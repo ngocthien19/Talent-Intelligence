@@ -200,6 +200,31 @@ const candidateModel = {
       [avatarData, userId]
     )
     return result.rows[0]
+  },
+
+  // Cập nhật trạng thái đã gửi báo cáo
+  updateNotified: async (candidateId) => {
+    const result = await pool.query(
+      `UPDATE candidates 
+       SET is_notified = true, 
+           report_sent_at = CURRENT_TIMESTAMP,
+           updated_at = CURRENT_TIMESTAMP
+       WHERE id = $1
+       RETURNING *`,
+      [candidateId]
+    )
+    return result.rows[0]
+  },
+
+  // Kiểm tra đã gửi báo cáo chưa
+  checkNotified: async (candidateId) => {
+    const result = await pool.query(
+      `SELECT is_notified, report_sent_at 
+       FROM candidates 
+       WHERE id = $1`,
+      [candidateId]
+    )
+    return result.rows[0]
   }
 }
 
