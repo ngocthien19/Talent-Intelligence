@@ -1,0 +1,182 @@
+import pool from '~/config/db.js'
+
+const jobModel = {
+  // Lấy danh sách công việc với filter
+  findAll: async (filters = {}) => {
+    const {
+      keyword,
+      location,
+      experience_level,
+      employment_type,
+      skill,
+      min_salary,
+      max_salary,
+      limit = 10,
+      offset = 0
+    } = filters
+
+    let query = `
+      SELECT jd.*, c.name as company_name, c.logo as company_logo, 
+             c.address as company_address, c.id as company_id
+      FROM job_descriptions jd
+      LEFT JOIN companies c ON jd.company_id = c.id
+      WHERE jd.is_active = true
+    `
+    const params = []
+    let paramIndex = 1
+
+    if (keyword) {
+      query += ` AND (jd.title ILIKE $${paramIndex} OR jd.description ILIKE $${paramIndex})`
+      params.push(`%${keyword}%`)
+      paramIndex++
+    }
+
+    if (location) {
+      query += ` AND jd.location ILIKE $${paramIndex}`
+      params.push(`%${location}%`)
+      paramIndex++
+    }
+
+    if (experience_level) {
+      query += ` AND jd.experience_level = $${paramIndex}`
+      params.push(experience_level)
+      paramIndex++
+    }
+
+    if (employment_type) {
+      query += ` AND jd.employment_type = $${paramIndex}`
+      params.push(employment_type)
+      paramIndex++
+    }
+
+    if (skill) {
+      query += ` AND jd.required_skills ? $${paramIndex}`
+      params.push(skill)
+      paramIndex++
+    }
+
+    if (min_salary) {
+      query += ` AND (jd.salary_range->>'min')::numeric >= $${paramIndex}`
+      params.push(min_salary)
+      paramIndex++
+    }
+
+    if (max_salary) {
+      query += ` AND (jd.salary_range->>'max')::numeric <= $${paramIndex}`
+      params.push(max_salary)
+      paramIndex++
+    }
+
+    // Đếm tổng
+    const countQuery = query.replace(
+      /SELECT jd\.\*, c\.name as company_name, c\.logo as company_logo, c\.address as company_address, c\.id as company_id/,
+      'SELECT COUNT(*) as total'
+    )
+    const countResult = await pool.query(countQuery, params)
+    const total = parseInt(countResult.rows[0]?.total || 0)
+
+    query += ` ORDER BY jd.created_at DESC LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`
+    params.push(limit, offset)
+
+    const result = await pool.query(query, params)
+
+    return {
+      data: result.rows,
+      pagination: {
+        total,
+        limit,
+        offset,
+        totalPages: Math.ceil(total / limit)
+      }
+    }
+  },
+
+  // Lấy chi tiết công việc
+  findById: async (id) => {
+    const result = await pool.query(
+      `SELECT jd.*, c.name as company_name, c.logo as company_logo, 
+              c.address as company_address, c.description as company_description,
+              c.culture_description as company_culture, c.id as company_id
+       FROM job_descriptions jd
+       LEFT JOIN companies c ON jd.company_id = c.id
+       WHERE jd.id = $1 AND jd.is_active = true`,
+      [id]
+    )
+    return result.rows[0]
+  },
+
+  // Lấy công việc theo công ty
+  findByCompanyId: async (companyId) => {
+    const result = await pool.query(
+      `SELECT jd.*, c.name as company_name
+       FROM job_descriptions jd
+       LEFT JOIN companies c ON jd.company_id = c.id
+       WHERE jd.company_id = $1 AND jd.is_active = true
+       ORDER BY jd.created_at DESC`,
+      [companyId]
+    )
+    return result.rows
+  },
+
+  // Lấy công việc nổi bật (mới nhất)
+  findFeatured: async (limit = 6) => {
+    const result = await pool.query(
+      `SELECT jd.*, c.name as company_name, c.logo as company_logo
+       FROM job_descriptions jd
+       LEFT JOIN companies c ON jd.company_id = c.id
+       WHERE jd.is_active = true
+       ORDER BY jd.created_at DESC
+       LIMIT $1`,
+      [limit]
+    )
+    return result.rows
+  },
+
+  // Đếm tổng số công việc
+  count: async () => {
+    const result = await pool.query(
+      'SELECT COUNT(*) as total FROM job_descriptions WHERE is_active = true'
+    )
+    return parseInt(result.rows[0]?.total || 0)
+  },
+
+  // Lấy filter options
+  getFilterOptions: async () => {
+    const result = await pool.query(
+      `SELECT 
+        DISTINCT location,
+        experience_level,
+        employment_type
+       FROM job_descriptions
+       WHERE is_active = true`
+    )
+
+    const options = {
+      locations: [],
+      experience_levels: [],
+      employment_types: []
+    }
+
+    result.rows.forEach(row => {
+      if (row.location && !options.locations.includes(row.location)) {
+        options.locations.push(row.location)
+      }
+      if (row.experience_level && !options.experience_levels.includes(row.experience_level)) {
+        options.experience_levels.push(row.experience_level)
+      }
+      if (row.employment_type && !options.employment_types.includes(row.employment_type)) {
+        options.employment_types.push(row.employment_type)
+      }
+    })
+
+    return options
+  },
+
+  // Lấy danh sách kỹ năng (cho autocomplete)
+  getSkills: async () => {
+    const result = await pool.query('SELECT name FROM skills ORDER BY name')
+    return result.rows.map(row => row.name)
+  }
+}
+
+export default jobModel

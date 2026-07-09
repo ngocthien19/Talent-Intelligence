@@ -1,0 +1,99 @@
+import express from 'express'
+import http from 'http'
+import cors from 'cors'
+import dotenv from 'dotenv'
+import cookieParser from 'cookie-parser'
+import compression from 'compression'
+import helmet from 'helmet'
+import morgan from 'morgan'
+import passport from 'passport'
+
+import { corsOptions } from '~/config/corsOptions'
+import { connectDB } from '~/config/db'
+import { env } from '~/config/environment'
+import '~/config/passport'
+
+import authRoutes from './routes/auth/auth.routes'
+import jobRoutes from './routes/candidate/job/job.routes'
+import candidateRoutes from './routes/candidate/candidate.routes'
+
+dotenv.config()
+
+const app = express()
+const server = http.createServer(app)
+
+// Middleware
+app.set('trust proxy', true)
+app.use(helmet())
+app.use(cors(corsOptions))
+app.use(compression())
+app.use(cookieParser())
+app.use(express.json({ limit: '50mb' }))
+app.use(express.urlencoded({ extended: true, limit: '50mb' }))
+
+app.use(passport.initialize())
+
+// Logging
+if (env.NODE_ENV === 'development') {
+  app.use(morgan('dev'))
+} else {
+  app.use(morgan('combined'))
+}
+
+// Routes
+app.use('/api/auth', authRoutes)
+app.use('/api/jobs', jobRoutes)
+app.use('/api/candidates', candidateRoutes)
+
+// Health check
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'OK',
+    timestamp: new Date().toISOString(),
+    environment: env.NODE_ENV
+  })
+})
+
+// Test route
+app.get('/api/test', (req, res) => {
+  res.json({
+    success: true,
+    message: 'Talent Intelligence API is running!',
+    timestamp: new Date().toISOString()
+  })
+})
+
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    message: 'Route not found'
+  })
+})
+
+// Error handler
+app.use((err, req, res, next) => {
+  console.error('Error:', err)
+  res.status(err.statusCode || 500).json({
+    success: false,
+    message: err.message || 'Internal Server Error'
+  })
+})
+
+// Start server
+const startServer = async () => {
+  try {
+    await connectDB()
+
+    const port = env.APP_PORT || 3000
+    server.listen(port, () => {
+      console.log(`Talent Intelligence Platform running at http://localhost:${port}`)
+      console.log(`Environment: ${env.NODE_ENV}`)
+    })
+  } catch (error) {
+    console.error('Failed to start server:', error.message)
+    process.exit(1)
+  }
+}
+
+startServer()
