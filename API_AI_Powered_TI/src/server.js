@@ -13,9 +13,11 @@ import { connectDB } from '~/config/db'
 import { env } from '~/config/environment'
 import '~/config/passport'
 
-import authRoutes from './routes/auth/auth.routes'
-import jobRoutes from './routes/candidate/job/job.routes'
-import candidateRoutes from './routes/candidate/candidate.routes'
+import authRoutes from '~/routes/auth/auth.routes'
+import jobRoutes from '~/routes/candidate/job/job.routes'
+import candidateRoutes from '~/routes/candidate/candidate.routes'
+
+import dashboardRoutes from '~/routes/hr/dashboard/dashboard.routes'
 
 dotenv.config()
 
@@ -44,6 +46,8 @@ if (env.NODE_ENV === 'development') {
 app.use('/api/auth', authRoutes)
 app.use('/api/jobs', jobRoutes)
 app.use('/api/candidates', candidateRoutes)
+
+app.use('/api/hr/dashboard', dashboardRoutes)
 
 // Health check
 app.get('/health', (req, res) => {
