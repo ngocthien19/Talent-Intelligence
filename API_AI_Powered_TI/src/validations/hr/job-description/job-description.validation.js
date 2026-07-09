@@ -1,0 +1,62 @@
+import Joi from 'joi'
+
+// Validation cho tạo JD
+export const createJDValidation = Joi.object({
+  title: Joi.string().required().min(3).max(255),
+  description: Joi.string().required().min(10),
+  requirements: Joi.string().optional(),
+  benefits: Joi.string().optional(),
+  requiredSkills: Joi.array().items(Joi.string()).optional(),
+  niceToHaveSkills: Joi.array().items(Joi.string()).optional(),
+  experienceLevel: Joi.string().valid('Fresher', 'Junior', 'Mid-Level', 'Senior', 'Lead', 'Manager').optional(),
+  employmentType: Joi.string().valid('Full-time', 'Part-time', 'Contract', 'Internship', 'Freelance').optional(),
+  location: Joi.string().optional(),
+  salaryRange: Joi.object({
+    min: Joi.number().min(0),
+    max: Joi.number().min(0),
+    currency: Joi.string().default('VND')
+  }).optional(),
+  isActive: Joi.boolean().default(true)
+})
+
+// Validation cho cập nhật JD
+export const updateJDValidation = Joi.object({
+  title: Joi.string().min(3).max(255).optional(),
+  description: Joi.string().min(10).optional(),
+  requirements: Joi.string().optional(),
+  benefits: Joi.string().optional(),
+  requiredSkills: Joi.array().items(Joi.string()).optional(),
+  niceToHaveSkills: Joi.array().items(Joi.string()).optional(),
+  experienceLevel: Joi.string().valid('Fresher', 'Junior', 'Mid-Level', 'Senior', 'Lead', 'Manager').optional(),
+  employmentType: Joi.string().valid('Full-time', 'Part-time', 'Contract', 'Internship', 'Freelance').optional(),
+  location: Joi.string().optional(),
+  salaryRange: Joi.object({
+    min: Joi.number().min(0),
+    max: Joi.number().min(0),
+    currency: Joi.string().default('VND')
+  }).optional(),
+  isActive: Joi.boolean().optional()
+})
+
+// Validation cho danh sách JD
+export const getJDListValidation = Joi.object({
+  keyword: Joi.string().min(1).max(100).optional(),
+  experienceLevel: Joi.string().valid('Fresher', 'Junior', 'Mid-Level', 'Senior', 'Lead', 'Manager').optional(),
+  employmentType: Joi.string().valid('Full-time', 'Part-time', 'Contract', 'Internship', 'Freelance').optional(),
+  isActive: Joi.boolean().optional(),
+  sortBy: Joi.string().valid('title', 'created_at', 'updated_at').default('created_at'),
+  sortOrder: Joi.string().valid('ASC', 'DESC').default('DESC'),
+  limit: Joi.number().min(1).max(100).default(20),
+  page: Joi.number().min(1).default(1)
+})
+
+export const idValidation = Joi.object({
+  id: Joi.string().uuid().required()
+})
+
+export default {
+  createJDValidation,
+  updateJDValidation,
+  getJDListValidation,
+  idValidation
+}
