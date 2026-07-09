@@ -13,6 +13,8 @@ import { connectDB } from '~/config/db'
 import { env } from '~/config/environment'
 import '~/config/passport'
 
+import { initSocket } from '~/providers/socket.provider'
+
 import redisConnection from '~/config/redis'
 
 import { createWorker } from '~/providers/queue.provider'
@@ -24,11 +26,15 @@ import candidateRoutes from '~/routes/candidate/candidate.routes'
 
 import dashboardRoutes from '~/routes/hr/dashboard/dashboard.routes'
 import analysisRoutes from '~/routes/hr/analysis/analysis.routes'
+import reportRoutes from '~/routes/hr/report/report.routes'
+import candidateManagementRoutes from '~/routes/hr/candidate/candidate-management.routes'
 
 dotenv.config()
 
 const app = express()
 const server = http.createServer(app)
+
+initSocket(server)
 
 // Middleware
 app.set('trust proxy', true)
@@ -55,6 +61,8 @@ app.use('/api/candidates', candidateRoutes)
 
 app.use('/api/hr/dashboard', dashboardRoutes)
 app.use('/api/hr/candidates', analysisRoutes)
+app.use('/api/hr/reports', reportRoutes)
+app.use('/api/hr', candidateManagementRoutes)
 
 // Health check
 app.get('/health', (req, res) => {
@@ -102,16 +110,11 @@ analysisWorkerInstance.on('failed', (job, err) => {
   console.error(`Job ${job.id} failed:`, err.message)
 })
 
-analysisWorkerInstance.on('progress', (job, progress) => {
-  console.log(`Job ${job.id} progress: ${progress}%`)
-})
-
 // START SERVER
 const startServer = async () => {
   try {
     await connectDB()
 
-    // Kiểm tra Redis connection
     if (redisConnection.status === 'ready') {
       console.log('Redis connection established successfully.')
     }
@@ -120,7 +123,6 @@ const startServer = async () => {
     server.listen(port, () => {
       console.log(`Talent Intelligence Platform running at http://localhost:${port}`)
       console.log(`Environment: ${env.NODE_ENV}`)
-      console.log('Queue Worker: analysis ready')
     })
   } catch (error) {
     console.error('Failed to start server:', error.message)
