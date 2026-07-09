@@ -3,14 +3,31 @@ import { env } from '~/config/environment'
 
 // Khởi tạo Gemini
 const genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY)
-
 const MODEL_NAME = 'gemini-2.5-flash'
+
+// Hàm retry với exponential backoff
+const retry = async (fn, maxRetries = 5, delay = 1000) => {
+  let lastError
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      return await fn()
+    } catch (error) {
+      lastError = error
+      if (error.status !== 429 && error.status !== 503) {
+        throw error
+      }
+      const waitTime = delay * Math.pow(2, attempt - 1) + Math.random() * 1000
+      await new Promise(resolve => setTimeout(resolve, waitTime))
+    }
+  }
+  throw lastError
+}
 
 export const getModel = () => {
   return genAI.getGenerativeModel({ model: MODEL_NAME })
 }
 
-// Lấy model với cấu hình structured (cho JSON output)
 export const getStructuredModel = () => {
   return genAI.getGenerativeModel({
     model: MODEL_NAME,
@@ -23,7 +40,6 @@ export const getStructuredModel = () => {
   })
 }
 
-// Lấy model với cấu hình creative (cho chat, interview)
 export const getCreativeModel = () => {
   return genAI.getGenerativeModel({
     model: MODEL_NAME,
@@ -36,26 +52,22 @@ export const getCreativeModel = () => {
   })
 }
 
-// Generate content với model mặc định
+// Generate content với retry
 export const generateContent = async (prompt) => {
-  try {
+  return retry(async () => {
     const model = getModel()
     const result = await model.generateContent(prompt)
     return result.response.text()
-  } catch (error) {
-    console.error('Gemini API error:', error)
-    throw new Error(`AI generation failed: ${error.message}`)
-  }
+  })
 }
 
-// Generate structured JSON content
+// Generate structured JSON content với retry
 export const generateStructuredContent = async (prompt) => {
-  try {
+  return retry(async () => {
     const model = getStructuredModel()
     const result = await model.generateContent(prompt)
     const text = result.response.text()
 
-    // Try to parse JSON
     try {
       const jsonMatch = text.match(/\{[\s\S]*\}/)
       if (jsonMatch) {
@@ -65,22 +77,29 @@ export const generateStructuredContent = async (prompt) => {
     } catch {
       return text
     }
-  } catch (error) {
-    console.error('Gemini API error:', error)
-    throw new Error(`AI generation failed: ${error.message}`)
-  }
+  })
 }
 
-// Generate creative content (chat, interview)
+// Generate creative content với retry
 export const generateCreativeContent = async (prompt) => {
-  try {
+  return retry(async () => {
     const model = getCreativeModel()
     const result = await model.generateContent(prompt)
     return result.response.text()
-  } catch (error) {
-    console.error('Gemini API error:', error)
-    throw new Error(`AI generation failed: ${error.message}`)
-  }
+  })
+}
+
+// TẠO EMBEDDING
+export const generateEmbedding = async (text) => {
+  return retry(async () => {
+    try {
+      const model = genAI.getGenerativeModel({ model: 'gemini-embedding-2' })
+      const result = await model.embedContent(text)
+      return result.embedding.values
+    } catch (error) {
+      throw new Error(`Failed to generate embedding: ${error.message}`)
+    }
+  })
 }
 
 export default {
@@ -89,5 +108,6 @@ export default {
   getCreativeModel,
   generateContent,
   generateStructuredContent,
-  generateCreativeContent
+  generateCreativeContent,
+  generateEmbedding
 }
