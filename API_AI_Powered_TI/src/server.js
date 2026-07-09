@@ -30,6 +30,7 @@ import analysisRoutes from '~/routes/hr/analysis/analysis.routes'
 import reportRoutes from '~/routes/hr/report/report.routes'
 import candidateManagementRoutes from '~/routes/hr/candidate/candidate-management.routes'
 import jobDescriptionRoutes from '~/routes/hr/job-description/job-description.routes'
+import comparisonRoutes from '~/routes/hr/comparison/comparison.routes'
 
 dotenv.config()
 
@@ -67,6 +68,7 @@ app.use('/api/hr/reports', reportRoutes)
 app.use('/api/hr', candidateManagementRoutes)
 app.use('/api/hr', jobDescriptionRoutes)
 app.use('/api/hr', profileRoutes)
+app.use('/api/hr', comparisonRoutes)
 
 // Health check
 app.get('/health', (req, res) => {

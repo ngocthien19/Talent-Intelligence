@@ -4,7 +4,7 @@ import { env } from '~/config/environment'
 // Khởi tạo Gemini
 const genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY)
 
-const MODEL_NAME = 'gemini-3.5-flash'
+const MODEL_NAME = 'gemini-2.5-flash'
 
 export const getModel = () => {
   return genAI.getGenerativeModel({ model: MODEL_NAME })
