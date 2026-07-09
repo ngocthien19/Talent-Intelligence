@@ -13,11 +13,17 @@ import { connectDB } from '~/config/db'
 import { env } from '~/config/environment'
 import '~/config/passport'
 
+import redisConnection from '~/config/redis'
+
+import { createWorker } from '~/providers/queue.provider'
+import { analysisWorker } from '~/jobs/analysis.job'
+
 import authRoutes from '~/routes/auth/auth.routes'
 import jobRoutes from '~/routes/candidate/job/job.routes'
 import candidateRoutes from '~/routes/candidate/candidate.routes'
 
 import dashboardRoutes from '~/routes/hr/dashboard/dashboard.routes'
+import analysisRoutes from '~/routes/hr/analysis/analysis.routes'
 
 dotenv.config()
 
@@ -48,6 +54,7 @@ app.use('/api/jobs', jobRoutes)
 app.use('/api/candidates', candidateRoutes)
 
 app.use('/api/hr/dashboard', dashboardRoutes)
+app.use('/api/hr/candidates', analysisRoutes)
 
 // Health check
 app.get('/health', (req, res) => {
@@ -84,20 +91,49 @@ app.use((err, req, res, next) => {
   })
 })
 
-// Start server
+// KHỞI TẠO WORKER CHO QUEUE
+const analysisWorkerInstance = createWorker('analysis', analysisWorker)
+
+analysisWorkerInstance.on('completed', (job) => {
+  console.log(`Job ${job.id} completed for candidate ${job.data.candidateId}`)
+})
+
+analysisWorkerInstance.on('failed', (job, err) => {
+  console.error(`Job ${job.id} failed:`, err.message)
+})
+
+analysisWorkerInstance.on('progress', (job, progress) => {
+  console.log(`Job ${job.id} progress: ${progress}%`)
+})
+
+// START SERVER
 const startServer = async () => {
   try {
     await connectDB()
+
+    // Kiểm tra Redis connection
+    if (redisConnection.status === 'ready') {
+      console.log('Redis connection established successfully.')
+    }
 
     const port = env.APP_PORT || 3000
     server.listen(port, () => {
       console.log(`Talent Intelligence Platform running at http://localhost:${port}`)
       console.log(`Environment: ${env.NODE_ENV}`)
+      console.log('Queue Worker: analysis ready')
     })
   } catch (error) {
     console.error('Failed to start server:', error.message)
     process.exit(1)
   }
 }
+
+// Graceful shutdown
+process.on('SIGTERM', async () => {
+  console.log('SIGTERM received, closing...')
+  await analysisWorkerInstance.close()
+  await redisConnection.quit()
+  server.close(() => process.exit(0))
+})
 
 startServer()
