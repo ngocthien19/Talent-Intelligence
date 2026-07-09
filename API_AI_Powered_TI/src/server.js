@@ -23,11 +23,13 @@ import { analysisWorker } from '~/jobs/analysis.job'
 import authRoutes from '~/routes/auth/auth.routes'
 import jobRoutes from '~/routes/candidate/job/job.routes'
 import candidateRoutes from '~/routes/candidate/candidate.routes'
+import profileRoutes from '~/routes/hr/profile/profile.routes'
 
 import dashboardRoutes from '~/routes/hr/dashboard/dashboard.routes'
 import analysisRoutes from '~/routes/hr/analysis/analysis.routes'
 import reportRoutes from '~/routes/hr/report/report.routes'
 import candidateManagementRoutes from '~/routes/hr/candidate/candidate-management.routes'
+import jobDescriptionRoutes from '~/routes/hr/job-description/job-description.routes'
 
 dotenv.config()
 
@@ -63,6 +65,8 @@ app.use('/api/hr/dashboard', dashboardRoutes)
 app.use('/api/hr/candidates', analysisRoutes)
 app.use('/api/hr/reports', reportRoutes)
 app.use('/api/hr', candidateManagementRoutes)
+app.use('/api/hr', jobDescriptionRoutes)
+app.use('/api/hr', profileRoutes)
 
 // Health check
 app.get('/health', (req, res) => {
