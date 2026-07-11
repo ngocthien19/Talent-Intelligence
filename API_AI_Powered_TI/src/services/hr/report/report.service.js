@@ -2,7 +2,7 @@ import analysisModel from '~/models/hr/analysis/analysis.model'
 import candidateModel from '~/models/candidate/candidate.model'
 import { EmailProvider } from '~/providers/email.provider'
 import { generateReportHTML } from '~/services/email/report.template'
-import { emitToCandidate, emitToUser } from '~/providers/socket.provider'
+import notificationService from '~/services/notification/notification.service'
 
 const reportService = {
   sendReport: async (candidateId, hrId) => {
@@ -38,23 +38,33 @@ const reportService = {
     // 6. Cập nhật trạng thái đã gửi
     await candidateModel.updateNotified(candidateId)
 
-    // 7. Gửi thông báo real-time cho candidate
-    emitToCandidate(candidateId, 'report:sent', {
-      candidateId: candidate.id,
-      candidateName: candidate.name,
-      positionApplied: candidate.position_applied,
-      overallScore: analysisResult.overall?.score || 0,
-      recommendation: analysisResult.overall?.recommendation || 'need_more_info',
-      sentAt: new Date().toISOString(),
-      message: 'Bạn đã nhận được báo cáo đánh giá hồ sơ từ nhà tuyển dụng'
+    // 7. Gửi thông báo cho Candidate
+    await notificationService.sendToCandidate(candidateId, {
+      type: 'report_sent',
+      title: 'Báo cáo đánh giá hồ sơ',
+      content: `Báo cáo đánh giá cho vị trí "${candidate.position_applied}" đã được gửi đến email của bạn.`,
+      extraData: {
+        candidateId: candidate.id,
+        candidateName: candidate.name,
+        positionApplied: candidate.position_applied,
+        overallScore: analysisResult.overall?.score || 0,
+        recommendation: analysisResult.overall?.recommendation || 'need_more_info',
+        sentAt: new Date().toISOString()
+      }
     })
 
     // 8. Gửi thông báo cho HR (xác nhận đã gửi)
-    emitToUser(hrId, 'report:sent:confirm', {
-      candidateId: candidate.id,
-      candidateName: candidate.name,
-      email: candidate.email,
-      sentAt: new Date().toISOString()
+    await notificationService.sendToHR(hrId, {
+      type: 'report_sent_confirm',
+      title: `Đã gửi báo cáo cho ${candidate.name}`,
+      content: `Báo cáo đánh giá đã được gửi đến email của ${candidate.name}`,
+      extraData: {
+        candidateId: candidate.id,
+        candidateName: candidate.name,
+        email: candidate.email,
+        positionApplied: candidate.position_applied,
+        sentAt: new Date().toISOString()
+      }
     })
 
     return {

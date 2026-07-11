@@ -1,6 +1,7 @@
 import analysisModel from '~/models/hr/analysis/analysis.model'
 import { generateStructuredContent } from '~/providers/gemini.provider'
 import { createQueue, addJob, getJobStatus } from '~/providers/queue.provider'
+import notificationService from '~/services/notification/notification.service'
 
 // Tạo queue
 const analysisQueue = createQueue('analysis')
@@ -103,6 +104,24 @@ Vui lòng phân tích và trả về kết quả dưới dạng JSON với cấu
 
     const updatedCandidate = await analysisModel.updateCandidateScores(candidateId, scores)
 
+    // Gửi thông báo
+    await notificationService.sendToCompany(candidate.company_id, {
+      type: 'analysis_completed',
+      title: `Phân tích hoàn tất: ${candidate.name}`,
+      content: `Phân tích CV cho ứng viên ${candidate.name} đã hoàn tất. Điểm: ${scores.overall_score}/100`,
+      extraData: {
+        candidateId: candidate.id,
+        candidateName: candidate.name,
+        positionApplied: candidate.position_applied,
+        overallScore: scores.overall_score,
+        skillsMatchScore: scores.skills_match_score,
+        cultureFitScore: scores.culture_fit_score,
+        retentionScore: scores.retention_score,
+        recommendation: result.overall?.recommendation,
+        analysisId: analysis.id
+      }
+    })
+
     return {
       analysis,
       candidate: updatedCandidate,
@@ -118,13 +137,27 @@ Vui lòng phân tích và trả về kết quả dưới dạng JSON với cấu
       throw new Error('Ứng viên này đã được phân tích')
     }
 
+    // Gửi thông báo cho HR biết đang xử lý
+    const candidate = await analysisModel.getCandidateForAnalysis(candidateId)
+
+    // Gửi thông báo cho HR biết đang xử lý
+    await notificationService.sendToHR(userId, {
+      type: 'analysis_started',
+      title: `Đang phân tích: ${candidate?.name || 'Ứng viên'}`,
+      content: 'Hệ thống đang phân tích CV cho ứng viên. Vui lòng chờ trong giây lát.',
+      extraData: {
+        candidateId: candidateId,
+        candidateName: candidate?.name,
+        status: 'processing'
+      }
+    })
+
     // Thêm vào queue
     const job = await addJob(analysisQueue, 'analyze-cv', {
       candidateId,
       companyId,
       userId
     }, {
-      // Job options
       attempts: 3,
       backoff: {
         type: 'exponential',
