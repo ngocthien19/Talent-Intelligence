@@ -43,6 +43,9 @@ export const env = {
   GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET || '',
   GOOGLE_CALLBACK_URL: process.env.GOOGLE_CALLBACK_URL || 'http://localhost:3000/api/auth/google/callback',
 
+  // Google Service Account
+  GOOGLE_SERVICE_ACCOUNT_KEY: process.env.GOOGLE_SERVICE_ACCOUNT_KEY || './service-account-key.json',
+
   // Frontend
   FRONTEND_URL: process.env.FRONTEND_URL || 'http://localhost:5173'
 }
