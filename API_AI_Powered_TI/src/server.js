@@ -24,6 +24,7 @@ import authRoutes from '~/routes/auth/auth.routes'
 import jobRoutes from '~/routes/candidate/job/job.routes'
 import candidateRoutes from '~/routes/candidate/candidate.routes'
 import profileRoutes from '~/routes/hr/profile/profile.routes'
+import mockInterviewRoutes from '~/routes/candidate/mock-interview/mock-interview.routes'
 
 import dashboardRoutes from '~/routes/hr/dashboard/dashboard.routes'
 import analysisRoutes from '~/routes/hr/analysis/analysis.routes'
@@ -68,6 +69,7 @@ if (env.NODE_ENV === 'development') {
 app.use('/api/auth', authRoutes)
 app.use('/api/jobs', jobRoutes)
 app.use('/api/candidates', candidateRoutes)
+app.use('/api/mock-interview', mockInterviewRoutes)
 
 app.use('/api/hr/dashboard', dashboardRoutes)
 app.use('/api/hr/candidates', analysisRoutes)
