@@ -33,6 +33,7 @@ import jobDescriptionRoutes from '~/routes/hr/job-description/job-description.ro
 import comparisonRoutes from '~/routes/hr/comparison/comparison.routes'
 import semanticSearchRoutes from '~/routes/hr/semantic-search/semantic-search.routes'
 import resumeEnrichmentRoutes from '~/routes/hr/resume-enrichment/resume-enrichment.routes'
+import calendarRoutes from '~/routes/hr/calendar/calendar.routes'
 
 dotenv.config()
 
@@ -73,6 +74,7 @@ app.use('/api/hr', profileRoutes)
 app.use('/api/hr', comparisonRoutes)
 app.use('/api/hr', semanticSearchRoutes)
 app.use('/api/hr/resume', resumeEnrichmentRoutes)
+app.use('/api/hr/calendar', calendarRoutes)
 
 // Health check
 app.get('/health', (req, res) => {
