@@ -2,6 +2,7 @@ import calendarModel from '~/models/hr/calendar/calendar.model'
 import { createCalendarEvent, deleteCalendarEvent } from '~/providers/google-calendar.provider'
 import candidateModel from '~/models/candidate/candidate.model'
 import { EmailProvider } from '~/providers/email.provider'
+import notificationService from '~/services/notification/notification.service'
 
 // Hàm tạo Google Meet link
 function generateMeetLink() {
@@ -55,6 +56,21 @@ const calendarService = {
     }
 
     await sendInterviewConfirmation(candidate, schedule, finalMeetLink)
+
+    await notificationService.sendToCandidate(candidateId, {
+      type: 'interview_invite',
+      title: `Lịch phỏng vấn - ${candidate.position_applied}`,
+      content: `Bạn có lịch phỏng vấn vào lúc ${new Date(interviewDate).toLocaleString('vi-VN')}`,
+      extraData: {
+        scheduleId: schedule.id,
+        interviewDate: interviewDate,
+        duration: duration || 60,
+        location: location || 'Google Meet',
+        meetingLink: finalMeetLink,
+        positionApplied: candidate.position_applied,
+        status: schedule.status
+      }
+    })
 
     return schedule
   },
