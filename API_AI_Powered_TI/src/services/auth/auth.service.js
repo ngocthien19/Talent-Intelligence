@@ -151,7 +151,8 @@ const authService = {
       id: user.id,
       email: user.email,
       roleId: user.role_id,
-      roleName: user.role_name
+      roleName: user.role_name,
+      companyId: user.company_id || null
     }
 
     const accessToken = JwtProvider.generateToken(
@@ -171,7 +172,7 @@ const authService = {
     if (user.role_name === ROLES.HR) {
       redirectUrl = '/hr/dashboard'
     } else if (user.role_name === ROLES.CANDIDATE) {
-      redirectUrl = '/dashboard'
+      redirectUrl = '/'
     }
 
     return {
@@ -184,7 +185,8 @@ const authService = {
         roleId: user.role_id,
         roleName: user.role_name,
         avatar: user.avatar,
-        isActive: user.is_active
+        isActive: user.is_active,
+        companyId: user.company_id
       },
       accessToken,
       refreshToken,

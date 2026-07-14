@@ -2,6 +2,7 @@ import candidateModel from '~/models/candidate/candidate.model'
 import jobModel from '~/models/candidate/job/job.model'
 import parseService from '~/services/parse.service'
 import { CloudinaryProvider } from '~/providers/cloudinary.provider'
+import notificationService from '~/services/notification/notification.service'
 
 const candidateService = {
   // Ứng tuyển công việc
@@ -73,6 +74,41 @@ const candidateService = {
       cv_mime_type: cvMimeType,
       parsed_data: parsedData,
       jd_text: job.description
+    })
+
+    // 5. Gửi thông báo cho HR (người đăng tuyển)
+    if (job.user_id) {
+      await notificationService.sendToHR(job.user_id, {
+        type: 'new_application',
+        title: `Ứng viên mới: ${candidate.name}`,
+        content: `${candidate.name} vừa ứng tuyển vào vị trí "${job.title}"`,
+        extraData: {
+          candidateId: candidate.id,
+          candidateName: candidate.name,
+          candidateEmail: candidate.email,
+          jobId: job_id,
+          jobTitle: job.title,
+          cvUrl: cvUrl,
+          status: candidate.status,
+          appliedAt: candidate.created_at
+        }
+      })
+    }
+
+    // 6. Gửi thông báo cho Candidate (bản thân)
+    await notificationService.sendToCandidate(user_id, {
+      type: 'application_submitted',
+      title: 'Đã ứng tuyển thành công',
+      content: `Bạn đã ứng tuyển vào vị trí "${job.title}" tại ${job.company_name || 'công ty'}`,
+      extraData: {
+        applicationId: candidate.id,
+        jobId: job_id,
+        jobTitle: job.title,
+        companyName: job.company_name,
+        positionApplied: job.title,
+        status: candidate.status,
+        appliedAt: candidate.created_at
+      }
     })
 
     return {

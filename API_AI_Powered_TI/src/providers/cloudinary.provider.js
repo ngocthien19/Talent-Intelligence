@@ -25,7 +25,7 @@ const uploadCV = multer({
   }
 })
 
-// 2. Avatar Storage (giữ nguyên - không cần buffer, chỉ cần URL kết quả)
+// 2. Avatar Storage
 const avatarStorage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
@@ -39,28 +39,29 @@ const uploadAvatar = multer({
   limits: { fileSize: 5 * 1024 * 1024 }
 })
 
-// 3. Logo Storage (giữ nguyên)
-const logoStorage = new CloudinaryStorage({
+// 3. Logo & Banner Storage (Company)
+const companyStorage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
-    folder: 'company_logos',
+    folder: 'company',
     allowed_formats: ['jpg', 'png', 'jpeg', 'webp'],
-    transformation: [{ width: 300, height: 300, crop: 'limit' }]
+    transformation: [{ width: 800, height: 400, crop: 'limit' }]
   }
 })
-const uploadLogo = multer({
-  storage: logoStorage,
+const uploadCompanyFiles = multer({
+  storage: companyStorage,
   limits: { fileSize: 5 * 1024 * 1024 }
 })
 
-// Upload 1 buffer lên Cloudinary (dùng cho CV, vì multer chỉ giữ buffer trong RAM)
+// 4. Upload buffer thủ công (dùng cho CV)
 const uploadBuffer = (buffer, options = {}) => {
   return new Promise((resolve, reject) => {
     const uploadStream = cloudinary.uploader.upload_stream(
       {
         resource_type: options.resource_type || 'raw',
         folder: options.folder,
-        public_id: options.public_id
+        public_id: options.public_id,
+        transformation: options.transformation || []
       },
       (error, result) => {
         if (error) return reject(error)
@@ -80,9 +81,7 @@ export const CloudinaryProvider = {
   // Middleware multer
   uploadCV: uploadCV.single('cv'),
   uploadAvatar: uploadAvatar.single('avatar'),
-  uploadLogo: uploadLogo.single('logo'),
-  uploadMultipleCV: uploadCV.array('cvs', 5),
-  uploadCompanyFiles: uploadLogo.fields([
+  uploadCompanyFiles: uploadCompanyFiles.fields([
     { name: 'logo', maxCount: 1 },
     { name: 'banner', maxCount: 1 }
   ])
