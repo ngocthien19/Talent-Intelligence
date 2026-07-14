@@ -7,7 +7,7 @@ services:
     container_name: talent-postgres
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 123456
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: talent_intelligence
       TZ: Asia/Ho_Chi_Minh
     ports:
@@ -36,11 +36,7 @@ services:
       - DB_HOST=postgres
       - DB_PORT=5432
       - DB_USER=postgres
-      - DB_PASSWORD=123456
       - DB_NAME=talent_intelligence
-      - REDIS_HOST=picture-bear-beachy-21991.db.redis.io
-      - REDIS_PORT=15699
-      - REDIS_PASSWORD=hyLnuNl6EcBS13kIQLpHMNVd4zYhpMN8
       - TZ=Asia/Ho_Chi_Minh
     env_file:
       - ./API_AI_Powered_TI/.env
