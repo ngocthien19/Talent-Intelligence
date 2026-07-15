@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  # POSTGRESQL + PGVECTOR
+  postgres:
+    image: pgvector/pgvector:pg15
+    container_name: talent-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123456
+      POSTGRES_DB: talent_intelligence
+      TZ: Asia/Ho_Chi_Minh
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-scripts:/docker-entrypoint-initdb.d
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # BACKEND 
+  backend:
+    build:
+      context: ./API_AI_Powered_TI
+      dockerfile: Dockerfile
+    container_name: talent-backend
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - APP_PORT=3000
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=123456
+      - DB_NAME=talent_intelligence
+      - REDIS_HOST=picture-bear-beachy-21991.db.redis.io
+      - REDIS_PORT=15699
+      - REDIS_PASSWORD=hyLnuNl6EcBS13kIQLpHMNVd4zYhpMN8
+      - TZ=Asia/Ho_Chi_Minh
+    env_file:
+      - ./API_AI_Powered_TI/.env
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./API_AI_Powered_TI:/app
+      - /app/node_modules
+    restart: unless-stopped
+    command: npm run dev
+
+volumes:
+  postgres_data:

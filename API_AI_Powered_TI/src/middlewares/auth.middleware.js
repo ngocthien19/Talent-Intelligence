@@ -34,7 +34,7 @@ const resendOTPLimiter = rateLimit({
   legacyHeaders: false
 })
 
-// ============ VALIDATE ============
+// VALIDATE
 
 // Validate đăng ký
 const validateRegister = (req, res, next) => {
