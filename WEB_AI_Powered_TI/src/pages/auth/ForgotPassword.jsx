@@ -28,7 +28,15 @@ const ForgotPassword = () => {
       await forgotPassword(data.email)
       setSubmittedEmail(data.email)
       setIsSubmitted(true)
+
       toast.success(t('auth.resetPasswordSent') || 'Mã OTP đã được gửi đến email của bạn')
+
+      setTimeout(() => {
+        navigate('/reset-password', {
+          state: { email: data.email }
+        })
+      }, 2000)
+
     } catch (error) {
       toast.error(error || t('auth.resetPasswordFailed') || 'Gửi yêu cầu thất bại')
     }
@@ -57,13 +65,10 @@ const ForgotPassword = () => {
             <p className="text-sm text-brand-text/60 dark:text-gray-400">
               {t('auth.resetPasswordEmailSent') || `Chúng tôi đã gửi mã OTP đến ${submittedEmail}`}
             </p>
+            <p className="text-xs text-brand-text/40 dark:text-gray-500 mt-2">
+              Đang chuyển hướng đến trang đặt lại mật khẩu...
+            </p>
           </div>
-          <Link
-            to="/reset-password"
-            className="w-full inline-block text-center px-6 py-3 bg-gradient-brand text-white rounded-xl font-medium hover:shadow-glow transition-all duration-300 cursor-pointer hover:scale-[1.02]"
-          >
-            {t('auth.goToResetPassword') || 'Đi đến đặt lại mật khẩu'}
-          </Link>
         </div>
       ) : (
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -111,7 +116,7 @@ const ForgotPassword = () => {
             {t('auth.backToLogin') || 'Quay lại'}{' '}
             <Link
               to="/login"
-              className="font-medium text-brand-primary hover:text-brand-secondary dark:hover:text-white transition-colors duration-200"
+              className="font-medium text-brand-primary hover:text-brand-accent hover:underline underline-offset-2 dark:hover:text-white transition-colors duration-200"
             >
               {t('auth.login') || 'Đăng nhập'}
             </Link>

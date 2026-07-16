@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { useLanguage } from '~/hooks/useLanguage'
 import { useAuth } from '~/hooks/useAuth'
@@ -10,9 +10,26 @@ import SocialLogin from '~/layouts/auth/SocialLogin'
 
 const Login = () => {
   const navigate = useNavigate()
+  const location = useLocation()
   const { t } = useLanguage()
   const { login, isLoading } = useAuth()
   const [showPassword, setShowPassword] = useState(false)
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search)
+    const success = params.get('success')
+    const error = params.get('error')
+
+    if (success === 'true') {
+      toast.success('Đăng nhập với Google thành công!')
+      // User đã được set cookie, chỉ cần chuyển về trang chủ
+      navigate('/')
+    }
+
+    if (error) {
+      toast.error(decodeURIComponent(error) || 'Đăng nhập với Google thất bại')
+    }
+  }, [location, navigate])
 
   const {
     register,
@@ -99,7 +116,10 @@ const Login = () => {
 
         {/* Forgot password */}
         <div className="flex items-center justify-end pb-2">
-          <Link to="/forgot-password" className="text-sm font-medium text-brand-primary hover:text-brand-accent transition-colors duration-200">
+          <Link
+            to="/forgot-password"
+            className="text-sm font-medium text-brand-primary hover:text-brand-accent hover:underline underline-offset-2 transition-all duration-200"
+          >
             {t('auth.forgotPassword') || 'Quên mật khẩu?'}
           </Link>
         </div>
@@ -126,7 +146,10 @@ const Login = () => {
         {/* Register link */}
         <p className="text-center text-sm font-medium text-brand-text/70 dark:text-gray-400 pt-2">
           {t('auth.noAccount') || 'Chưa có tài khoản?'}{' '}
-          <Link to="/register" className="text-brand-primary hover:text-brand-accent transition-colors duration-200">
+          <Link
+            to="/register"
+            className="text-brand-primary hover:text-brand-accent hover:underline underline-offset-2 transition-all duration-200"
+          >
             {t('auth.registerNow') || 'Đăng ký ngay'}
           </Link>
         </p>
