@@ -64,5 +64,40 @@
     "ctaTitle": "Let AI help you find the most suitable job",
     "ctaDesc": "Upload your CV, AI will analyze and suggest the most suitable jobs based on your skills and experience.",
     "tryMockInterview": "Try Mock Interview"
+  },
+  "jobs": {
+    "title": "Jobs",
+    "found": "Found",
+    "jobs": "jobs",
+    "filters": "Filters",
+    "clearAll": "Clear all",
+    "category": "Category",
+    "location": "Location",
+    "experience": "Experience",
+    "type": "Employment Type",
+    "salary": "Salary",
+    "all": "All",
+    "selectJob": "Select a job to view details",
+    "applyNow": "Apply now",
+    "saveJob": "Save job",
+    "postedOn": "Posted on",
+    "jobDescription": "Job Description",
+    "requirements": "Requirements",
+    "benefits": "Benefits",
+    "requiredSkills": "Required Skills",
+    "niceToHaveSkills": "Nice to Have Skills",
+    "noJobsFound": "No jobs found",
+    "tryDifferentFilters": "Try changing your search filters",
+    "withKeyword": "with keyword",
+    "viewJobDetail": "View job details"
+  },
+  "pagination": {
+    "previous": "Previous",
+    "next": "Next"
+  },
+  "common": {
+    "addToFavorites": "Add to favorites",
+    "removeFromFavorites": "Remove from favorites",
+    "loginRequired": "Please login to save job"
   }
 }

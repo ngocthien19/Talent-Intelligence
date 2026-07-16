@@ -1,15 +1,24 @@
 import { useState, useEffect, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useLanguage } from '~/hooks/useLanguage'
 import { categoryApi } from '~/api/candidate/category.api'
+import { LOCATIONS } from '~/utils/constant'
 import { FaSearch, FaMapMarkerAlt, FaTag, FaCheck } from 'react-icons/fa'
 
-const SearchForm = () => {
+const SearchForm = ({ onSearch, initialKeyword = '' }) => {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const { t } = useLanguage()
-  const [searchKeyword, setSearchKeyword] = useState('')
-  const [searchLocation, setSearchLocation] = useState('')
-  const [searchCategory, setSearchCategory] = useState('')
+
+  const [searchKeyword, setSearchKeyword] = useState(
+    initialKeyword || searchParams.get('keyword') || ''
+  )
+  const [searchLocation, setSearchLocation] = useState(
+    searchParams.get('location') || ''
+  )
+  const [searchCategory, setSearchCategory] = useState(
+    searchParams.get('category') || ''
+  )
   const [isLocationOpen, setIsLocationOpen] = useState(false)
   const [isCategoryOpen, setIsCategoryOpen] = useState(false)
   const [categories, setCategories] = useState([])
@@ -17,21 +26,15 @@ const SearchForm = () => {
   const locationRef = useRef(null)
   const categoryRef = useRef(null)
 
-  // Danh sách thành phố
-  const locations = [
-    { value: '', label: 'Tất cả địa điểm' },
-    { value: 'Hà Nội', label: 'Hà Nội' },
-    { value: 'TP. Hồ Chí Minh', label: 'TP. Hồ Chí Minh' },
-    { value: 'Đà Nẵng', label: 'Đà Nẵng' },
-    { value: 'Hải Phòng', label: 'Hải Phòng' },
-    { value: 'Cần Thơ', label: 'Cần Thơ' },
-    { value: 'Nha Trang', label: 'Nha Trang' },
-    { value: 'Huế', label: 'Huế' },
-    { value: 'Vũng Tàu', label: 'Vũng Tàu' },
-    { value: 'Đà Lạt', label: 'Đà Lạt' },
-    { value: 'Biên Hòa', label: 'Biên Hòa' },
-    { value: 'Bình Dương', label: 'Bình Dương' }
-  ]
+  useEffect(() => {
+    const keyword = searchParams.get('keyword') || ''
+    const location = searchParams.get('location') || ''
+    const category = searchParams.get('category') || ''
+
+    if (keyword !== searchKeyword) setSearchKeyword(keyword)
+    if (location !== searchLocation) setSearchLocation(location)
+    if (category !== searchCategory) setSearchCategory(category)
+  }, [searchParams])
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -68,8 +71,22 @@ const SearchForm = () => {
     const params = new URLSearchParams()
     if (searchKeyword) params.append('keyword', searchKeyword)
     if (searchLocation) params.append('location', searchLocation)
-    if (searchCategory) params.append('category_id', searchCategory)
-    navigate(`/jobs?${params.toString()}`)
+    if (searchCategory) params.append('category', searchCategory)
+
+    const queryString = params.toString()
+    const url = `/jobs${queryString ? `?${queryString}` : ''}`
+
+    if (onSearch) {
+      onSearch(searchKeyword)
+    }
+    navigate(url)
+  }
+
+  // Lấy tên category theo id
+  const getCategoryName = (id) => {
+    if (!id) return 'Danh mục'
+    const found = categories.find(c => c.id === id)
+    return found ? found.name : 'Danh mục'
   }
 
   return (
@@ -101,7 +118,7 @@ const SearchForm = () => {
           <FaTag className="text-brand-text/40 dark:text-gray-400 flex-shrink-0" size={18} />
           <span className="flex-1 truncate">
             {searchCategory
-              ? categories.find(c => c.id === searchCategory)?.name || 'Danh mục'
+              ? getCategoryName(searchCategory)
               : (t('home.categoryPlaceholder') || 'Danh mục')}
           </span>
           <svg
@@ -176,7 +193,7 @@ const SearchForm = () => {
         {/* Dropdown menu */}
         {isLocationOpen && (
           <div className="absolute z-50 left-0 right-0 mt-1 max-h-60 overflow-y-auto bg-white dark:bg-gray-800 rounded-xl shadow-bold border border-brand-light dark:border-gray-700 py-1 animate-fade-in">
-            {locations.map((location) => (
+            {LOCATIONS.map((location) => (
               <button
                 key={location.value}
                 type="button"

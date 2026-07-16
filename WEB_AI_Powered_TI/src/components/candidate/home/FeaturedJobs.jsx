@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { useLanguage } from '~/hooks/useLanguage'
 import { FaBriefcase, FaArrowRight } from 'react-icons/fa'
-import JobCard from './JobCard'
+import JobCard from '~/components/common/JobCard'
 
 const FeaturedJobs = ({ jobs, isLoading, formatSalary, getExperienceLabel, getDaysAgo }) => {
   const { t } = useLanguage()
