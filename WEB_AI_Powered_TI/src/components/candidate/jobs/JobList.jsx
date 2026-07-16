@@ -1,4 +1,5 @@
-import JobCard from './JobCard'
+import { FaBriefcase } from 'react-icons/fa'
+import JobCard from '~/components/common/JobCard'
 
 const JobList = ({ jobs, selectedJobId, onSelectJob, formatSalary, getExperienceLabel, getDaysAgo }) => {
   if (jobs.length === 0) {

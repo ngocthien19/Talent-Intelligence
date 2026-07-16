@@ -64,5 +64,40 @@
     "ctaTitle": "AIがあなたに最適な仕事を見つけるお手伝いをします",
     "ctaDesc": "CVをアップロードすると、AIが分析し、あなたのスキルと経験に基づいて最適な仕事を提案します。",
     "tryMockInterview": "模擬面接を試す"
+  },
+  "jobs": {
+    "title": "求人",
+    "found": "見つかりました",
+    "jobs": "件の求人",
+    "filters": "フィルター",
+    "clearAll": "すべてクリア",
+    "category": "カテゴリ",
+    "location": "場所",
+    "experience": "経験",
+    "type": "雇用形態",
+    "salary": "給与",
+    "all": "すべて",
+    "selectJob": "詳細を表示する求人を選択",
+    "applyNow": "今すぐ応募",
+    "saveJob": "求人を保存",
+    "postedOn": "投稿日",
+    "jobDescription": "仕事内容",
+    "requirements": "必要条件",
+    "benefits": "福利厚生",
+    "requiredSkills": "必須スキル",
+    "niceToHaveSkills": "歓迎スキル",
+    "noJobsFound": "求人が見つかりません",
+    "tryDifferentFilters": "検索フィルターを変更してみてください",
+    "withKeyword": "キーワード",
+    "viewJobDetail": "求人詳細を見る"
+  },
+  "pagination": {
+    "previous": "前へ",
+    "next": "次へ"
+  },
+  "common": {
+    "addToFavorites": "お気に入りに追加",
+    "removeFromFavorites": "お気に入りから削除",
+    "loginRequired": "保存するにはログインしてください"
   }
 }

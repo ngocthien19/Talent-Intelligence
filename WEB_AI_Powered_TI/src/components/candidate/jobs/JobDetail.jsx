@@ -8,29 +8,33 @@ import {
   FaBookmark,
   FaRegBookmark,
   FaTag,
-  FaUsers,
-  FaCalendarAlt,
+  FaArrowLeft,
   FaBriefcase,
-  FaCheckCircle,
-  FaTimesCircle,
-  FaAward,
-  FaGraduationCap,
-  FaArrowLeft
+  FaArrowRight
 } from 'react-icons/fa'
 import { toggleFavorite } from '~/redux/slices/favorite.slice'
 import { toast } from 'react-toastify'
 import { useAuth } from '~/hooks/useAuth'
+import { useLanguage } from '~/hooks/useLanguage'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger
+} from '~/components/ui/tooltip'
+import { Link } from 'react-router-dom'
 
 const JobDetail = ({ job, onBack, formatSalary, getExperienceLabel }) => {
   const dispatch = useDispatch()
   const { isAuthenticated } = useAuth()
+  const { t } = useLanguage()
   const { favoriteIds, isLoading } = useSelector((state) => state.favorite)
   const [isFavorite, setIsFavorite] = useState(favoriteIds.includes(job?.id))
   const [isToggling, setIsToggling] = useState(false)
 
   const handleToggleFavorite = async () => {
     if (!isAuthenticated) {
-      toast.warning('Vui lòng đăng nhập để lưu việc làm')
+      toast.warning(t('common.loginRequired') || 'Vui lòng đăng nhập để lưu việc làm')
       return
     }
 
@@ -50,7 +54,7 @@ const JobDetail = ({ job, onBack, formatSalary, getExperienceLabel }) => {
 
   if (!job) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-custom dark:shadow-gray-800/30 p-8 text-center">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-custom dark:shadow-gray-800/30 p-8 text-center border-t-4 border-brand-primary dark:border-brand-primary transition-all duration-300">
         <p className="text-brand-text dark:text-gray-400">
           Chọn một công việc để xem chi tiết
         </p>
@@ -59,11 +63,11 @@ const JobDetail = ({ job, onBack, formatSalary, getExperienceLabel }) => {
   }
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-custom dark:shadow-gray-800/30 p-6">
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-custom dark:shadow-gray-800/30 p-6 border-t-4 border-brand-primary dark:border-brand-primary transition-all duration-300 sticky top-24">
       {/* Back button - mobile */}
       <button
         onClick={onBack}
-        className="md:hidden flex items-center gap-2 text-brand-text dark:text-gray-400 hover:text-brand-primary transition-colors duration-200 mb-4"
+        className="md:hidden flex items-center gap-2 text-brand-text dark:text-gray-400 hover:text-brand-primary dark:hover:text-brand-primary transition-colors duration-200 mb-4 cursor-pointer"
       >
         <FaArrowLeft size={16} />
         <span>Quay lại</span>
@@ -74,12 +78,12 @@ const JobDetail = ({ job, onBack, formatSalary, getExperienceLabel }) => {
         <div className="flex items-center gap-4">
           {job.company_logo ? (
             <img
-              src={job.company_logo}
+              src={job.company_logo.secure_url}
               alt={job.company_name}
               className="w-16 h-16 rounded-xl object-cover"
             />
           ) : (
-            <div className="w-16 h-16 rounded-xl bg-gradient-brand flex items-center justify-center text-white font-bold text-2xl">
+            <div className="w-16 h-16 rounded-xl bg-gradient-brand flex items-center justify-center text-white font-bold text-2xl dark:bg-gradient-brand">
               {job.company_name?.charAt(0) || 'C'}
             </div>
           )}
@@ -88,53 +92,79 @@ const JobDetail = ({ job, onBack, formatSalary, getExperienceLabel }) => {
               {job.title}
             </h2>
             <p className="text-brand-text dark:text-gray-400 flex items-center gap-1">
-              <FaBuilding size={14} />
+              <FaBuilding size={14} className="dark:text-gray-400" />
               {job.company_name}
             </p>
           </div>
         </div>
-        <button
-          onClick={handleToggleFavorite}
-          disabled={isToggling || isLoading}
-          className="p-2 rounded-lg hover:bg-brand-light dark:hover:bg-gray-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isFavorite ? (
-            <FaBookmark size={24} className="text-brand-primary" />
-          ) : (
-            <FaRegBookmark size={24} className="text-brand-text/60" />
-          )}
-        </button>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={handleToggleFavorite}
+                disabled={isToggling || isLoading}
+                className="p-2 rounded-lg hover:bg-brand-light dark:hover:bg-gray-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                aria-label={isFavorite ? t('common.removeFromFavorites') : t('common.addToFavorites')}
+              >
+                {isFavorite ? (
+                  <FaBookmark size={24} className="text-brand-primary dark:text-brand-primary" />
+                ) : (
+                  <FaRegBookmark size={24} className="text-brand-text/60 dark:text-gray-500" />
+                )}
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>
+                {isFavorite
+                  ? t('common.removeFromFavorites') || 'Xóa khỏi yêu thích'
+                  : t('common.addToFavorites') || 'Thêm vào yêu thích'
+                }
+              </p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </div>
+
+      {/* Link xem chi tiết công việc */}
+      <Link
+        to={`/jobs/${job.id}`}
+        className="inline-flex items-center gap-2 text-brand-primary hover:text-brand-secondary dark:hover:text-brand-primary font-medium transition-colors duration-300 group mb-4"
+      >
+        <span className="group-hover:underline underline-offset-2">
+          {t('jobs.viewJobDetail') || 'Xem chi tiết công việc'}
+        </span>
+        <FaArrowRight size={14} className="group-hover:translate-x-1 transition-transform duration-300" />
+      </Link>
 
       {/* Tags */}
       <div className="flex flex-wrap items-center gap-2 mb-4">
         {job.location && (
           <span className="inline-flex items-center gap-1 text-sm bg-brand-light/70 dark:bg-gray-700 text-brand-text dark:text-gray-300 px-3 py-1 rounded-full">
-            <FaMapMarkerAlt size={14} />
+            <FaMapMarkerAlt size={14} className="dark:text-gray-400" />
             {job.location}
           </span>
         )}
         {job.experience_level && (
           <span className="inline-flex items-center gap-1 text-sm bg-brand-light/70 dark:bg-gray-700 text-brand-text dark:text-gray-300 px-3 py-1 rounded-full">
-            <FaClock size={14} />
+            <FaClock size={14} className="dark:text-gray-400" />
             {getExperienceLabel(job.experience_level)}
           </span>
         )}
         {job.salary_range && (
           <span className="inline-flex items-center gap-1 text-sm bg-brand-light/70 dark:bg-gray-700 text-brand-text dark:text-gray-300 px-3 py-1 rounded-full">
-            <FaMoneyBillWave size={14} />
+            <FaMoneyBillWave size={14} className="dark:text-gray-400" />
             {formatSalary(job.salary_range)}
           </span>
         )}
         {job.employment_type && (
           <span className="inline-flex items-center gap-1 text-sm bg-brand-light/70 dark:bg-gray-700 text-brand-text dark:text-gray-300 px-3 py-1 rounded-full">
-            <FaBriefcase size={14} />
+            <FaBriefcase size={14} className="dark:text-gray-400" />
             {job.employment_type}
           </span>
         )}
         {job.category_name && (
           <span className="inline-flex items-center gap-1 text-sm bg-brand-light/70 dark:bg-gray-700 text-brand-text dark:text-gray-300 px-3 py-1 rounded-full">
-            <FaTag size={14} />
+            <FaTag size={14} className="dark:text-gray-400" />
             {job.category_name}
           </span>
         )}
@@ -212,7 +242,7 @@ const JobDetail = ({ job, onBack, formatSalary, getExperienceLabel }) => {
             {job.required_skills.map((skill, index) => (
               <span
                 key={index}
-                className="px-3 py-1.5 bg-brand-light dark:bg-gray-700 text-brand-text dark:text-gray-300 rounded-lg text-sm"
+                className="inline-flex items-center gap-1 text-sm bg-brand-light/70 dark:bg-gray-700 text-brand-text dark:text-gray-300 px-3 py-1 rounded-full"
               >
                 {skill}
               </span>
@@ -231,7 +261,7 @@ const JobDetail = ({ job, onBack, formatSalary, getExperienceLabel }) => {
             {job.nice_to_have_skills.map((skill, index) => (
               <span
                 key={index}
-                className="px-3 py-1.5 bg-brand-light/50 dark:bg-gray-700/50 text-brand-text dark:text-gray-300 rounded-lg text-sm border border-dashed border-brand-light dark:border-gray-600"
+                className="inline-flex items-center gap-1 text-sm bg-brand-light/40 dark:bg-gray-700/50 text-brand-text dark:text-gray-400 px-3 py-1 rounded-full border border-dashed border-brand-light dark:border-gray-600"
               >
                 {skill}
               </span>
@@ -242,11 +272,11 @@ const JobDetail = ({ job, onBack, formatSalary, getExperienceLabel }) => {
 
       {/* Apply button */}
       <div className="flex flex-col sm:flex-row gap-3 mt-6 pt-6 border-t border-brand-light dark:border-gray-700">
-        <button className="flex-1 px-6 py-3 bg-gradient-brand text-white rounded-xl font-medium hover:shadow-glow transition-all duration-300">
-          Ứng tuyển ngay
+        <button className="flex-1 px-6 py-3 bg-gradient-brand text-white rounded-xl font-medium hover:shadow-glow dark:hover:shadow-glow transition-all duration-300 cursor-pointer">
+          {t('jobs.applyNow') || 'Ứng tuyển ngay'}
         </button>
-        <button className="px-6 py-3 border border-brand-primary text-brand-primary hover:bg-brand-primary hover:text-white rounded-xl font-medium transition-all duration-300">
-          Lưu việc làm
+        <button className="px-6 py-3 border border-brand-primary dark:border-brand-primary text-brand-primary dark:text-brand-primary hover:bg-brand-primary dark:hover:bg-brand-primary hover:!text-white dark:hover:text-white rounded-xl font-medium transition-all duration-300 cursor-pointer">
+          {t('jobs.saveJob') || 'Lưu việc làm'}
         </button>
       </div>
     </div>

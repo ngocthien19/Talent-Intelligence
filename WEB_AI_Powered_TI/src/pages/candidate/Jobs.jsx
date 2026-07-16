@@ -11,6 +11,13 @@ import JobList from '~/components/candidate/jobs/JobList'
 import JobDetail from '~/components/candidate/jobs/JobDetail'
 import Pagination from '~/components/common/Pagination'
 import { toast } from 'react-toastify'
+import {
+  formatSalary,
+  getDaysAgo
+} from '~/utils/format'
+import {
+  getExperienceLabel
+} from '~/utils/constant'
 
 const Jobs = () => {
   const { t } = useLanguage()
@@ -22,21 +29,42 @@ const Jobs = () => {
   const [selectedJob, setSelectedJob] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
   const [filterOptions, setFilterOptions] = useState({})
+
+  // Lấy page từ URL params, mặc định là 1
+  const currentPage = parseInt(searchParams.get('page') || '1', 10)
   const [pagination, setPagination] = useState({
-    currentPage: 1,
+    currentPage: currentPage,
     totalPages: 1,
     total: 0,
     limit: 5
   })
 
-  // Active filters
+  // Active filters - lấy từ URL params
   const [activeFilters, setActiveFilters] = useState({
     keyword: searchParams.get('keyword') || '',
     location: searchParams.get('location') || '',
     category_id: searchParams.get('category') || '',
-    experience_level: '',
-    employment_type: ''
+    experience_level: searchParams.get('experience_level') || '',
+    employment_type: searchParams.get('employment_type') || '',
+    salary_range: searchParams.get('salary_range') || ''
   })
+
+  useEffect(() => {
+    if (!searchParams.has('page')) {
+      const newParams = new URLSearchParams(searchParams)
+      newParams.set('page', '1')
+      setSearchParams(newParams, { replace: true })
+    }
+  }, [])
+
+  // Đồng bộ currentPage khi URL thay đổi
+  useEffect(() => {
+    const page = parseInt(searchParams.get('page') || '1', 10)
+    setPagination(prev => ({
+      ...prev,
+      currentPage: page
+    }))
+  }, [searchParams])
 
   // Fetch filter options
   useEffect(() => {
@@ -70,6 +98,7 @@ const Jobs = () => {
         category_id: activeFilters.category_id || undefined,
         experience_level: activeFilters.experience_level || undefined,
         employment_type: activeFilters.employment_type || undefined,
+        salary_range: activeFilters.salary_range || undefined,
         limit: pagination.limit,
         offset: (pagination.currentPage - 1) * pagination.limit
       }
@@ -90,9 +119,10 @@ const Jobs = () => {
           total: response.pagination.total
         }))
 
-        // Select first job if none selected
-        if (response.data.length > 0 && !selectedJob) {
+        if (response.data.length > 0) {
           setSelectedJob(response.data[0])
+        } else {
+          setSelectedJob(null)
         }
       }
     } catch (error) {
@@ -101,7 +131,7 @@ const Jobs = () => {
     } finally {
       setIsLoading(false)
     }
-  }, [activeFilters, pagination.currentPage, pagination.limit, selectedJob])
+  }, [activeFilters, pagination.currentPage, pagination.limit])
 
   useEffect(() => {
     fetchJobs()
@@ -113,17 +143,15 @@ const Jobs = () => {
       ...prev,
       [key]: value
     }))
-    setPagination(prev => ({
-      ...prev,
-      currentPage: 1
-    }))
-    // Update URL params
+    // Reset về page 1 khi filter thay đổi
+    const newParams = new URLSearchParams(searchParams)
     if (value) {
-      searchParams.set(key, value)
+      newParams.set(key, value)
     } else {
-      searchParams.delete(key)
+      newParams.delete(key)
     }
-    setSearchParams(searchParams)
+    newParams.set('page', '1')
+    setSearchParams(newParams)
   }
 
   // Handle clear all filters
@@ -133,13 +161,12 @@ const Jobs = () => {
       location: '',
       category_id: '',
       experience_level: '',
-      employment_type: ''
+      employment_type: '',
+      salary_range: ''
     })
-    setPagination(prev => ({
-      ...prev,
-      currentPage: 1
-    }))
-    setSearchParams(new URLSearchParams())
+    const newParams = new URLSearchParams()
+    newParams.set('page', '1')
+    setSearchParams(newParams)
   }
 
   // Handle clear single filter
@@ -153,24 +180,19 @@ const Jobs = () => {
       ...prev,
       keyword: keyword || ''
     }))
-    setPagination(prev => ({
-      ...prev,
-      currentPage: 1
-    }))
+    const newParams = new URLSearchParams()
     if (keyword) {
-      searchParams.set('keyword', keyword)
-    } else {
-      searchParams.delete('keyword')
+      newParams.set('keyword', keyword)
     }
-    setSearchParams(searchParams)
+    newParams.set('page', '1')
+    setSearchParams(newParams)
   }
 
   // Handle page change
   const handlePageChange = (page) => {
-    setPagination(prev => ({
-      ...prev,
-      currentPage: page
-    }))
+    const newParams = new URLSearchParams(searchParams)
+    newParams.set('page', String(page))
+    setSearchParams(newParams)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
@@ -182,45 +204,6 @@ const Jobs = () => {
     if (window.innerWidth < 1024) {
       document.getElementById('job-detail')?.scrollIntoView({ behavior: 'smooth' })
     }
-  }
-
-  // Format utilities
-  const formatSalary = (salaryRange) => {
-    if (!salaryRange) return 'Thương lượng'
-    const { min, max, currency } = salaryRange
-    if (min && max) {
-      return `${formatNumber(min)} - ${formatNumber(max)} ${currency || 'VND'}`
-    }
-    if (min) return `Từ ${formatNumber(min)} ${currency || 'VND'}`
-    if (max) return `Đến ${formatNumber(max)} ${currency || 'VND'}`
-    return 'Thương lượng'
-  }
-
-  const formatNumber = (num) => {
-    if (!num) return '0'
-    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')
-  }
-
-  const getDaysAgo = (date) => {
-    const now = new Date()
-    const created = new Date(date)
-    const diffTime = Math.abs(now - created)
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-    if (diffDays === 0) return 'Hôm nay'
-    if (diffDays === 1) return '1 ngày trước'
-    return `${diffDays} ngày trước`
-  }
-
-  const getExperienceLabel = (level) => {
-    const labels = {
-      'entry': 'Mới tốt nghiệp',
-      'junior': 'Junior (1-3 năm)',
-      'mid': 'Mid-level (3-5 năm)',
-      'senior': 'Senior (5-7 năm)',
-      'lead': 'Lead (7-10 năm)',
-      'manager': 'Manager (10+ năm)'
-    }
-    return labels[level] || level
   }
 
   return (
@@ -243,7 +226,21 @@ const Jobs = () => {
       {/* Results count */}
       <div className="mb-4">
         <p className="text-sm text-brand-text dark:text-gray-400">
-          {t('jobs.found') || 'Tìm thấy'} {pagination.total} {t('jobs.jobs') || 'việc làm'}
+          {activeFilters.keyword ? (
+            <>
+              {t('jobs.found') || 'Tìm thấy'} {' '}
+              <span className="font-semibold text-brand-primary">{pagination.total}</span>
+              {' '}{t('jobs.jobs') || 'việc làm'}{' '}
+              {t('jobs.withKeyword') || 'với từ khóa'}{' '}
+              <span className="font-semibold text-brand-primary">"{activeFilters.keyword}"</span>
+            </>
+          ) : (
+            <>
+              {t('jobs.found') || 'Tìm thấy'} {' '}
+              <span className="font-semibold text-brand-primary">{pagination.total}</span>
+              {' '}{t('jobs.jobs') || 'việc làm'}
+            </>
+          )}
         </p>
       </div>
 
@@ -297,7 +294,7 @@ const Jobs = () => {
         </div>
       </div>
 
-      {/* Pagination  */}
+      {/* Pagination */}
       {pagination.totalPages > 1 && (
         <div className="mt-8">
           <Pagination

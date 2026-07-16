@@ -64,5 +64,40 @@
     "ctaTitle": "Để AI giúp bạn tìm việc phù hợp nhất",
     "ctaDesc": "Upload CV của bạn, AI sẽ phân tích và gợi ý những công việc phù hợp nhất với kỹ năng và kinh nghiệm của bạn.",
     "tryMockInterview": "Thử Mock Interview"
+  },
+  "jobs": {
+    "title": "Việc làm",
+    "found": "Tìm thấy",
+    "jobs": "việc làm",
+    "filters": "Bộ lọc",
+    "clearAll": "Xóa tất cả",
+    "category": "Danh mục",
+    "location": "Địa điểm",
+    "experience": "Kinh nghiệm",
+    "type": "Loại hình",
+    "salary": "Mức lương",
+    "all": "Tất cả",
+    "selectJob": "Chọn một công việc để xem chi tiết",
+    "applyNow": "Ứng tuyển ngay",
+    "saveJob": "Lưu việc làm",
+    "postedOn": "Ngày đăng",
+    "jobDescription": "Mô tả công việc",
+    "requirements": "Yêu cầu",
+    "benefits": "Quyền lợi",
+    "requiredSkills": "Kỹ năng yêu cầu",
+    "niceToHaveSkills": "Kỹ năng thêm",
+    "noJobsFound": "Không tìm thấy công việc phù hợp",
+    "tryDifferentFilters": "Hãy thử thay đổi bộ lọc tìm kiếm",
+    "withKeyword": "với từ khóa",
+    "viewJobDetail": "Xem chi tiết công việc"
+  },
+  "pagination": {
+    "previous": "Trước",
+    "next": "Sau"
+  },
+  "common": {
+    "addToFavorites": "Thêm vào yêu thích",
+    "removeFromFavorites": "Xóa khỏi yêu thích",
+    "loginRequired": "Vui lòng đăng nhập để lưu việc làm"
   }
 }
