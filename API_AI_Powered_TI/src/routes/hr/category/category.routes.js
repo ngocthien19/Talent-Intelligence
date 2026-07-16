@@ -27,8 +27,6 @@ router.get(
   categoryController.getList
 )
 
-router.get('/categories/dropdown', categoryController.getDropdown)
-
 router.get(
   '/categories/:id',
   validate(idValidation, 'params'),
