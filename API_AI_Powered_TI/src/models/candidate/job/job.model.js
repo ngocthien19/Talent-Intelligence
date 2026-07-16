@@ -1,4 +1,4 @@
-import pool from '~/config/db.js'
+import pool from '~/config/db'
 
 const jobModel = {
   // Lấy danh sách công việc với filter
@@ -11,15 +11,18 @@ const jobModel = {
       skill,
       min_salary,
       max_salary,
+      category_id,
       limit = 10,
       offset = 0
     } = filters
 
     let query = `
       SELECT jd.*, c.name as company_name, c.logo as company_logo, 
-             c.address as company_address, c.id as company_id
+             c.address as company_address, c.id as company_id,
+             cat.name as category_name, cat.slug as category_slug
       FROM job_descriptions jd
       LEFT JOIN companies c ON jd.company_id = c.id
+      LEFT JOIN category_job cat ON jd.category_id = cat.id
       WHERE jd.is_active = true
     `
     const params = []
@@ -67,9 +70,15 @@ const jobModel = {
       paramIndex++
     }
 
+    if (category_id) {
+      query += ` AND jd.category_id = $${paramIndex}`
+      params.push(category_id)
+      paramIndex++
+    }
+
     // Đếm tổng
     const countQuery = query.replace(
-      /SELECT jd\.\*, c\.name as company_name, c\.logo as company_logo, c\.address as company_address, c\.id as company_id/,
+      /SELECT jd\.\*, c\.name as company_name, c\.logo as company_logo, c\.address as company_address, c\.id as company_id, cat\.name as category_name, cat\.slug as category_slug/,
       'SELECT COUNT(*) as total'
     )
     const countResult = await pool.query(countQuery, params)
@@ -96,9 +105,11 @@ const jobModel = {
     const result = await pool.query(
       `SELECT jd.*, c.name as company_name, c.logo as company_logo, 
               c.address as company_address, c.description as company_description,
-              c.culture_description as company_culture, c.id as company_id
+              c.culture_description as company_culture, c.id as company_id,
+              cat.name as category_name, cat.slug as category_slug
        FROM job_descriptions jd
        LEFT JOIN companies c ON jd.company_id = c.id
+       LEFT JOIN category_job cat ON jd.category_id = cat.id
        WHERE jd.id = $1 AND jd.is_active = true`,
       [id]
     )
@@ -108,9 +119,11 @@ const jobModel = {
   // Lấy công việc theo công ty
   findByCompanyId: async (companyId) => {
     const result = await pool.query(
-      `SELECT jd.*, c.name as company_name
+      `SELECT jd.*, c.name as company_name,
+              cat.name as category_name, cat.slug as category_slug
        FROM job_descriptions jd
        LEFT JOIN companies c ON jd.company_id = c.id
+       LEFT JOIN category_job cat ON jd.category_id = cat.id
        WHERE jd.company_id = $1 AND jd.is_active = true
        ORDER BY jd.created_at DESC`,
       [companyId]
@@ -121,9 +134,11 @@ const jobModel = {
   // Lấy công việc nổi bật (mới nhất)
   findFeatured: async (limit = 6) => {
     const result = await pool.query(
-      `SELECT jd.*, c.name as company_name, c.logo as company_logo
+      `SELECT jd.*, c.name as company_name, c.logo as company_logo,
+              cat.name as category_name, cat.slug as category_slug
        FROM job_descriptions jd
        LEFT JOIN companies c ON jd.company_id = c.id
+       LEFT JOIN category_job cat ON jd.category_id = cat.id
        WHERE jd.is_active = true
        ORDER BY jd.created_at DESC
        LIMIT $1`,
@@ -168,6 +183,11 @@ const jobModel = {
         options.employment_types.push(row.employment_type)
       }
     })
+
+    const categoryResult = await pool.query(
+      'SELECT id, name, slug FROM category_job WHERE is_active = true ORDER BY name ASC'
+    )
+    options.categories = categoryResult.rows
 
     return options
   },
