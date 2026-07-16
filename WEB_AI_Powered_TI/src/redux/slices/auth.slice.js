@@ -1,55 +1,85 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import { authApi } from '~/api/auth/auth.api'
 
-// Async thunks
+// ĐĂNG NHẬP
 export const login = createAsyncThunk(
   'auth/login',
   async (loginData, { rejectWithValue }) => {
     try {
       const response = await authApi.login(loginData)
-      return response.data // { user, accessToken, redirectUrl }
+      return response // { user, accessToken, redirectUrl }
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Đăng nhập thất bại')
     }
   }
 )
 
+// ĐĂNG KÝ
 export const register = createAsyncThunk(
   'auth/register',
   async (registerData, { rejectWithValue }) => {
     try {
       const response = await authApi.register(registerData)
-      return response.data
+      return response
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Đăng ký thất bại')
     }
   }
 )
 
+// XÁC THỰC OTP
 export const verifyOtp = createAsyncThunk(
   'auth/verifyOtp',
   async (otpData, { rejectWithValue }) => {
     try {
       const response = await authApi.verifyOtp(otpData)
-      return response.data
+      return response
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Xác thực OTP thất bại')
     }
   }
 )
 
+// GỬI LẠI OTP
 export const resendOtp = createAsyncThunk(
   'auth/resendOtp',
   async (email, { rejectWithValue }) => {
     try {
       const response = await authApi.resendOtp(email)
-      return response.data
+      return response
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Gửi lại OTP thất bại')
     }
   }
 )
 
+// QUÊN MẬT KHẨU
+export const forgotPassword = createAsyncThunk(
+  'auth/forgotPassword',
+  async (email, { rejectWithValue }) => {
+    try {
+      const response = await authApi.forgotPassword(email)
+      return response
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Gửi yêu cầu thất bại')
+    }
+  }
+)
+
+// ĐẶT LẠI MẬT KHẨU
+export const resetPassword = createAsyncThunk(
+  'auth/resetPassword',
+  async (resetData, { rejectWithValue }) => {
+    try {
+      const response = await authApi.resetPassword(resetData)
+      return response
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Đặt lại mật khẩu thất bại')
+    }
+  }
+)
+
+// ĐĂNG XUẤT
 export const logout = createAsyncThunk(
   'auth/logout',
   async (_, { rejectWithValue }) => {
@@ -62,24 +92,26 @@ export const logout = createAsyncThunk(
   }
 )
 
+// LẤY PROFILE
 export const getProfile = createAsyncThunk(
   'auth/getProfile',
   async (_, { rejectWithValue }) => {
     try {
       const response = await authApi.getProfile()
-      return response.data
+      return response
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Lấy thông tin thất bại')
     }
   }
 )
 
+// REFRESH TOKEN
 export const refreshToken = createAsyncThunk(
   'auth/refreshToken',
   async (_, { rejectWithValue }) => {
     try {
       const response = await authApi.refreshToken()
-      return response.data
+      return response
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Refresh token thất bại')
     }
@@ -148,6 +180,10 @@ const authSlice = createSlice({
         state.user = action.payload.user
         state.accessToken = action.payload.accessToken
         state.error = null
+        if (action.payload?.user) {
+          localStorage.setItem('user', JSON.stringify(action.payload.user))
+          localStorage.setItem('accessToken', action.payload.accessToken)
+        }
       })
       .addCase(login.rejected, (state, action) => {
         state.isLoading = false
@@ -195,6 +231,32 @@ const authSlice = createSlice({
         state.isLoading = false
         state.error = action.payload
       })
+      // Forgot Password
+      .addCase(forgotPassword.pending, (state) => {
+        state.isLoading = true
+        state.error = null
+      })
+      .addCase(forgotPassword.fulfilled, (state) => {
+        state.isLoading = false
+        state.error = null
+      })
+      .addCase(forgotPassword.rejected, (state, action) => {
+        state.isLoading = false
+        state.error = action.payload
+      })
+      // Reset Password
+      .addCase(resetPassword.pending, (state) => {
+        state.isLoading = true
+        state.error = null
+      })
+      .addCase(resetPassword.fulfilled, (state) => {
+        state.isLoading = false
+        state.error = null
+      })
+      .addCase(resetPassword.rejected, (state, action) => {
+        state.isLoading = false
+        state.error = action.payload
+      })
       // Logout
       .addCase(logout.fulfilled, (state) => {
         state.user = null
@@ -203,14 +265,17 @@ const authSlice = createSlice({
         state.isAuthenticated = false
         state.favoriteIds = []
         state.error = null
+        localStorage.removeItem('user')
+        localStorage.removeItem('accessToken')
       })
       .addCase(logout.rejected, (state) => {
-        // Vẫn clear state dù logout có lỗi
         state.user = null
         state.accessToken = null
         state.refreshToken = null
         state.isAuthenticated = false
         state.favoriteIds = []
+        localStorage.removeItem('user')
+        localStorage.removeItem('accessToken')
       })
       // Get Profile
       .addCase(getProfile.pending, (state) => {

@@ -122,12 +122,12 @@ const VerifyOtp = () => {
           )}
         </div>
 
-        <button type="submit" disabled={isLoading} className="w-full px-6 py-3.5 bg-gradient-brand text-white rounded-xl font-bold shadow-md hover:shadow-glow hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-70">
+        <button type="submit" disabled={isLoading} className="cursor-pointer w-full px-6 py-3.5 bg-gradient-brand text-white rounded-xl font-bold shadow-md hover:shadow-glow hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-70">
           {isLoading ? t('auth.verifying') || 'Đang xác thực...' : t('auth.verify') || 'Xác thực'}
         </button>
 
         <p className="text-center text-sm font-medium text-brand-text/70 dark:text-gray-400">
-          {t('auth.backToLogin') || 'Quay lại'} <Link to="/login" className="text-brand-primary hover:text-brand-accent transition-colors duration-200">{t('auth.login') || 'Đăng nhập'}</Link>
+          {t('auth.backToLogin') || 'Quay lại'} <Link to="/login" className="text-brand-primary hover:text-brand-accent hover:underline underline-offset-2 transition-colors duration-200">{t('auth.login') || 'Đăng nhập'}</Link>
         </p>
       </form>
     </AuthLayout>

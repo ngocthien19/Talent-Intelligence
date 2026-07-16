@@ -7,6 +7,9 @@ import Login from '~/pages/auth/Login'
 import Register from '~/pages/auth/Register'
 import VerifyOtp from '~/pages/auth/VerifyOtp'
 import ForgotPassword from '~/pages/auth/ForgotPassword'
+import ResetPassword from '~/pages/auth/ResetPassword'
+
+
 import ThemeInitializer from '~/components/common/ThemeInitializer'
 import LanguageInitializer from '~/components/common/LanguageInitializer'
 
@@ -21,6 +24,7 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/verify-otp" element={<VerifyOtp />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
 
         {/* Candidate routes */}
         <Route path="/" element={<CandidateLayout />}>

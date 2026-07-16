@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { useLanguage } from '~/hooks/useLanguage'
@@ -15,6 +15,19 @@ const ResetPassword = () => {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
+  const [emailFromState, setEmailFromState] = useState('')
+
+  useEffect(() => {
+    const email = location.state?.email
+    if (email) {
+      setEmailFromState(email)
+    } else {
+      // Nếu không có email trong state, chuyển về forgot-password
+      toast.warning('Vui lòng nhập email trước')
+      navigate('/forgot-password')
+    }
+  }, [location.state, navigate])
+
   const {
     register,
     handleSubmit,
@@ -22,12 +35,25 @@ const ResetPassword = () => {
     formState: { errors }
   } = useForm({
     defaultValues: {
-      email: '',
+      email: emailFromState || '',
       otpCode: '',
       password: '',
       confirmPassword: ''
     }
   })
+
+  useEffect(() => {
+    if (emailFromState) {
+      // Cập nhật lại form value
+      const form = document.querySelector('form')
+      if (form) {
+        const emailInput = form.querySelector('#email')
+        if (emailInput) {
+          emailInput.value = emailFromState
+        }
+      }
+    }
+  }, [emailFromState])
 
   const password = watch('password')
 
@@ -54,7 +80,7 @@ const ResetPassword = () => {
       showBack={true}
     >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-        {/* Email */}
+        {/* Email - Disabled và lấy từ state */}
         <div>
           <label htmlFor="email" className="block text-sm font-medium text-brand-secondary dark:text-white mb-1">
             {t('auth.email') || 'Email'}
@@ -62,17 +88,14 @@ const ResetPassword = () => {
           <input
             id="email"
             type="email"
-            className={`w-full px-4 py-3 rounded-xl border ${errors.email ? 'border-red-500' : 'border-brand-light dark:border-gray-700'} bg-transparent focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent transition-all duration-200 dark:text-white`}
+            value={emailFromState}
+            disabled
+            className="w-full px-4 py-3 rounded-xl border border-brand-light dark:border-gray-700 bg-gray-100 dark:bg-gray-800 text-brand-text dark:text-gray-400 cursor-not-allowed opacity-70"
             placeholder={t('auth.emailPlaceholder') || 'example@email.com'}
-            {...register('email', {
-              required: t('auth.emailRequired') || 'Vui lòng nhập email',
-              pattern: {
-                value: /\S+@\S+\.\S+/,
-                message: t('auth.emailInvalid') || 'Email không hợp lệ'
-              }
-            })}
           />
-          {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email.message}</p>}
+          <p className="mt-1 text-xs text-brand-text/50 dark:text-gray-500">
+            Email đã được xác nhận, không thể thay đổi
+          </p>
         </div>
 
         {/* OTP Code */}
@@ -176,7 +199,7 @@ const ResetPassword = () => {
           {t('auth.backToLogin') || 'Quay lại'}{' '}
           <Link
             to="/login"
-            className="font-medium text-brand-primary hover:text-brand-secondary dark:hover:text-white transition-colors duration-200"
+            className="font-medium text-brand-primary hover:text-brand-accent hover:underline underline-offset-2 dark:hover:text-white transition-colors duration-200"
           >
             {t('auth.login') || 'Đăng nhập'}
           </Link>
