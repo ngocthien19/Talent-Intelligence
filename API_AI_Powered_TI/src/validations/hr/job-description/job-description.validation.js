@@ -16,6 +16,7 @@ export const createJDValidation = Joi.object({
     max: Joi.number().min(0),
     currency: Joi.string().default('VND')
   }).optional(),
+  categoryId: Joi.string().uuid().required(),
   isActive: Joi.boolean().default(true)
 })
 
@@ -35,6 +36,7 @@ export const updateJDValidation = Joi.object({
     max: Joi.number().min(0),
     currency: Joi.string().default('VND')
   }).optional(),
+  categoryId: Joi.string().uuid().required(),
   isActive: Joi.boolean().optional()
 })
 
@@ -44,6 +46,7 @@ export const getJDListValidation = Joi.object({
   experienceLevel: Joi.string().valid('Fresher', 'Junior', 'Mid-Level', 'Senior', 'Lead', 'Manager').optional(),
   employmentType: Joi.string().valid('Full-time', 'Part-time', 'Contract', 'Internship', 'Freelance').optional(),
   isActive: Joi.boolean().optional(),
+  categoryId: Joi.string().uuid().optional(),
   sortBy: Joi.string().valid('title', 'created_at', 'updated_at').default('created_at'),
   sortOrder: Joi.string().valid('ASC', 'DESC').default('DESC'),
   limit: Joi.number().min(1).max(100).default(20),
@@ -54,9 +57,15 @@ export const idValidation = Joi.object({
   id: Joi.string().uuid().required()
 })
 
+export const bulkActionValidation = Joi.object({
+  ids: Joi.array().items(Joi.string().uuid()).min(1).required(),
+  action: Joi.string().valid('delete', 'activate', 'deactivate').required()
+})
+
 export default {
   createJDValidation,
   updateJDValidation,
   getJDListValidation,
-  idValidation
+  idValidation,
+  bulkActionValidation
 }

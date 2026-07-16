@@ -1,17 +1,16 @@
-import jobDescriptionService from '~/services/hr/job-description/job-description.service'
+import categoryService from '~/services/hr/category/category.service'
 
-const jobDescriptionController = {
-  // Tạo JD mới
+const categoryController = {
   create: async (req, res) => {
     try {
       const companyId = req.user.companyId
       const data = req.body
 
-      const result = await jobDescriptionService.create(companyId, data)
+      const result = await categoryService.create(companyId, data)
 
       return res.status(201).json({
         success: true,
-        message: 'Tạo mô tả công việc thành công',
+        message: 'Tạo danh mục thành công',
         data: result
       })
     } catch (error) {
@@ -22,30 +21,21 @@ const jobDescriptionController = {
     }
   },
 
-  // Lấy danh sách JD
   getList: async (req, res) => {
     try {
       const companyId = req.user.companyId
       const {
-        keyword,
-        experienceLevel,
-        employmentType,
         isActive,
-        sortBy,
-        sortOrder,
+        keyword,
         limit = 20,
         page = 1
       } = req.query
 
       const offset = (page - 1) * limit
 
-      const result = await jobDescriptionService.getList(companyId, {
-        keyword,
-        experienceLevel,
-        employmentType,
+      const result = await categoryService.getList(companyId, {
         isActive: isActive !== undefined ? isActive === 'true' : undefined,
-        sortBy,
-        sortOrder,
+        keyword,
         limit: parseInt(limit),
         offset: parseInt(offset)
       })
@@ -63,13 +53,30 @@ const jobDescriptionController = {
     }
   },
 
-  // Lấy chi tiết JD
+  getDropdown: async (req, res) => {
+    try {
+      const companyId = req.user.companyId
+
+      const result = await categoryService.getDropdown(companyId)
+
+      return res.status(200).json({
+        success: true,
+        data: result
+      })
+    } catch (error) {
+      return res.status(500).json({
+        success: false,
+        message: error.message
+      })
+    }
+  },
+
   getById: async (req, res) => {
     try {
       const { id } = req.params
       const companyId = req.user.companyId
 
-      const result = await jobDescriptionService.getById(id, companyId)
+      const result = await categoryService.getById(id, companyId)
 
       return res.status(200).json({
         success: true,
@@ -83,18 +90,17 @@ const jobDescriptionController = {
     }
   },
 
-  // Cập nhật JD
   update: async (req, res) => {
     try {
       const { id } = req.params
       const companyId = req.user.companyId
       const data = req.body
 
-      const result = await jobDescriptionService.update(id, companyId, data)
+      const result = await categoryService.update(id, companyId, data)
 
       return res.status(200).json({
         success: true,
-        message: 'Cập nhật mô tả công việc thành công',
+        message: 'Cập nhật danh mục thành công',
         data: result
       })
     } catch (error) {
@@ -105,50 +111,20 @@ const jobDescriptionController = {
     }
   },
 
-  // Xóa JD
   delete: async (req, res) => {
     try {
       const { id } = req.params
       const companyId = req.user.companyId
 
-      const result = await jobDescriptionService.delete(id, companyId)
+      const result = await categoryService.delete(id, companyId)
 
       return res.status(200).json({
         success: true,
-        message: 'Xóa mô tả công việc thành công',
+        message: 'Xóa danh mục thành công',
         data: result
       })
     } catch (error) {
       return res.status(404).json({
-        success: false,
-        message: error.message
-      })
-    }
-  },
-
-  // Bulk action
-  bulkAction: async (req, res) => {
-    try {
-      const companyId = req.user.companyId
-      const { ids, action } = req.body
-
-      if (!ids || !Array.isArray(ids) || ids.length === 0) {
-        return res.status(400).json({
-          success: false,
-          message: 'Vui lòng chọn ít nhất một công việc'
-        })
-      }
-
-      const result = await jobDescriptionService.bulkAction(companyId, ids, action)
-
-      return res.status(200).json({
-        success: true,
-        message: result.message,
-        data: result.data,
-        total: result.total
-      })
-    } catch (error) {
-      return res.status(400).json({
         success: false,
         message: error.message
       })
@@ -156,4 +132,4 @@ const jobDescriptionController = {
   }
 }
 
-export default jobDescriptionController
+export default categoryController

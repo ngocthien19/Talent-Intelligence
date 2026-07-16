@@ -1,10 +1,18 @@
 import jobDescriptionModel from '~/models/hr/job-description/job-description.model'
 import notificationService from '~/services/notification/notification.service'
 import { EmailProvider } from '~/providers/email.provider'
+import categoryModel from '~/models/hr/category/category.model'
 import pool from '~/config/db'
 
 const jobDescriptionService = {
   create: async (companyId, data) => {
+    if (data.categoryId) {
+      const category = await categoryModel.getById(data.categoryId, companyId)
+      if (!category) {
+        throw new Error('Danh mục không tồn tại')
+      }
+    }
+
     const result = await jobDescriptionModel.create({
       companyId,
       ...data
@@ -42,6 +50,14 @@ const jobDescriptionService = {
     if (!exists) {
       throw new Error('Không tìm thấy mô tả công việc')
     }
+
+    if (data.categoryId) {
+      const category = await categoryModel.getById(data.categoryId, companyId)
+      if (!category) {
+        throw new Error('Danh mục không tồn tại')
+      }
+    }
+
     return await jobDescriptionModel.update(id, companyId, data)
   },
 
@@ -55,6 +71,51 @@ const jobDescriptionService = {
 
   getTotalCount: async (companyId) => {
     return await jobDescriptionModel.getTotalCount(companyId)
+  },
+
+  // Bulk action
+  bulkAction: async (companyId, ids, action) => {
+    // Kiểm tra ids có tồn tại không
+    const existingIds = await jobDescriptionModel.checkIdsExist(ids, companyId)
+
+    if (existingIds.length === 0) {
+      throw new Error('Không tìm thấy công việc nào')
+    }
+
+    // Kiểm tra nếu có id không tồn tại
+    const notFoundIds = ids.filter(id => !existingIds.includes(id))
+    if (notFoundIds.length > 0) {
+      throw new Error(`Không tìm thấy công việc với ID: ${notFoundIds.join(', ')}`)
+    }
+
+    let result = []
+    let message = ''
+
+    switch (action) {
+      case 'delete':
+        result = await jobDescriptionModel.bulkDelete(ids, companyId)
+        message = `Đã xóa ${result.length} công việc thành công`
+        break
+
+      case 'activate':
+        result = await jobDescriptionModel.bulkUpdateStatus(ids, companyId, true)
+        message = `Đã kích hoạt ${result.length} công việc thành công`
+        break
+
+      case 'deactivate':
+        result = await jobDescriptionModel.bulkUpdateStatus(ids, companyId, false)
+        message = `Đã tạm dừng ${result.length} công việc thành công`
+        break
+
+      default:
+        throw new Error('Hành động không hợp lệ')
+    }
+
+    return {
+      message,
+      data: result,
+      total: result.length
+    }
   }
 }
 
