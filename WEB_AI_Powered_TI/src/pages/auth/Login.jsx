@@ -12,24 +12,24 @@ const Login = () => {
   const navigate = useNavigate()
   const location = useLocation()
   const { t } = useLanguage()
-  const { login, isLoading } = useAuth()
+  const { login, isLoading, fetchProfile } = useAuth()
   const [showPassword, setShowPassword] = useState(false)
 
   useEffect(() => {
     const params = new URLSearchParams(location.search)
-    const success = params.get('success')
+    const success = params.get('google_success')
     const error = params.get('error')
 
     if (success === 'true') {
       toast.success('Đăng nhập với Google thành công!')
-      // User đã được set cookie, chỉ cần chuyển về trang chủ
-      navigate('/')
+      navigate('/', { replace: true })
     }
 
     if (error) {
       toast.error(decodeURIComponent(error) || 'Đăng nhập với Google thất bại')
+      navigate('/login', { replace: true })
     }
-  }, [location, navigate])
+  }, [location, navigate, fetchProfile])
 
   const {
     register,
@@ -139,8 +139,8 @@ const Login = () => {
               {t('auth.loading') || 'Đang xử lý...'}
             </div>
           ) : (
-            t('auth.login') || 'Đăng nhập'
-          )}
+            t('auth.login') || 'Đăng nhập')
+          }
         </button>
 
         {/* Register link */}

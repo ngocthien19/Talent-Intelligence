@@ -98,7 +98,13 @@ export const getProfile = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await authApi.getProfile()
-      return response
+      const userData = response.data || response
+
+      if (userData) {
+        localStorage.setItem('user', JSON.stringify(userData))
+      }
+
+      return userData
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Lấy thông tin thất bại')
     }

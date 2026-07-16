@@ -1,4 +1,7 @@
+import { useEffect } from 'react'
 import { Routes, Route } from 'react-router-dom'
+import { useDispatch } from 'react-redux'
+import { getProfile } from '~/redux/slices/auth.slice'
 import CandidateLayout from '~/layouts/candidate/CandidateLayout'
 import Home from '~/pages/candidate/Home'
 import Jobs from '~/pages/candidate/Jobs'
@@ -8,12 +11,20 @@ import Register from '~/pages/auth/Register'
 import VerifyOtp from '~/pages/auth/VerifyOtp'
 import ForgotPassword from '~/pages/auth/ForgotPassword'
 import ResetPassword from '~/pages/auth/ResetPassword'
-
-
 import ThemeInitializer from '~/components/common/ThemeInitializer'
 import LanguageInitializer from '~/components/common/LanguageInitializer'
 
 function App() {
+  const dispatch = useDispatch()
+
+  useEffect(() => {
+    // Luôn thử lấy profile khi app khởi động.
+    // Nếu có cookie accessToken hợp lệ -> BE trả về user -> Redux tự set isAuthenticated = true
+    // Nếu không có / hết hạn -> catch lỗi, coi như chưa đăng nhập, không cần làm gì thêm
+    dispatch(getProfile())
+  }, [dispatch])
+
+
   return (
     <>
       <ThemeInitializer />

@@ -30,17 +30,13 @@ export const useAuth = () => {
   // ĐĂNG NHẬP
   const handleLogin = async (loginData) => {
     try {
-      console.log('useAuth.login:', loginData.email)
       const result = await dispatch(login(loginData)).unwrap()
-      console.log('useAuth.login result:', result)
-
       if (result?.user) {
         localStorage.setItem('user', JSON.stringify(result.user))
         localStorage.setItem('accessToken', result.accessToken)
       }
       return result
     } catch (error) {
-      console.error('useAuth.login error:', error)
       throw error
     }
   }
@@ -48,12 +44,9 @@ export const useAuth = () => {
   // ĐĂNG KÝ
   const handleRegister = async (registerData) => {
     try {
-      console.log('useAuth.register:', registerData.email)
       const result = await dispatch(register(registerData)).unwrap()
-      console.log('useAuth.register result:', result)
       return result
     } catch (error) {
-      console.error('useAuth.register error:', error)
       throw error
     }
   }
@@ -61,12 +54,9 @@ export const useAuth = () => {
   // XÁC THỰC OTP
   const handleVerifyOtp = async (otpData) => {
     try {
-      console.log('useAuth.verifyOtp:', otpData.email)
       const result = await dispatch(verifyOtp(otpData)).unwrap()
-      console.log('useAuth.verifyOtp result:', result)
       return result
     } catch (error) {
-      console.error('useAuth.verifyOtp error:', error)
       throw error
     }
   }
@@ -74,12 +64,9 @@ export const useAuth = () => {
   // GỬI LẠI OTP
   const handleResendOtp = async (email) => {
     try {
-      console.log('📤 useAuth.resendOtp:', email)
       const result = await dispatch(resendOtp(email)).unwrap()
-      console.log('useAuth.resendOtp result:', result)
       return result
     } catch (error) {
-      console.error('useAuth.resendOtp error:', error)
       throw error
     }
   }
@@ -87,12 +74,9 @@ export const useAuth = () => {
   // QUÊN MẬT KHẨU
   const handleForgotPassword = async (email) => {
     try {
-      console.log('useAuth.forgotPassword:', email)
       const result = await dispatch(forgotPassword(email)).unwrap()
-      console.log('useAuth.forgotPassword result:', result)
       return result
     } catch (error) {
-      console.error('useAuth.forgotPassword error:', error)
       throw error
     }
   }
@@ -100,12 +84,9 @@ export const useAuth = () => {
   // ĐẶT LẠI MẬT KHẨU
   const handleResetPassword = async (resetData) => {
     try {
-      console.log('📤 useAuth.resetPassword:', resetData.email)
       const result = await dispatch(resetPassword(resetData)).unwrap()
-      console.log('useAuth.resetPassword result:', result)
       return result
     } catch (error) {
-      console.error('useAuth.resetPassword error:', error)
       throw error
     }
   }
@@ -118,7 +99,6 @@ export const useAuth = () => {
       localStorage.removeItem('accessToken')
       navigate('/login')
     } catch (error) {
-      console.error('Logout error:', error)
       localStorage.removeItem('user')
       localStorage.removeItem('accessToken')
       navigate('/login')
@@ -129,10 +109,11 @@ export const useAuth = () => {
   const fetchProfile = async () => {
     try {
       const result = await dispatch(getProfile()).unwrap()
-      console.log('useAuth.fetchProfile:', result)
+      if (result) {
+        localStorage.setItem('user', JSON.stringify(result))
+      }
       return result
     } catch (error) {
-      console.error('Fetch profile error:', error)
       throw error
     }
   }
@@ -141,9 +122,7 @@ export const useAuth = () => {
   const updateProfile = async (data) => {
     try {
       await dispatch(updateUserFields(data))
-      console.log('useAuth.updateProfile:', data)
     } catch (error) {
-      console.error('Update profile error:', error)
       throw error
     }
   }
