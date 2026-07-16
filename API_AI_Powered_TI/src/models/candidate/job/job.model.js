@@ -12,89 +12,95 @@ const jobModel = {
       min_salary,
       max_salary,
       category_id,
-      limit = 10,
+      limit = 5,
       offset = 0
     } = filters
 
-    let query = `
+    const conditions = []
+    const params = []
+    let paramIndex = 1
+
+    conditions.push('jd.is_active = true')
+
+    if (keyword) {
+      conditions.push(`(jd.title ILIKE $${paramIndex} OR jd.description ILIKE $${paramIndex})`)
+      params.push(`%${keyword}%`)
+      paramIndex++
+    }
+
+    if (location) {
+      conditions.push(`jd.location ILIKE $${paramIndex}`)
+      params.push(`%${location}%`)
+      paramIndex++
+    }
+
+    if (experience_level) {
+      conditions.push(`jd.experience_level = $${paramIndex}`)
+      params.push(experience_level)
+      paramIndex++
+    }
+
+    if (employment_type) {
+      conditions.push(`jd.employment_type = $${paramIndex}`)
+      params.push(employment_type)
+      paramIndex++
+    }
+
+    if (skill) {
+      conditions.push(`jd.required_skills ? $${paramIndex}`)
+      params.push(skill)
+      paramIndex++
+    }
+
+    if (min_salary) {
+      conditions.push(`(jd.salary_range->>'min')::numeric >= $${paramIndex}`)
+      params.push(min_salary)
+      paramIndex++
+    }
+
+    if (max_salary) {
+      conditions.push(`(jd.salary_range->>'max')::numeric <= $${paramIndex}`)
+      params.push(max_salary)
+      paramIndex++
+    }
+
+    if (category_id) {
+      conditions.push(`jd.category_id = $${paramIndex}`)
+      params.push(category_id)
+      paramIndex++
+    }
+
+    const whereClause = `WHERE ${conditions.join(' AND ')}`
+
+    const countQuery = `
+      SELECT COUNT(*) as total
+      FROM job_descriptions jd
+      ${whereClause}
+    `
+    const countParams = [...params]
+    const countResult = await pool.query(countQuery, countParams)
+    const total = parseInt(countResult.rows[0]?.total || 0)
+
+    const dataQuery = `
       SELECT jd.*, c.name as company_name, c.logo as company_logo, 
              c.address as company_address, c.id as company_id,
              cat.name as category_name, cat.slug as category_slug
       FROM job_descriptions jd
       LEFT JOIN companies c ON jd.company_id = c.id
       LEFT JOIN category_job cat ON jd.category_id = cat.id
-      WHERE jd.is_active = true
+      ${whereClause}
+      ORDER BY jd.created_at DESC
+      LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
     `
-    const params = []
-    let paramIndex = 1
-
-    if (keyword) {
-      query += ` AND (jd.title ILIKE $${paramIndex} OR jd.description ILIKE $${paramIndex})`
-      params.push(`%${keyword}%`)
-      paramIndex++
-    }
-
-    if (location) {
-      query += ` AND jd.location ILIKE $${paramIndex}`
-      params.push(`%${location}%`)
-      paramIndex++
-    }
-
-    if (experience_level) {
-      query += ` AND jd.experience_level = $${paramIndex}`
-      params.push(experience_level)
-      paramIndex++
-    }
-
-    if (employment_type) {
-      query += ` AND jd.employment_type = $${paramIndex}`
-      params.push(employment_type)
-      paramIndex++
-    }
-
-    if (skill) {
-      query += ` AND jd.required_skills ? $${paramIndex}`
-      params.push(skill)
-      paramIndex++
-    }
-
-    if (min_salary) {
-      query += ` AND (jd.salary_range->>'min')::numeric >= $${paramIndex}`
-      params.push(min_salary)
-      paramIndex++
-    }
-
-    if (max_salary) {
-      query += ` AND (jd.salary_range->>'max')::numeric <= $${paramIndex}`
-      params.push(max_salary)
-      paramIndex++
-    }
-
-    if (category_id) {
-      query += ` AND jd.category_id = $${paramIndex}`
-      params.push(category_id)
-      paramIndex++
-    }
-
-    // Đếm tổng
-    const countQuery = query.replace(
-      /SELECT jd\.\*, c\.name as company_name, c\.logo as company_logo, c\.address as company_address, c\.id as company_id, cat\.name as category_name, cat\.slug as category_slug/,
-      'SELECT COUNT(*) as total'
-    )
-    const countResult = await pool.query(countQuery, params)
-    const total = parseInt(countResult.rows[0]?.total || 0)
-
-    query += ` ORDER BY jd.created_at DESC LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`
-    params.push(limit, offset)
-
-    const result = await pool.query(query, params)
+    const dataParams = [...params, limit, offset]
+    const result = await pool.query(dataQuery, dataParams)
 
     return {
       data: result.rows,
       pagination: {
         total,
-        limit,
-        offset,
+        limit: parseInt(limit),
+        offset: parseInt(offset),
         totalPages: Math.ceil(total / limit)
       }
     }
