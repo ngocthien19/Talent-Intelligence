@@ -12,6 +12,7 @@ const jobController = {
         skill: req.query.skill,
         min_salary: req.query.min_salary,
         max_salary: req.query.max_salary,
+        category_id: req.query.category_id,
         limit: parseInt(req.query.limit) || 10,
         offset: parseInt(req.query.offset) || 0
       }
