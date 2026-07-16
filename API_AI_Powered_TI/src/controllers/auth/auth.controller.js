@@ -102,7 +102,7 @@ const authController = {
   //  GOOGLE CALLBACK
   googleCallback: (req, res) => {
     try {
-      // User đã được passport xác thực và lưu trong req.user
+    // User đã được passport xác thực và lưu trong req.user
       const user = req.user
       const tokens = req.tokens || {
         accessToken: req.accessToken,
@@ -127,12 +127,12 @@ const authController = {
         maxAge: ms(env.JWT_REFRESH_EXPIRE)
       })
 
-      // Redirect về frontend
       const frontendUrl = env.FRONTEND_URL || 'http://localhost:5173'
-      res.redirect(`${frontendUrl}/auth/callback?success=true`)
+      res.redirect(`${frontendUrl}/`)
+
     } catch (error) {
       const frontendUrl = env.FRONTEND_URL || 'http://localhost:5173'
-      res.redirect(`${frontendUrl}/auth/callback?error=${error.message}`)
+      res.redirect(`${frontendUrl}/login?error=${encodeURIComponent(error.message)}`)
     }
   },
 
