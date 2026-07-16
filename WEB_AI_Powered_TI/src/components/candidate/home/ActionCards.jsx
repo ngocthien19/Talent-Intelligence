@@ -30,28 +30,41 @@ const ActionCards = () => {
   ]
 
   return (
-    <section className="py-8">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-        {cards.map((card, index) => (
-          <Link
-            key={index}
-            to={card.to}
-            className="action-card group bg-white dark:bg-gray-800 rounded-xl shadow-custom dark:shadow-gray-800/30 p-6 hover:shadow-glow dark:hover:shadow-gray-800/50 transition-all duration-300 text-center cursor-pointer"
-          >
-            <div className="action-icon w-14 h-14 bg-gradient-brand rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
-              <card.icon className="text-white" size={24} />
-            </div>
-            <h3 className="text-lg font-semibold text-brand-secondary dark:text-white mb-2">
-              {card.title}
-            </h3>
-            <p className="text-sm text-brand-text dark:text-gray-400">
-              {card.desc}
-            </p>
-            <span className="action-arrow inline-block mt-3 text-brand-primary font-medium text-sm group-hover:translate-x-1 transition-transform duration-300 cursor-pointer">
-              {card.action}
-            </span>
-          </Link>
-        ))}
+    <section className="w-full py-20 bg-white dark:bg-slate-900 border-b border-brand-light/50 dark:border-gray-800">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {cards.map((card, index) => (
+            <Link
+              key={index}
+              to={card.to}
+              className="action-card group bg-brand-bg/50 dark:bg-gray-800/50 rounded-2xl border border-brand-light/50 dark:border-gray-700 p-8 hover:bg-brand-primary dark:hover:bg-brand-primary hover:border-brand-primary transition-all duration-500 text-center cursor-pointer hover:-translate-y-2 shadow-sm hover:shadow-glow"
+            >
+              {/* Box Icon: Bình thường nền xanh nhạt, hover thành nền trắng mờ 20% */}
+              <div className="action-icon w-16 h-16 bg-brand-light dark:bg-gray-700 group-hover:bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-all duration-500 shadow-sm group-hover:shadow-md">
+                {/* Icon: Bình thường màu xanh chủ đạo, hover chuyển sang màu trắng */}
+                <card.icon
+                  className="text-brand-primary dark:text-brand-accent group-hover:text-white transition-colors duration-500"
+                  size={28}
+                />
+              </div>
+
+              {/* Chữ tiêu đề */}
+              <h3 className="text-xl font-bold text-brand-secondary dark:text-white group-hover:text-white transition-colors duration-500 mb-3">
+                {card.title}
+              </h3>
+
+              {/* Chữ mô tả */}
+              <p className="text-base text-brand-text dark:text-gray-400 group-hover:text-white/90 dark:group-hover:text-white transition-colors duration-500">
+                {card.desc}
+              </p>
+
+              {/* Nút Action */}
+              <span className="action-arrow inline-block mt-4 text-brand-primary font-semibold text-sm group-hover:!text-white group-hover:translate-x-1 transition-all duration-500">
+                {card.action}
+              </span>
+            </Link>
+          ))}
+        </div>
       </div>
     </section>
   )
