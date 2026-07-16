@@ -25,6 +25,7 @@ import jobRoutes from '~/routes/candidate/job/job.routes'
 import candidateRoutes from '~/routes/candidate/candidate.routes'
 import profileRoutes from '~/routes/hr/profile/profile.routes'
 import mockInterviewRoutes from '~/routes/candidate/mock-interview/mock-interview.routes'
+import favoriteRoutes from '~/routes/candidate/favorite/favorite.routes'
 
 import dashboardRoutes from '~/routes/hr/dashboard/dashboard.routes'
 import analysisRoutes from '~/routes/hr/analysis/analysis.routes'
@@ -36,6 +37,7 @@ import semanticSearchRoutes from '~/routes/hr/semantic-search/semantic-search.ro
 import resumeEnrichmentRoutes from '~/routes/hr/resume-enrichment/resume-enrichment.routes'
 import calendarRoutes from '~/routes/hr/calendar/calendar.routes'
 import rediscoveryRoutes from '~/routes/hr/rediscovery/rediscovery.routes'
+import categoryRoutes from '~/routes/hr/category/category.routes'
 
 import candidateNotificationRoutes from '~/routes/candidate/notification/notification.routes'
 import hrNotificationRoutes from '~/routes/hr/notification/notification.routes'
@@ -70,6 +72,7 @@ app.use('/api/auth', authRoutes)
 app.use('/api/jobs', jobRoutes)
 app.use('/api/candidates', candidateRoutes)
 app.use('/api/mock-interview', mockInterviewRoutes)
+app.use('/api/candidate', favoriteRoutes)
 
 app.use('/api/hr/dashboard', dashboardRoutes)
 app.use('/api/hr/candidates', analysisRoutes)
@@ -82,6 +85,7 @@ app.use('/api/hr', semanticSearchRoutes)
 app.use('/api/hr/resume', resumeEnrichmentRoutes)
 app.use('/api/hr/calendar', calendarRoutes)
 app.use('/api/hr/rediscovery', rediscoveryRoutes)
+app.use('/api/hr', categoryRoutes)
 
 app.use('/api/candidate', candidateNotificationRoutes)
 app.use('/api/hr', hrNotificationRoutes)

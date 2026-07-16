@@ -7,7 +7,8 @@ import {
   createJDValidation,
   updateJDValidation,
   getJDListValidation,
-  idValidation
+  idValidation,
+  bulkActionValidation
 } from '~/validations/hr/job-description/job-description.validation'
 
 const router = express.Router()
@@ -49,6 +50,12 @@ router.delete(
   '/jobs/:id',
   validate(idValidation, 'params'),
   jobDescriptionController.delete
+)
+
+router.post(
+  '/jobs/bulk',
+  validate(bulkActionValidation, 'body'),
+  jobDescriptionController.bulkAction
 )
 
 export default router

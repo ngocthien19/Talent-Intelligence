@@ -15,6 +15,7 @@ const jobDescriptionModel = {
       employmentType,
       location,
       salaryRange,
+      categoryId,
       isActive = true
     } = data
 
@@ -22,8 +23,8 @@ const jobDescriptionModel = {
       INSERT INTO job_descriptions (
         company_id, title, description, requirements, benefits,
         required_skills, nice_to_have_skills, experience_level,
-        employment_type, location, salary_range, is_active
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+        employment_type, location, salary_range, category_id, is_active
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
       RETURNING *
     `
 
@@ -39,6 +40,7 @@ const jobDescriptionModel = {
       employmentType,
       location,
       salaryRange ? JSON.stringify(salaryRange) : null,
+      categoryId || null,
       isActive
     ])
 
@@ -53,6 +55,7 @@ const jobDescriptionModel = {
       experienceLevel,
       employmentType,
       isActive,
+      categoryId,
       sortBy = 'created_at',
       sortOrder = 'DESC',
       limit = 20,
@@ -63,31 +66,37 @@ const jobDescriptionModel = {
     const params = []
     let paramIndex = 1
 
-    conditions.push(`company_id = $${paramIndex}`)
+    conditions.push(`j.company_id = $${paramIndex}`)
     params.push(companyId)
     paramIndex++
 
     if (keyword) {
-      conditions.push(`(title ILIKE $${paramIndex} OR description ILIKE $${paramIndex})`)
+      conditions.push(`(j.title ILIKE $${paramIndex} OR j.description ILIKE $${paramIndex})`)
       params.push(`%${keyword}%`)
       paramIndex++
     }
 
     if (experienceLevel) {
-      conditions.push(`experience_level = $${paramIndex}`)
+      conditions.push(`j.experience_level = $${paramIndex}`)
       params.push(experienceLevel)
       paramIndex++
     }
 
     if (employmentType) {
-      conditions.push(`employment_type = $${paramIndex}`)
+      conditions.push(`j.employment_type = $${paramIndex}`)
       params.push(employmentType)
       paramIndex++
     }
 
     if (isActive !== undefined && isActive !== null) {
-      conditions.push(`is_active = $${paramIndex}`)
+      conditions.push(`j.is_active = $${paramIndex}`)
       params.push(isActive)
+      paramIndex++
+    }
+
+    if (categoryId) {
+      conditions.push(`j.category_id = $${paramIndex}`)
+      params.push(categoryId)
       paramIndex++
     }
 
@@ -95,29 +104,33 @@ const jobDescriptionModel = {
 
     const countQuery = `
       SELECT COUNT(*) as total
-      FROM job_descriptions
+      FROM job_descriptions j
       ${whereClause}
     `
     const countResult = await pool.query(countQuery, params)
     const total = parseInt(countResult.rows[0]?.total || 0)
 
     const sortMap = {
-      title: 'title',
-      created_at: 'created_at',
-      updated_at: 'updated_at'
+      title: 'j.title',
+      created_at: 'j.created_at',
+      updated_at: 'j.updated_at'
     }
-    const sortField = sortMap[sortBy] || 'created_at'
+    const sortField = sortMap[sortBy] || 'j.created_at'
 
     const limitParam = parseInt(limit)
     const offsetParam = parseInt(offset)
 
     const dataQuery = `
-      SELECT id, title, description, requirements, benefits,
-             required_skills, nice_to_have_skills,
-             experience_level, employment_type, location,
-             salary_range, is_active,
-             created_at, updated_at
-      FROM job_descriptions
+      SELECT j.id, j.title, j.description, j.requirements, j.benefits,
+             j.required_skills, j.nice_to_have_skills,
+             j.experience_level, j.employment_type, j.location,
+             j.salary_range, j.is_active, j.category_id,
+             j.created_at, j.updated_at,
+             c.name as company_name,
+             cat.name as category_name, cat.slug as category_slug
+      FROM job_descriptions j
+      LEFT JOIN companies c ON j.company_id = c.id
+      LEFT JOIN category_job cat ON j.category_id = cat.id
       ${whereClause}
       ORDER BY ${sortField} ${sortOrder}
       LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
@@ -137,12 +150,14 @@ const jobDescriptionModel = {
     }
   },
 
-  // Lấy chi tiết JD
+  // Lấy chi tiết JD (có join với category)
   getById: async (id, companyId) => {
     const result = await pool.query(
-      `SELECT j.*, c.name as company_name
+      `SELECT j.*, c.name as company_name,
+              cat.name as category_name, cat.slug as category_slug
        FROM job_descriptions j
        LEFT JOIN companies c ON j.company_id = c.id
+       LEFT JOIN category_job cat ON j.category_id = cat.id
        WHERE j.id = $1 AND j.company_id = $2`,
       [id, companyId]
     )
@@ -166,6 +181,7 @@ const jobDescriptionModel = {
       employmentType: 'employment_type',
       location: 'location',
       salaryRange: 'salary_range',
+      categoryId: 'category_id',
       isActive: 'is_active'
     }
 
@@ -234,6 +250,54 @@ const jobDescriptionModel = {
       [id, companyId]
     )
     return result.rows.length > 0
+  },
+
+  // Bulk delete
+  bulkDelete: async (ids, companyId) => {
+    const placeholders = ids.map((_, i) => `$${i + 1}`).join(', ')
+    const params = [...ids, companyId]
+
+    const query = `
+      DELETE FROM job_descriptions
+      WHERE id IN (${placeholders})
+      AND company_id = $${ids.length + 1}
+      RETURNING id, title
+    `
+
+    const result = await pool.query(query, params)
+    return result.rows
+  },
+
+  // Bulk update status
+  bulkUpdateStatus: async (ids, companyId, isActive) => {
+    const placeholders = ids.map((_, i) => `$${i + 1}`).join(', ')
+    const params = [...ids, isActive, companyId]
+
+    const query = `
+      UPDATE job_descriptions
+      SET is_active = $${ids.length + 1}, updated_at = CURRENT_TIMESTAMP
+      WHERE id IN (${placeholders})
+      AND company_id = $${ids.length + 2}
+      RETURNING id, title, is_active
+    `
+
+    const result = await pool.query(query, params)
+    return result.rows
+  },
+
+  // Kiểm tra tất cả ids có tồn tại và thuộc company không
+  checkIdsExist: async (ids, companyId) => {
+    const placeholders = ids.map((_, i) => `$${i + 1}`).join(', ')
+    const params = [...ids, companyId]
+
+    const query = `
+      SELECT id FROM job_descriptions
+      WHERE id IN (${placeholders})
+      AND company_id = $${ids.length + 1}
+    `
+
+    const result = await pool.query(query, params)
+    return result.rows.map(row => row.id)
   }
 }
 

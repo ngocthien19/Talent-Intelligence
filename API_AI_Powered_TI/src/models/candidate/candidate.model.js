@@ -1,4 +1,4 @@
-import pool from '~/config/db.js'
+import pool from '~/config/db'
 
 const candidateModel = {
   // Tạo ứng viên mới
@@ -53,6 +53,17 @@ const candidateModel = {
       [userId]
     )
     return result.rows
+  },
+
+  getCandidateByUserId: async (userId) => {
+    const result = await pool.query(
+      `SELECT c.*, u.fullname, u.email, u.phone
+       FROM candidates c
+       JOIN users u ON c.user_id = u.id
+       WHERE c.user_id = $1`,
+      [userId]
+    )
+    return result.rows[0]
   },
 
   // Lấy chi tiết ứng tuyển
