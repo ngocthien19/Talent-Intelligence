@@ -7,9 +7,7 @@ const CandidateLayout = () => {
     <div className="app-wrapper">
       <Header />
       <main className="flex-1">
-        <div className="app-container py-6">
-          <Outlet />
-        </div>
+        <Outlet />
       </main>
       <Footer />
     </div>

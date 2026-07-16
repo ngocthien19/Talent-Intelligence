@@ -207,7 +207,7 @@ const Jobs = () => {
   }
 
   return (
-    <div className="animate-fade-in py-6">
+    <div className="app-container animate-fade-in py-6">
       {/* Search Form */}
       <div className="mb-6">
         <SearchForm onSearch={handleSearch} initialKeyword={activeFilters.keyword} />

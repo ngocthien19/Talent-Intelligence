@@ -14,6 +14,14 @@ export const jobApi = {
     return response.data
   },
 
+  // Lấy công việc liên quan
+  getRelatedJobs: async (jobId, limit = 10) => {
+    const response = await authorizedAxiosInstance.get(`${DEV_API_URL}/api/jobs/related/${jobId}`, {
+      params: { limit }
+    })
+    return response.data
+  },
+
   // Lấy công việc nổi bật
   getFeaturedJobs: async (limit = 6) => {
     const response = await authorizedAxiosInstance.get(`${DEV_API_URL}/api/jobs/featured`, {
