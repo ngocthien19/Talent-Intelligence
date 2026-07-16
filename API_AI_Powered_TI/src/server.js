@@ -26,6 +26,7 @@ import candidateRoutes from '~/routes/candidate/candidate.routes'
 import profileRoutes from '~/routes/hr/profile/profile.routes'
 import mockInterviewRoutes from '~/routes/candidate/mock-interview/mock-interview.routes'
 import favoriteRoutes from '~/routes/candidate/favorite/favorite.routes'
+import candidateCategoryRoutes from '~/routes/candidate/category/category.routes'
 
 import dashboardRoutes from '~/routes/hr/dashboard/dashboard.routes'
 import analysisRoutes from '~/routes/hr/analysis/analysis.routes'
@@ -73,6 +74,7 @@ app.use('/api/jobs', jobRoutes)
 app.use('/api/candidates', candidateRoutes)
 app.use('/api/mock-interview', mockInterviewRoutes)
 app.use('/api/candidate', favoriteRoutes)
+app.use('/api', candidateCategoryRoutes)
 
 app.use('/api/hr/dashboard', dashboardRoutes)
 app.use('/api/hr/candidates', analysisRoutes)
