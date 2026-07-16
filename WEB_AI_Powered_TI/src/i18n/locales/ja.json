@@ -45,6 +45,7 @@
     "heroDesc": "何千もの求人情報があなたを待っています。AIによるスマート検索で、数回のクリックで簡単に応募できます。",
     "searchPlaceholder": "求人を検索...",
     "locationPlaceholder": "場所...",
+    "categoryPlaceholder": "カテゴリ...",
     "search": "検索",
     "browseAllJobs": "すべての求人を見る",
     "uploadCV": "CVをアップロードして提案を受ける",

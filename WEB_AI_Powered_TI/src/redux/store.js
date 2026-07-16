@@ -12,6 +12,7 @@ import {
 
 import authReducer from './slices/auth.slice'
 import uiReducer from './slices/ui.slice'
+import favoriteReducer from './slices/favorite.slice'
 
 const customStorage = {
   getItem: (key) => Promise.resolve(window.localStorage.getItem(key)),
@@ -23,13 +24,14 @@ const customStorage = {
 const persistConfig = {
   key: 'root',
   storage: customStorage,
-  whitelist: ['auth', 'ui']
+  whitelist: ['auth', 'ui', 'favorite']
 }
 
 // 2. Gom reducers
 const rootReducer = combineReducers({
   auth: authReducer,
-  ui: uiReducer
+  ui: uiReducer,
+  favorite: favoriteReducer
 })
 
 // 3. Tạo persisted reducer

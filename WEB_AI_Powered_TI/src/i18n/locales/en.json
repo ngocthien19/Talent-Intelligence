@@ -45,6 +45,7 @@
     "heroDesc": "Thousands of job opportunities are waiting for you. Smart search with AI, easy application with just a few clicks.",
     "searchPlaceholder": "Search jobs...",
     "locationPlaceholder": "Location...",
+    "categoryPlaceholder": "Category...",
     "search": "Search",
     "browseAllJobs": "Browse all jobs",
     "uploadCV": "Upload CV for suggestions",
