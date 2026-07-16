@@ -2,7 +2,7 @@ import authorizedAxiosInstance from '~/utils/authorizedAxios'
 import { DEV_API_URL } from '~/utils/constant'
 
 export const jobApi = {
-  // Lấy danh sách công việc
+  // Lấy danh sách công việc với filter
   getJobs: async (params = {}) => {
     const response = await authorizedAxiosInstance.get(`${DEV_API_URL}/api/jobs`, { params })
     return response.data

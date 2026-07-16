@@ -33,11 +33,10 @@ const SearchForm = () => {
     { value: 'Bình Dương', label: 'Bình Dương' }
   ]
 
-  // Fetch categories
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await categoryApi.getDropdown()
+        const response = await categoryApi.getAllCategories()
         if (response.success) {
           setCategories([{ id: '', name: 'Tất cả danh mục' }, ...response.data])
         }
@@ -69,7 +68,7 @@ const SearchForm = () => {
     const params = new URLSearchParams()
     if (searchKeyword) params.append('keyword', searchKeyword)
     if (searchLocation) params.append('location', searchLocation)
-    if (searchCategory) params.append('category', searchCategory)
+    if (searchCategory) params.append('category_id', searchCategory)
     navigate(`/jobs?${params.toString()}`)
   }
 
