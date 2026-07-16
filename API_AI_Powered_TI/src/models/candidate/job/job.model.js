@@ -202,6 +202,99 @@ const jobModel = {
   getSkills: async () => {
     const result = await pool.query('SELECT name FROM skills ORDER BY name')
     return result.rows.map(row => row.name)
+  },
+
+  // Lấy công việc liên quan
+  findRelated: async (jobId, limit = 10) => {
+  // 1. Lấy thông tin job hiện tại
+    const currentJob = await jobModel.findById(jobId)
+    if (!currentJob) {
+      throw new Error('Không tìm thấy công việc')
+    }
+
+    const { category_id } = currentJob
+
+    if (!category_id) {
+      return []
+    }
+
+    const conditions = []
+    const params = []
+    let paramIndex = 1
+
+    conditions.push(`jd.id != CAST($${paramIndex} AS UUID)`)
+    params.push(jobId)
+    paramIndex++
+
+    conditions.push('jd.is_active = true')
+
+    conditions.push(`jd.category_id = CAST($${paramIndex} AS UUID)`)
+    params.push(category_id)
+    paramIndex++
+
+    const whereClause = `WHERE ${conditions.join(' AND ')}`
+
+    const query = `
+    SELECT jd.*, c.name as company_name, c.logo as company_logo,
+           cat.name as category_name, cat.slug as category_slug
+    FROM job_descriptions jd
+    LEFT JOIN companies c ON jd.company_id = c.id
+    LEFT JOIN category_job cat ON jd.category_id = cat.id
+    ${whereClause}
+    ORDER BY jd.created_at DESC
+    LIMIT $${paramIndex}
+  `
+
+    params.push(limit)
+
+    const result = await pool.query(query, params)
+    return result.rows
+  },
+
+  // Lấy công việc theo category
+  findByCategory: async (categoryId, limit = 10, offset = 0) => {
+    const result = await pool.query(
+      `SELECT jd.*, c.name as company_name, c.logo as company_logo,
+              cat.name as category_name, cat.slug as category_slug
+       FROM job_descriptions jd
+       LEFT JOIN companies c ON jd.company_id = c.id
+       LEFT JOIN category_job cat ON jd.category_id = cat.id
+       WHERE jd.category_id = $1 AND jd.is_active = true
+       ORDER BY jd.created_at DESC
+       LIMIT $2 OFFSET $3`,
+      [categoryId, limit, offset]
+    )
+    return result.rows
+  },
+
+  // Lấy công việc theo kỹ năng
+  findBySkills: async (skills, limit = 10, offset = 0) => {
+    const skillConditions = skills.map((_, i) =>
+      `jd.required_skills ? $${i + 1}`
+    ).join(' OR ')
+
+    const params = [...skills, limit, offset]
+    const query = `
+      SELECT jd.*, c.name as company_name, c.logo as company_logo,
+             cat.name as category_name, cat.slug as category_slug,
+             (
+               SELECT COUNT(*) 
+               FROM jsonb_array_elements_text(jd.required_skills) AS skill
+               WHERE skill = ANY($${
+  skills.map((_, i) => `$${i + 1}`).join(', ')
+})
+             ) as match_count
+      FROM job_descriptions jd
+      LEFT JOIN companies c ON jd.company_id = c.id
+      LEFT JOIN category_job cat ON jd.category_id = cat.id
+      WHERE (${skillConditions})
+      AND jd.is_active = true
+      ORDER BY match_count DESC, jd.created_at DESC
+      LIMIT $${skills.length + 1} OFFSET $${skills.length + 2}
+    `
+
+    const result = await pool.query(query, params)
+    return result.rows
   }
 }
 
