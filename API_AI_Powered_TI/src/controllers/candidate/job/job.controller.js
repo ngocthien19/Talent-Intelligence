@@ -141,6 +141,90 @@ const jobController = {
         message: error.message
       })
     }
+  },
+
+  // Lấy công việc liên quan
+  getRelatedJobs: async (req, res) => {
+    try {
+      const { id } = req.params
+      const limit = parseInt(req.query.limit) || 10
+
+      const jobs = await jobService.getRelatedJobs(id, limit)
+
+      return res.status(200).json({
+        success: true,
+        data: jobs
+      })
+    } catch (error) {
+      if (error.message === 'Không tìm thấy công việc') {
+        return res.status(404).json({
+          success: false,
+          message: error.message
+        })
+      }
+      return res.status(500).json({
+        success: false,
+        message: error.message
+      })
+    }
+  },
+
+  // Lấy công việc theo category
+  getJobsByCategory: async (req, res) => {
+    try {
+      const { categoryId } = req.params
+      const limit = parseInt(req.query.limit) || 10
+      const page = parseInt(req.query.page) || 1
+
+      const jobs = await jobService.getJobsByCategory(categoryId, limit, page)
+
+      return res.status(200).json({
+        success: true,
+        data: jobs,
+        pagination: {
+          limit,
+          page
+        }
+      })
+    } catch (error) {
+      return res.status(500).json({
+        success: false,
+        message: error.message
+      })
+    }
+  },
+
+  // Lấy công việc theo kỹ năng
+  getJobsBySkills: async (req, res) => {
+    try {
+      const { skills } = req.query
+      const limit = parseInt(req.query.limit) || 10
+      const page = parseInt(req.query.page) || 1
+
+      if (!skills) {
+        return res.status(400).json({
+          success: false,
+          message: 'Vui lòng cung cấp kỹ năng cần tìm'
+        })
+      }
+
+      const skillArray = skills.split(',').map(s => s.trim())
+      const jobs = await jobService.getJobsBySkills(skillArray, limit, page)
+
+      return res.status(200).json({
+        success: true,
+        data: jobs,
+        pagination: {
+          limit,
+          page
+        }
+      })
+    } catch (error) {
+      return res.status(500).json({
+        success: false,
+        message: error.message
+      })
+    }
   }
 }
 
