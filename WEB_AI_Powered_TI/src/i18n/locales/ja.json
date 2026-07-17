@@ -93,7 +93,43 @@
     "viewJobDetail": "求人詳細を見る",
     "relatedJobs": "関連する求人",
     "noRelatedJobs": "関連する求人は見つかりませんでした",
-    "back": "戻る"
+    "back": "戻る",
+    "cv": "あなたのCV",
+    "dragDropCV": "ドラッグ＆ドロップまたはクリックしてCVを選択",
+    "supportedFormats": "対応形式: PDF, DOC, DOCX (最大10MB)",
+    "coverLetter": "カバーレター",
+    "optional": "任意",
+    "coverLetterPlaceholder": "自己紹介とこのポジションに適している理由を簡単に説明してください...",
+    "submitApplication": "応募を送信",
+    "validation": {
+      "cvRequired": "応募するにはCVを選択してください",
+      "cvFileType": "PDFまたはWordファイルをアップロードしてください",
+      "cvFileSize": "ファイルが大きすぎます。10MB未満のファイルを選択してください",
+      "coverLetterMax": "カバーレターは2000文字を超えることはできません"
+    },
+    "status": {
+      "pending": "保留中",
+      "reviewing": "審査中",
+      "shortlisted": "選考通過",
+      "rejected": "不合格",
+      "hired": "採用"
+    }
+  },
+  "applications": {
+    "title": "応募履歴",
+    "count": "応募済み",
+    "jobs": "件の求人",
+    "empty": "応募履歴はまだありません",
+    "emptyDesc": "興味のある求人を検索して応募しましょう",
+    "browseJobs": "求人を探す",
+    "viewDetail": "詳細を見る",
+    "loginRequired": "ログインしてください",
+    "loginToView": "応募履歴を表示するにはログインしてください",
+    "applySuccess": "応募が完了しました！",
+    "applyFailed": "応募に失敗しました",
+    "cvRequired": "応募するにはCVを選択してください",
+    "submitting": "送信中...",
+    "submitApplication": "応募を送信"
   },
   "pagination": {
     "previous": "前へ",
@@ -106,7 +142,8 @@
     "confirm": "確認",
     "cancel": "キャンセル",
     "loading": "処理中...",
-    "deleting": "削除中..."
+    "deleting": "削除中...",
+    "submitting": "送信中..."
   },
   "auth": {
     "login": "ログイン",
