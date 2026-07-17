@@ -8,6 +8,7 @@ import FeaturedJobs from '~/components/candidate/home/FeaturedJobs'
 import CTASection from '~/components/candidate/home/CTASection'
 import { formatSalary, getDaysAgo } from '~/utils/format'
 import { getExperienceLabel } from '~/utils/constant'
+import { useScrollToTop } from '~/hooks/useScrollToTop'
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 40 },
@@ -19,6 +20,7 @@ const fadeInUp = {
 }
 
 const Home = () => {
+  useScrollToTop()
   const { t } = useLanguage()
   const [featuredJobs, setFeaturedJobs] = useState([])
   const [jobCount, setJobCount] = useState(0)

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useLanguage } from '~/hooks/useLanguage'
 import { useAuth } from '~/hooks/useAuth'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   FaBriefcase,
@@ -13,10 +13,17 @@ import {
   FaMapMarkerAlt,
   FaCalendarAlt,
   FaFileAlt,
-  FaArrowLeft
+  FaArrowLeft,
+  FaEye,
+  FaChevronRight,
+  FaFilePdf,
+  FaFileWord,
+  FaFile,
+  FaExternalLinkAlt
 } from 'react-icons/fa'
 import { applicationApi } from '~/api/candidate/application.api'
 import { toast } from 'react-toastify'
+import { useScrollToTop } from '~/hooks/useScrollToTop'
 
 const containerVariants = {
   hidden: { opacity: 0, y: 20 },
@@ -81,8 +88,20 @@ const statusConfig = {
   }
 }
 
+const getFileIcon = (mimeType) => {
+  if (mimeType?.includes('pdf')) {
+    return FaFilePdf
+  }
+  if (mimeType?.includes('word') || mimeType?.includes('document')) {
+    return FaFileWord
+  }
+  return FaFile
+}
+
 const Applications = () => {
+  useScrollToTop()
   const { t } = useLanguage()
+  const navigate = useNavigate()
   const { isAuthenticated } = useAuth()
   const [applications, setApplications] = useState([])
   const [isLoading, setIsLoading] = useState(true)
@@ -117,6 +136,17 @@ const Applications = () => {
         {config.label}
       </span>
     )
+  }
+
+  // Hàm mở CV trong tab mới
+  const handleViewCV = (cvUrl, e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (cvUrl) {
+    // Sử dụng Google Docs Viewer để xem PDF
+      const viewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(cvUrl)}&embedded=true`
+      window.open(viewerUrl, '_blank')
+    }
   }
 
   if (!isAuthenticated) {
@@ -171,7 +201,7 @@ const Applications = () => {
         </div>
         <Link
           to="/jobs"
-          className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-brand-primary border border-brand-primary rounded-lg hover:bg-brand-primary hover:!text-white transition-all duration-200 cursor-pointer"
+          className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-brand-primary border border-brand-primary rounded-lg hover:bg-brand-primary hover:!text-white transition-all duration-200 cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
         >
           <FaArrowLeft size={14} />
           {t('applications.browseJobs') || 'Tìm việc ngay'}
@@ -180,8 +210,8 @@ const Applications = () => {
 
       {/* Content */}
       {isLoading ? (
-        <div className="space-y-4">
-          {[1, 2, 3].map((i) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {[1, 2, 3, 4].map((i) => (
             <div key={i} className="bg-white dark:bg-gray-800 rounded-xl shadow-custom dark:shadow-gray-800/30 p-6 skeleton-pulse">
               <div className="flex items-start gap-4">
                 <div className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
@@ -196,9 +226,13 @@ const Applications = () => {
         </div>
       ) : applications.length > 0 ? (
         <AnimatePresence mode="wait">
-          <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {applications.map((app, index) => {
               const StatusIcon = statusConfig[app.status?.toLowerCase()]?.icon || FaHourglassHalf
+              const FileIcon = getFileIcon(app.cv_mime_type)
+              const cvFileName = app.cv_original_name || 'CV.pdf'
+              const hasCV = app.cv_url && app.cv_url.trim() !== ''
+
               return (
                 <motion.div
                   key={app.id}
@@ -208,60 +242,97 @@ const Applications = () => {
                   animate="visible"
                   exit={{ opacity: 0, y: -20 }}
                   layout
-                  className="bg-white dark:bg-gray-800 rounded-xl shadow-custom dark:shadow-gray-800/30 p-6 border-l-4 border-l-brand-primary hover:shadow-glow dark:hover:shadow-gray-800/50 transition-all duration-300"
+                  className="group bg-white dark:bg-gray-800 rounded-xl shadow-custom dark:shadow-gray-800/30 p-6 border-l-4 border-l-brand-primary hover:shadow-glow dark:hover:shadow-gray-800/50 transition-all duration-300 hover:-translate-y-1"
                 >
-                  <div className="flex flex-wrap items-start justify-between gap-4">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start gap-4">
-                        {app.company_logo ? (
-                          <img
-                            src={app.company_logo?.secure_url || app.company_logo}
-                            alt={app.company_name}
-                            className="w-12 h-12 rounded-lg object-cover flex-shrink-0"
-                          />
-                        ) : (
-                          <div className="w-12 h-12 rounded-lg bg-gradient-brand flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
-                            {app.company_name?.charAt(0) || 'C'}
-                          </div>
-                        )}
-                        <div className="min-w-0">
-                          <h3 className="text-lg font-semibold text-brand-secondary dark:text-white">
-                            {app.job_title || app.position_applied}
-                          </h3>
-                          <p className="text-sm text-brand-text dark:text-gray-400 flex items-center gap-1">
-                            <FaBuilding size={12} />
-                            {app.company_name}
-                          </p>
-                          {app.job_location && (
-                            <p className="text-sm text-brand-text/60 dark:text-gray-500 flex items-center gap-1 mt-0.5">
-                              <FaMapMarkerAlt size={12} />
-                              {app.job_location}
-                            </p>
-                          )}
+                  <div className="flex flex-col h-full">
+                    {/* Header row - Logo + Title + View Detail */}
+                    <div className="flex items-start gap-4 mb-3">
+                      {app.company_logo ? (
+                        <img
+                          src={app.company_logo?.secure_url || app.company_logo}
+                          alt={app.company_name}
+                          className="w-12 h-12 rounded-lg object-cover flex-shrink-0"
+                        />
+                      ) : (
+                        <div className="w-12 h-12 rounded-lg bg-gradient-brand flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
+                          {app.company_name?.charAt(0) || 'C'}
                         </div>
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <h3 className="text-lg font-semibold text-brand-secondary dark:text-white line-clamp-1">
+                          {app.job_title || app.position_applied}
+                        </h3>
+                        <p className="text-sm text-brand-text dark:text-gray-400 flex items-center gap-1">
+                          <FaBuilding size={12} />
+                          <span className="line-clamp-1">{app.company_name}</span>
+                        </p>
+                        {app.job_location && (
+                          <p className="text-sm text-brand-text/60 dark:text-gray-500 flex items-center gap-1 mt-0.5">
+                            <FaMapMarkerAlt size={12} />
+                            <span className="line-clamp-1">{app.job_location}</span>
+                          </p>
+                        )}
                       </div>
-
-                      <div className="flex flex-wrap items-center gap-3 mt-3">
-                        {getStatusBadge(app.status)}
-                        <span className="text-xs text-brand-text/60 dark:text-gray-500 flex items-center gap-1">
-                          <FaCalendarAlt size={12} />
-                          {new Date(app.created_at).toLocaleDateString('vi-VN')}
+                      {/* View Detail link - góc phải trên */}
+                      <Link
+                        to={`/applications/${app.id}`}
+                        className="flex items-center gap-1.5 text-sm font-medium text-brand-primary hover:text-brand-secondary dark:hover:text-white transition-all duration-300 group/link whitespace-nowrap flex-shrink-0 ml-auto mt-1"
+                      >
+                        <span className="flex items-center gap-1 group-hover/link:underline underline-offset-2 transition-all duration-300">
+                          <FaEye size={14} />
+                          {t('applications.viewDetail') || 'Xem chi tiết'}
                         </span>
-                      </div>
+                        <motion.span
+                          whileHover={{ x: 5 }}
+                          transition={{ duration: 0.3 }}
+                          className="group-hover/link:translate-x-1 transition-transform duration-300"
+                        >
+                          <FaChevronRight size={12} />
+                        </motion.span>
+                      </Link>
                     </div>
 
-                    <Link
-                      to={`/applications/${app.id}`}
-                      className="flex items-center gap-1 text-sm text-brand-primary hover:text-brand-secondary dark:hover:text-white transition-colors duration-200 group whitespace-nowrap"
-                    >
-                      {t('applications.viewDetail') || 'Xem chi tiết'}
-                      <motion.span
-                        whileHover={{ x: 5 }}
-                        transition={{ duration: 0.3 }}
-                      >
-                        →
-                      </motion.span>
-                    </Link>
+                    {/* CV File - Hiển thị file đã gửi */}
+                    <div className="mb-3">
+                      {hasCV ? (
+                        <button
+                          onClick={(e) => handleViewCV(app.cv_url, e)}
+                          className="inline-flex items-center gap-2 px-3 py-2 text-sm bg-brand-light/30 dark:bg-gray-700/30 hover:bg-brand-light/50 dark:hover:bg-gray-700/50 rounded-lg transition-all duration-200 group/cv cursor-pointer border border-brand-light/30 dark:border-gray-600/30 hover:border-brand-primary/50 dark:hover:border-brand-primary/30"
+                          title={t('applications.viewCV') || 'Xem CV trong tab mới'}
+                        >
+                          <FileIcon
+                            size={16}
+                            className={`${app.cv_mime_type?.includes('pdf') ? 'text-red-500' : app.cv_mime_type?.includes('word') ? 'text-blue-500' : 'text-brand-text/60'}`}
+                          />
+                          <span className="text-brand-text dark:text-gray-300 truncate max-w-[150px]">
+                            {cvFileName}
+                          </span>
+                          {app.cv_file_size && (
+                            <span className="text-xs text-brand-text/40 dark:text-gray-500">
+                              {(app.cv_file_size / 1024).toFixed(1)} KB
+                            </span>
+                          )}
+                          <span className="flex items-center gap-1 text-xs font-medium text-brand-primary hover:underline transition-all duration-200 ml-1">
+                            <FaExternalLinkAlt size={10} />
+                            {t('applications.view') || 'Xem'}
+                          </span>
+                        </button>
+                      ) : (
+                        <span className="inline-flex items-center gap-2 px-3 py-2 text-sm text-brand-text/40 dark:text-gray-500 bg-brand-light/20 dark:bg-gray-700/20 rounded-lg">
+                          <FaFile size={16} />
+                          {t('applications.noCV') || 'Chưa có CV'}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Footer - Status + Date */}
+                    <div className="flex flex-wrap items-center gap-3 mt-auto pt-3 border-t border-brand-light/50 dark:border-gray-700/50">
+                      {getStatusBadge(app.status)}
+                      <span className="text-xs text-brand-text/60 dark:text-gray-500 flex items-center gap-1">
+                        <FaCalendarAlt size={12} />
+                        {new Date(app.created_at).toLocaleDateString('vi-VN')}
+                      </span>
+                    </div>
                   </div>
                 </motion.div>
               )
@@ -284,7 +355,7 @@ const Applications = () => {
           </p>
           <Link
             to="/jobs"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-brand text-white rounded-xl font-medium hover:shadow-glow transition-all duration-300 cursor-pointer"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-brand text-white rounded-xl font-medium hover:shadow-glow transition-all duration-300 cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
           >
             {t('applications.browseJobs') || 'Tìm việc ngay'}
           </Link>

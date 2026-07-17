@@ -5,6 +5,7 @@ import * as yup from 'yup'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useLanguage } from '~/hooks/useLanguage'
 import { useAuth } from '~/hooks/useAuth'
+import { useNavigate } from 'react-router-dom' // THÊM IMPORT
 import { applicationApi } from '~/api/candidate/application.api'
 import {
   FaTimes,
@@ -51,6 +52,7 @@ const applySchema = yup.object({
 const ApplyJobModal = ({ isOpen, onClose, jobId, jobTitle, companyName }) => {
   const { t } = useLanguage()
   const { user } = useAuth()
+  const navigate = useNavigate() // THÊM
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
   const [fileName, setFileName] = useState('')
@@ -121,6 +123,8 @@ const ApplyJobModal = ({ isOpen, onClose, jobId, jobTitle, companyName }) => {
           fileInputRef.current.value = ''
         }
         onClose()
+        // CHUYỂN HƯỚNG ĐẾN TRANG APPLICATIONS
+        navigate('/applications')
       }
     } catch (error) {
       toast.error(error?.message || 'Ứng tuyển thất bại')

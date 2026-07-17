@@ -20,8 +20,10 @@ import {
 import {
   getExperienceLabel
 } from '~/utils/constant'
+import { useScrollToTop } from '~/hooks/useScrollToTop'
 
 const Jobs = () => {
+  useScrollToTop()
   const { t } = useLanguage()
   const dispatch = useDispatch()
   const { isAuthenticated } = useAuth()
