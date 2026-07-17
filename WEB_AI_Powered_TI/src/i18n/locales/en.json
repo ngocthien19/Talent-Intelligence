@@ -93,7 +93,43 @@
     "viewJobDetail": "View job details",
     "relatedJobs": "Related Jobs",
     "noRelatedJobs": "No related jobs found",
-    "back": "Back"
+    "back": "Back",
+    "cv": "Your CV",
+    "dragDropCV": "Drag & drop or click to select CV",
+    "supportedFormats": "Supported: PDF, DOC, DOCX (max 10MB)",
+    "coverLetter": "Cover Letter",
+    "optional": "optional",
+    "coverLetterPlaceholder": "Briefly introduce yourself and why you're suitable for this position...",
+    "submitApplication": "Submit Application",
+    "validation": {
+      "cvRequired": "Please select your CV to apply",
+      "cvFileType": "Please upload PDF or Word file",
+      "cvFileSize": "File is too large. Please select a file under 10MB",
+      "coverLetterMax": "Cover letter cannot exceed 2000 characters"
+    },
+    "status": {
+      "pending": "Pending",
+      "reviewing": "Reviewing",
+      "shortlisted": "Shortlisted",
+      "rejected": "Rejected",
+      "hired": "Hired"
+    }
+  },
+  "applications": {
+    "title": "My Applications",
+    "count": "Applied",
+    "jobs": "jobs",
+    "empty": "No applications yet",
+    "emptyDesc": "Start searching and applying to jobs you're interested in",
+    "browseJobs": "Browse Jobs",
+    "viewDetail": "View Details",
+    "loginRequired": "Please login",
+    "loginToView": "Login to view your applications",
+    "applySuccess": "Application submitted successfully!",
+    "applyFailed": "Application failed",
+    "cvRequired": "Please select your CV to apply",
+    "submitting": "Submitting...",
+    "submitApplication": "Submit Application"
   },
   "pagination": {
     "previous": "Previous",
@@ -106,7 +142,8 @@
     "confirm": "Confirm",
     "cancel": "Cancel",
     "loading": "Loading...",
-    "deleting": "Deleting..."
+    "deleting": "Deleting...",
+    "submitting": "Submitting..."
   },
   "auth": {
     "login": "ログイン",

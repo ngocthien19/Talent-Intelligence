@@ -10,6 +10,7 @@ import Home from '~/pages/candidate/Home'
 import Jobs from '~/pages/candidate/Jobs'
 import JobDetailPage from '~/pages/candidate/JobDetailPage'
 import Favorites from '~/pages/candidate/Favorites'
+import Applications from '~/pages/candidate/Applications'
 
 import Login from '~/pages/auth/Login'
 import Register from '~/pages/auth/Register'
@@ -57,6 +58,7 @@ function App() {
           <Route path="jobs" element={<Jobs />} />
           <Route path="jobs/:id" element={<JobDetailPage />} />
           <Route path="favorites" element={<Favorites />} />
+          <Route path="applications" element={<Applications />} />
         </Route>
       </Routes>
     </>

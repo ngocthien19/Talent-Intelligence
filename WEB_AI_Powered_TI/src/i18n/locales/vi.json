@@ -93,7 +93,43 @@
     "viewJobDetail": "Xem chi tiết công việc",
     "relatedJobs": "Công việc liên quan",
     "noRelatedJobs": "Chưa có công việc liên quan",
-    "back": "Quay lại"
+    "back": "Quay lại",
+    "cv": "CV của bạn",
+    "dragDropCV": "Kéo thả hoặc click để chọn CV",
+    "supportedFormats": "Hỗ trợ: PDF, DOC, DOCX (tối đa 10MB)",
+    "coverLetter": "Thư giới thiệu",
+    "optional": "tùy chọn",
+    "coverLetterPlaceholder": "Giới thiệu ngắn gọn về bản thân và lý do bạn phù hợp với vị trí này...",
+    "submitApplication": "Gửi ứng tuyển",
+    "validation": {
+      "cvRequired": "Vui lòng chọn CV để ứng tuyển",
+      "cvFileType": "Vui lòng upload file PDF hoặc Word",
+      "cvFileSize": "File quá lớn. Vui lòng chọn file dưới 10MB",
+      "coverLetterMax": "Thư giới thiệu không được vượt quá 2000 ký tự"
+    },
+    "status": {
+      "pending": "Đang chờ",
+      "reviewing": "Đang xem xét",
+      "shortlisted": "Đã lọc",
+      "rejected": "Từ chối",
+      "hired": "Đã nhận"
+    }
+  },
+  "applications": {
+    "title": "Hồ sơ đã ứng tuyển",
+    "count": "Đã ứng tuyển",
+    "jobs": "công việc",
+    "empty": "Chưa có hồ sơ ứng tuyển nào",
+    "emptyDesc": "Bắt đầu tìm kiếm và ứng tuyển vào những công việc bạn quan tâm",
+    "browseJobs": "Tìm việc ngay",
+    "viewDetail": "Xem chi tiết",
+    "loginRequired": "Vui lòng đăng nhập",
+    "loginToView": "Đăng nhập để xem danh sách ứng tuyển của bạn",
+    "applySuccess": "Ứng tuyển thành công!",
+    "applyFailed": "Ứng tuyển thất bại",
+    "cvRequired": "Vui lòng chọn CV để ứng tuyển",
+    "submitting": "Đang gửi...",
+    "submitApplication": "Gửi ứng tuyển"
   },
   "pagination": {
     "previous": "Trước",
@@ -106,7 +142,8 @@
     "confirm": "Xác nhận",
     "cancel": "Hủy",
     "loading": "Đang xử lý...",
-    "deleting": "Đang xóa..."
+    "deleting": "Đang xóa...",
+    "submitting": "Đang gửi..."
   },
   "auth": {
     "login": "Đăng nhập",
