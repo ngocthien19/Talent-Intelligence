@@ -1,11 +1,12 @@
 import { useState, useEffect, useCallback } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useSearchParams, useLocation } from 'react-router-dom'
 import { useLanguage } from '~/hooks/useLanguage'
 import { jobApi } from '~/api/candidate/job.api'
 import { useDispatch } from 'react-redux'
 import { getFavorites } from '~/redux/slices/favorite.slice'
 import { syncFavorites } from '~/redux/slices/auth.slice'
 import { useAuth } from '~/hooks/useAuth'
+import { motion } from 'framer-motion'
 import SearchForm from '~/components/candidate/home/SearchForm'
 import JobFilters from '~/components/candidate/jobs/JobFilters'
 import JobList from '~/components/candidate/jobs/JobList'
@@ -25,6 +26,7 @@ const Jobs = () => {
   const dispatch = useDispatch()
   const { isAuthenticated } = useAuth()
   const [searchParams, setSearchParams] = useSearchParams()
+  const location = useLocation() // THÊM
 
   const [jobs, setJobs] = useState([])
   const [selectedJob, setSelectedJob] = useState(null)
@@ -86,7 +88,6 @@ const Jobs = () => {
   useEffect(() => {
     if (isAuthenticated) {
       dispatch(getFavorites()).then((result) => {
-        // Đồng bộ favoriteIds từ API vào auth slice
         if (result.payload?.data) {
           const ids = result.payload.data.map(fav => fav.job_id)
           dispatch(syncFavorites(ids))
@@ -110,7 +111,6 @@ const Jobs = () => {
         offset: (pagination.currentPage - 1) * pagination.limit
       }
 
-      // Remove undefined values
       Object.keys(params).forEach(key => {
         if (params[key] === undefined || params[key] === '') {
           delete params[key]
@@ -150,7 +150,6 @@ const Jobs = () => {
       ...prev,
       [key]: value
     }))
-    // Reset về page 1 khi filter thay đổi
     const newParams = new URLSearchParams(searchParams)
     if (value) {
       newParams.set(key, value)
@@ -210,14 +209,18 @@ const Jobs = () => {
   const handleSelectJob = (jobId) => {
     const job = jobs.find(j => j.id === jobId)
     setSelectedJob(job)
-    // On mobile, scroll to detail
     if (window.innerWidth < 1024) {
       document.getElementById('job-detail')?.scrollIntoView({ behavior: 'smooth' })
     }
   }
 
   return (
-    <div className="app-container animate-fade-in py-6">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+      className="app-container animate-fade-in py-6"
+    >
       {/* Search Form */}
       <div className="mb-6">
         <SearchForm onSearch={handleSearch} initialKeyword={activeFilters.keyword} />
@@ -314,7 +317,7 @@ const Jobs = () => {
           />
         </div>
       )}
-    </div>
+    </motion.div>
   )
 }
 

@@ -8,7 +8,7 @@ import {
   FaSignOutAlt,
   FaBars,
   FaTimes,
-  FaChartBar,
+  FaBookmark,
   FaBell,
   FaMoon,
   FaSun,
@@ -276,12 +276,12 @@ const Header = () => {
                       {t('header.profile') || 'Hồ sơ của tôi'}
                     </Link>
                     <Link
-                      to="/dashboard"
+                      to="/favorites"
                       className="flex items-center gap-3 px-4 py-2.5 text-sm text-brand-text dark:text-gray-300 hover:bg-brand-light dark:hover:bg-gray-800 hover:text-brand-primary dark:hover:text-white transition-all duration-200 group cursor-pointer"
                       onClick={() => setIsDropdownOpen(false)}
                     >
-                      <FaChartBar size={16} className="text-brand-text/60 dark:text-gray-500 group-hover:text-brand-primary transition-colors" />
-                      {t('header.dashboard') || 'Dashboard'}
+                      <FaBookmark size={16} className="text-brand-text/60 dark:text-gray-500 group-hover:text-brand-primary transition-colors" />
+                      {t('header.favorites') || 'Công việc đã lưu'}
                     </Link>
                     <div className="h-px bg-brand-light dark:bg-gray-700 my-1 mx-2"></div>
                     <button

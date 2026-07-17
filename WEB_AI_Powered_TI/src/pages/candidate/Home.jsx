@@ -1,12 +1,22 @@
 import { useState, useEffect } from 'react'
 import { useLanguage } from '~/hooks/useLanguage'
 import { jobApi } from '~/api/candidate/job.api'
+import { motion } from 'framer-motion'
 import HeroSection from '~/components/candidate/home/HeroSection'
 import ActionCards from '~/components/candidate/home/ActionCards'
 import FeaturedJobs from '~/components/candidate/home/FeaturedJobs'
 import CTASection from '~/components/candidate/home/CTASection'
 import { formatSalary, getDaysAgo } from '~/utils/format'
 import { getExperienceLabel } from '~/utils/constant'
+
+const fadeInUp = {
+  hidden: { opacity: 0, y: 40 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }
+  }
+}
 
 const Home = () => {
   const { t } = useLanguage()
@@ -38,7 +48,12 @@ const Home = () => {
   }, [])
 
   return (
-    <div className="animate-fade-in">
+    <motion.div
+      initial="hidden"
+      animate="visible"
+      variants={fadeInUp}
+      className="animate-fade-in"
+    >
       <HeroSection jobCount={jobCount} />
       <ActionCards />
       <FeaturedJobs
@@ -49,7 +64,7 @@ const Home = () => {
         getDaysAgo={getDaysAgo}
       />
       <CTASection />
-    </div>
+    </motion.div>
   )
 }
 

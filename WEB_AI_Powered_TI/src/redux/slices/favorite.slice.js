@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import { favoriteApi } from '~/api/candidate/favorite.api'
+import { syncFavorites } from './auth.slice'
 
 // Async thunks
 export const toggleFavorite = createAsyncThunk(
@@ -19,7 +20,7 @@ export const getFavorites = createAsyncThunk(
   async (params, { rejectWithValue }) => {
     try {
       const response = await favoriteApi.getFavorites(params)
-      return response.data
+      return response
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Lấy danh sách thất bại')
     }

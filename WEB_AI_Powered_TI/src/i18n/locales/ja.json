@@ -16,7 +16,8 @@
     "darkMode": "ダークモード",
     "lightMode": "ライトモード",
     "selectLanguage": "言語を選択",
-    "appearance": "外観"
+    "appearance": "外観",
+    "favorites": "保存した求人"
   },
   "footer": {
     "brandDesc": "AIを活用したスマートな人材評価・育成プラットフォーム。採用担当者と潜在的な候補者を結びつけます。",
@@ -101,7 +102,11 @@
   "common": {
     "addToFavorites": "お気に入りに追加",
     "removeFromFavorites": "お気に入りから削除",
-    "loginRequired": "保存するにはログインしてください"
+    "loginRequired": "保存するにはログインしてください",
+    "confirm": "確認",
+    "cancel": "キャンセル",
+    "loading": "処理中...",
+    "deleting": "削除中..."
   },
   "auth": {
     "login": "ログイン",
@@ -166,5 +171,21 @@
     "confirmPasswordRequired": "パスワードを確認してください",
     "forgotPasswordSubtitle": "メールアドレスを入力してパスワードリセット用のOTPを受け取る",
     "resetPasswordSentSubtitle": "メールを確認してパスワードをリセットしてください"
+  },
+  "favorites": {
+    "title": "保存した求人",
+    "count": "保存済み",
+    "jobs": "求人",
+    "empty": "保存した求人はまだありません",
+    "emptyDesc": "興味のある求人を検索して保存してください",
+    "browseJobs": "求人を探す",
+    "clearAll": "すべて削除",
+    "loginRequired": "ログインしてください",
+    "loginToView": "保存した求人を表示するにはログインしてください",
+    "confirmTitle": "保存した求人をすべて削除",
+    "confirmMessage": "保存した求人をすべて削除してもよろしいですか？この操作は元に戻せません。",
+    "confirmDelete": "すべて削除",
+    "cleared": "保存した求人をすべて削除しました",
+    "removed": "お気に入りから削除しました"
   }
 }
