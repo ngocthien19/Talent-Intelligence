@@ -99,10 +99,9 @@ const authController = {
     // Passport sẽ redirect đến Google
   },
 
-  //  GOOGLE CALLBACK
+  // GOOGLE CALLBACK
   googleCallback: (req, res) => {
     try {
-    // User đã được passport xác thực và lưu trong req.user
       const user = req.user
       const tokens = req.tokens || {
         accessToken: req.accessToken,
@@ -127,8 +126,23 @@ const authController = {
         maxAge: ms(env.JWT_REFRESH_EXPIRE)
       })
 
+      const userData = {
+        id: user.id,
+        fullname: user.fullname,
+        email: user.email,
+        phone: user.phone || null,
+        address: user.address || null,
+        roleId: user.roleId || user.role_id,
+        roleName: user.roleName || user.role_name,
+        avatar: user.avatar || null,
+        isActive: user.is_active,
+        companyId: user.companyId || user.company_id || null
+      }
+
       const frontendUrl = env.FRONTEND_URL || 'http://localhost:5173'
-      res.redirect(`${frontendUrl}/`)
+
+      const redirectUrl = `${frontendUrl}/?google_success=true&accessToken=${tokens.accessToken}&user=${encodeURIComponent(JSON.stringify(userData))}`
+      res.redirect(redirectUrl)
 
     } catch (error) {
       const frontendUrl = env.FRONTEND_URL || 'http://localhost:5173'
