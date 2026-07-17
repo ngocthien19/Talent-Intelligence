@@ -129,7 +129,20 @@
     "applyFailed": "Application failed",
     "cvRequired": "Please select your CV to apply",
     "submitting": "Submitting...",
-    "submitApplication": "Submit Application"
+    "submitApplication": "Submit Application",
+    "noCV": "No CV uploaded",
+    "view": "View",
+    "viewCV": "View CV in new tab",
+    "back": "Back to list",
+    "cv": "Submitted CV",
+    "coverLetter": "Cover Letter",
+    "download": "Download",
+    "scores": "Scores",
+    "overall": "Overall",
+    "skillsMatch": "Skills",
+    "cultureFit": "Culture",
+    "retention": "Retention",
+    "detailTitle": "Application Details"
   },
   "pagination": {
     "previous": "Previous",

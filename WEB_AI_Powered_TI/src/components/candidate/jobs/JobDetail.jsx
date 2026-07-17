@@ -388,17 +388,10 @@ const JobDetail = ({ job, onBack, formatSalary, getExperienceLabel }) => {
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            onClick={() => setShowApplyModal(true)} // THÊM ONCLICK
+            onClick={() => setShowApplyModal(true)}
             className="flex-1 px-6 py-3 bg-gradient-brand text-white rounded-xl font-medium hover:shadow-glow transition-all duration-300 cursor-pointer"
           >
             {t('jobs.applyNow') || 'Ứng tuyển ngay'}
-          </motion.button>
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            className="px-6 py-3 border border-brand-primary dark:border-brand-primary text-brand-primary dark:text-brand-primary hover:bg-brand-primary dark:hover:bg-brand-primary hover:!text-white dark:hover:text-white rounded-xl font-medium transition-all duration-300 cursor-pointer"
-          >
-            {t('jobs.saveJob') || 'Lưu việc làm'}
           </motion.button>
         </motion.div>
       </motion.div>

@@ -129,7 +129,20 @@
     "applyFailed": "応募に失敗しました",
     "cvRequired": "応募するにはCVを選択してください",
     "submitting": "送信中...",
-    "submitApplication": "応募を送信"
+    "submitApplication": "応募を送信",
+    "noCV": "CVがありません",
+    "view": "表示",
+    "viewCV": "新しいタブでCVを表示",
+    "back": "一覧に戻る",
+    "cv": "提出したCV",
+    "coverLetter": "カバーレター",
+    "download": "ダウンロード",
+    "scores": "スコア",
+    "overall": "総合",
+    "skillsMatch": "スキル",
+    "cultureFit": "カルチャー",
+    "retention": "定着性",
+    "detailTitle": "応募詳細"
   },
   "pagination": {
     "previous": "前へ",

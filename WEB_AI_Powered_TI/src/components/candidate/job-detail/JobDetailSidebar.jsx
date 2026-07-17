@@ -120,13 +120,6 @@ const JobDetailSidebar = ({ job, getExperienceLabel }) => {
             >
               {t('jobs.applyNow') || 'Ứng tuyển ngay'}
             </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.02, y: -2 }}
-              whileTap={{ scale: 0.98 }}
-              className="w-full px-6 py-3 border border-brand-primary text-brand-primary rounded-xl font-medium transition-all duration-300 cursor-pointer hover:bg-brand-primary hover:!text-white hover:shadow-glow"
-            >
-              {t('jobs.saveJob') || 'Lưu việc làm'}
-            </motion.button>
           </motion.div>
         </div>
       </motion.div>

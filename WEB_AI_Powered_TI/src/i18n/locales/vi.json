@@ -129,7 +129,20 @@
     "applyFailed": "Ứng tuyển thất bại",
     "cvRequired": "Vui lòng chọn CV để ứng tuyển",
     "submitting": "Đang gửi...",
-    "submitApplication": "Gửi ứng tuyển"
+    "submitApplication": "Gửi ứng tuyển",
+    "noCV": "Chưa có CV",
+    "view": "Xem",
+    "viewCV": "Xem CV trong tab mới",
+    "back": "Quay lại danh sách",
+    "cv": "CV đã gửi",
+    "coverLetter": "Thư giới thiệu",
+    "download": "Tải xuống",
+    "scores": "Điểm đánh giá",
+    "overall": "Tổng quan",
+    "skillsMatch": "Kỹ năng",
+    "cultureFit": "Văn hóa",
+    "retention": "Gắn bó",
+    "detailTitle": "Xem chi tiết hồ sơ"
   },
   "pagination": {
     "previous": "Trước",
