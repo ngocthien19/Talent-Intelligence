@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import {
   FaBuilding,
@@ -23,18 +23,26 @@ import {
   TooltipTrigger
 } from '~/components/ui/tooltip'
 import { Link } from 'react-router-dom'
+import { syncFavorites } from '~/redux/slices/auth.slice'
+
 
 const JobDetail = ({ job, onBack, formatSalary, getExperienceLabel }) => {
   const dispatch = useDispatch()
   const { isAuthenticated } = useAuth()
   const { t } = useLanguage()
   const { favoriteIds, isLoading } = useSelector((state) => state.favorite)
-  const [isFavorite, setIsFavorite] = useState(favoriteIds.includes(job?.id))
+  const [isFavorite, setIsFavorite] = useState(false)
   const [isToggling, setIsToggling] = useState(false)
+
+  useEffect(() => {
+    if (job?.id && favoriteIds) {
+      setIsFavorite(favoriteIds.includes(job.id))
+    }
+  }, [favoriteIds, job?.id])
 
   const handleToggleFavorite = async () => {
     if (!isAuthenticated) {
-      toast.warning(t('common.loginRequired') || 'Vui lòng đăng nhập để lưu việc làm')
+      toast.warning('Vui lòng đăng nhập để lưu việc làm')
       return
     }
 
@@ -43,7 +51,16 @@ const JobDetail = ({ job, onBack, formatSalary, getExperienceLabel }) => {
     setIsToggling(true)
     try {
       const result = await dispatch(toggleFavorite(job.id)).unwrap()
-      setIsFavorite(result.action === 'added')
+      // Cập nhật local state
+      const newIsFavorite = result.action === 'added'
+      setIsFavorite(newIsFavorite)
+
+      // Đồng bộ với auth slice
+      const updatedFavorites = result.action === 'added'
+        ? [...favoriteIds, job.id]
+        : favoriteIds.filter(id => id !== job.id)
+      dispatch(syncFavorites(updatedFavorites))
+
       toast.success(result.action === 'added' ? 'Đã thêm vào yêu thích' : 'Đã xóa khỏi yêu thích')
     } catch (error) {
       toast.error(error || 'Thao tác thất bại')

@@ -12,23 +12,54 @@ import { useLanguage } from '~/hooks/useLanguage'
 import { formatSalary } from '~/utils/format'
 import { toast } from 'react-toastify'
 import { useAuth } from '~/hooks/useAuth'
+import { useDispatch, useSelector } from 'react-redux'
+import { toggleFavorite } from '~/redux/slices/favorite.slice'
+import { syncFavorites } from '~/redux/slices/auth.slice'
+import { useState, useEffect } from 'react'
 
 const JobDetailContent = ({
   job,
-  isFavorite,
-  isToggling,
-  onToggleFavorite,
   getExperienceLabel
 }) => {
   const { t } = useLanguage()
   const { isAuthenticated } = useAuth()
+  const dispatch = useDispatch()
+  const { favoriteIds, isLoading } = useSelector((state) => state.favorite)
+  const [isFavorite, setIsFavorite] = useState(false)
+  const [isToggling, setIsToggling] = useState(false)
 
-  const handleToggleFavorite = () => {
+  useEffect(() => {
+    if (job?.id && favoriteIds) {
+      setIsFavorite(favoriteIds.includes(job.id))
+    }
+  }, [favoriteIds, job?.id])
+
+  const handleToggleFavorite = async () => {
     if (!isAuthenticated) {
       toast.warning('Vui lòng đăng nhập để lưu việc làm')
       return
     }
-    onToggleFavorite()
+
+    if (isToggling) return
+
+    setIsToggling(true)
+    try {
+      const result = await dispatch(toggleFavorite(job.id)).unwrap()
+      const newIsFavorite = result.action === 'added'
+      setIsFavorite(newIsFavorite)
+
+      // Đồng bộ với auth slice
+      const updatedFavorites = result.action === 'added'
+        ? [...favoriteIds, job.id]
+        : favoriteIds.filter(id => id !== job.id)
+      dispatch(syncFavorites(updatedFavorites))
+
+      toast.success(result.action === 'added' ? 'Đã thêm vào yêu thích' : 'Đã xóa khỏi yêu thích')
+    } catch (error) {
+      toast.error(error || 'Thao tác thất bại')
+    } finally {
+      setIsToggling(false)
+    }
   }
 
   // Format text with line breaks
@@ -81,7 +112,7 @@ const JobDetailContent = ({
           </div>
           <button
             onClick={handleToggleFavorite}
-            disabled={isToggling}
+            disabled={isToggling || isLoading}
             className="p-2 rounded-lg hover:bg-brand-light dark:hover:bg-gray-700 transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed hover:scale-110"
             aria-label={isFavorite ? 'Bỏ yêu thích' : 'Thêm yêu thích'}
           >

@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useLanguage } from '~/hooks/useLanguage'
 import { jobApi } from '~/api/candidate/job.api'
-import { useDispatch } from 'react-redux'
-import { toggleFavorite } from '~/redux/slices/favorite.slice'
+import { useDispatch, useSelector } from 'react-redux'
+import { toggleFavorite, getFavorites } from '~/redux/slices/favorite.slice'
 import { useAuth } from '~/hooks/useAuth'
 import { FaBriefcase, FaArrowLeft, FaArrowRight } from 'react-icons/fa'
 import { toast } from 'react-toastify'
@@ -20,6 +20,7 @@ import {
 import {
   getExperienceLabel
 } from '~/utils/constant'
+import { syncFavorites } from '~/redux/slices/auth.slice'
 
 const JobDetailPage = () => {
   const { id } = useParams()
@@ -27,17 +28,28 @@ const JobDetailPage = () => {
   const dispatch = useDispatch()
   const { t } = useLanguage()
   const { isAuthenticated } = useAuth()
+  const { favoriteIds } = useSelector((state) => state.favorite)
   const [job, setJob] = useState(null)
   const [relatedJobs, setRelatedJobs] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [isRelatedLoading, setIsRelatedLoading] = useState(true)
-  const [isFavorite, setIsFavorite] = useState(false)
-  const [isToggling, setIsToggling] = useState(false)
 
   useEffect(() => {
     fetchJobDetail()
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }, [id])
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      dispatch(getFavorites()).then((result) => {
+        // Đồng bộ favoriteIds từ API vào auth slice
+        if (result.payload?.data) {
+          const ids = result.payload.data.map(fav => fav.job_id)
+          dispatch(syncFavorites(ids))
+        }
+      })
+    }
+  }, [dispatch, isAuthenticated])
 
   const fetchJobDetail = async () => {
     setIsLoading(true)
@@ -66,26 +78,6 @@ const JobDetailPage = () => {
       console.error('Fetch related jobs error:', error)
     } finally {
       setIsRelatedLoading(false)
-    }
-  }
-
-  const handleToggleFavorite = async () => {
-    if (!isAuthenticated) {
-      toast.warning('Vui lòng đăng nhập để lưu việc làm')
-      return
-    }
-
-    if (isToggling) return
-
-    setIsToggling(true)
-    try {
-      const result = await dispatch(toggleFavorite(job.id)).unwrap()
-      setIsFavorite(result.action === 'added')
-      toast.success(result.action === 'added' ? 'Đã thêm vào yêu thích' : 'Đã xóa khỏi yêu thích')
-    } catch (error) {
-      toast.error(error || 'Thao tác thất bại')
-    } finally {
-      setIsToggling(false)
     }
   }
 
@@ -149,9 +141,6 @@ const JobDetailPage = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <JobDetailContent
             job={job}
-            isFavorite={isFavorite}
-            isToggling={isToggling}
-            onToggleFavorite={handleToggleFavorite}
             getExperienceLabel={getExperienceLabel}
           />
 
