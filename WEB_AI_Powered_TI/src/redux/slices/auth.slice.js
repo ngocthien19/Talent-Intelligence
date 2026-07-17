@@ -7,7 +7,7 @@ export const login = createAsyncThunk(
   async (loginData, { rejectWithValue }) => {
     try {
       const response = await authApi.login(loginData)
-      return response // { user, accessToken, redirectUrl }
+      return response
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Đăng nhập thất bại')
     }
@@ -99,11 +99,6 @@ export const getProfile = createAsyncThunk(
     try {
       const response = await authApi.getProfile()
       const userData = response.data || response
-
-      if (userData) {
-        localStorage.setItem('user', JSON.stringify(userData))
-      }
-
       return userData
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Lấy thông tin thất bại')
@@ -124,6 +119,30 @@ export const refreshToken = createAsyncThunk(
   }
 )
 
+// Khởi tạo favoriteIds từ localStorage
+const getInitialFavorites = () => {
+  try {
+    const persistRoot = localStorage.getItem('persist:root')
+    if (persistRoot) {
+      const parsed = JSON.parse(persistRoot)
+      if (parsed.auth) {
+        const auth = JSON.parse(parsed.auth)
+        if (auth.favoriteIds) {
+          return auth.favoriteIds
+        }
+      }
+    }
+    const user = localStorage.getItem('user')
+    if (user) {
+      const parsed = JSON.parse(user)
+      return parsed.favoriteIds || []
+    }
+  } catch (e) {
+    return []
+  }
+  return []
+}
+
 const initialState = {
   user: null,
   accessToken: null,
@@ -131,7 +150,7 @@ const initialState = {
   isAuthenticated: false,
   isLoading: false,
   error: null,
-  favoriteIds: []
+  favoriteIds: getInitialFavorites()
 }
 
 const authSlice = createSlice({
@@ -144,6 +163,9 @@ const authSlice = createSlice({
     setUser: (state, action) => {
       state.user = action.payload
       state.isAuthenticated = true
+      if (action.payload?.favoriteIds) {
+        state.favoriteIds = action.payload.favoriteIds
+      }
     },
     clearUser: (state) => {
       state.user = null
@@ -171,6 +193,12 @@ const authSlice = createSlice({
     },
     updateAccessToken: (state, action) => {
       state.accessToken = action.payload
+    },
+    syncFavorites: (state, action) => {
+      state.favoriteIds = action.payload || []
+      if (state.user) {
+        state.user.favoriteIds = action.payload || []
+      }
     }
   },
   extraReducers: (builder) => {
@@ -186,10 +214,6 @@ const authSlice = createSlice({
         state.user = action.payload.user
         state.accessToken = action.payload.accessToken
         state.error = null
-        if (action.payload?.user) {
-          localStorage.setItem('user', JSON.stringify(action.payload.user))
-          localStorage.setItem('accessToken', action.payload.accessToken)
-        }
       })
       .addCase(login.rejected, (state, action) => {
         state.isLoading = false
@@ -271,8 +295,6 @@ const authSlice = createSlice({
         state.isAuthenticated = false
         state.favoriteIds = []
         state.error = null
-        localStorage.removeItem('user')
-        localStorage.removeItem('accessToken')
       })
       .addCase(logout.rejected, (state) => {
         state.user = null
@@ -280,8 +302,6 @@ const authSlice = createSlice({
         state.refreshToken = null
         state.isAuthenticated = false
         state.favoriteIds = []
-        localStorage.removeItem('user')
-        localStorage.removeItem('accessToken')
       })
       // Get Profile
       .addCase(getProfile.pending, (state) => {
@@ -291,11 +311,16 @@ const authSlice = createSlice({
         state.isLoading = false
         state.user = action.payload
         state.isAuthenticated = true
+        if (action.payload?.favoriteIds) {
+          state.favoriteIds = action.payload.favoriteIds
+        }
+        localStorage.setItem('user', JSON.stringify(action.payload))
       })
       .addCase(getProfile.rejected, (state) => {
         state.isLoading = false
         state.isAuthenticated = false
         state.user = null
+        state.favoriteIds = []
       })
       // Refresh Token
       .addCase(refreshToken.fulfilled, (state, action) => {
@@ -317,7 +342,8 @@ export const {
   addToFavorites,
   removeFromFavorites,
   updateUserFields,
-  updateAccessToken
+  updateAccessToken,
+  syncFavorites
 } = authSlice.actions
 
 export default authSlice.reducer

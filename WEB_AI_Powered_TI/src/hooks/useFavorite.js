@@ -1,57 +1,38 @@
-import { useEffect } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
-import {
-  getFavorites,
-  toggleFavorite,
-  checkFavorite,
-  clearFavorites,
-  updateFavoriteStatus
-} from '~/redux/slices/favorite.slice'
+import { useAuth } from './useAuth'
+import { useDispatch } from 'react-redux'
+import { getFavorites } from '~/redux/slices/favorite.slice'
 
 export const useFavorite = () => {
   const dispatch = useDispatch()
-  const { favorites, favoriteIds, isLoading, error, total, totalPages } = useSelector(
-    (state) => state.favorite
-  )
+  const {
+    favoriteIds,
+    addFavorite,
+    removeFavorite,
+    isFavorite,
+    syncFavoriteIds,
+    setFavoritesFromApi
+  } = useAuth()
 
-  const fetchFavorites = async (params = {}) => {
-    await dispatch(getFavorites(params)).unwrap()
-  }
-
-  const toggle = async (jobId) => {
-    const result = await dispatch(toggleFavorite(jobId)).unwrap()
-    return result
-  }
-
-  const check = async (jobId) => {
-    const result = await dispatch(checkFavorite(jobId)).unwrap()
-    return result.isFavorite
-  }
-
-  const clear = async () => {
-    await dispatch(clearFavorites()).unwrap()
-  }
-
-  const isFavorite = (jobId) => {
-    return favoriteIds.includes(jobId)
-  }
-
-  const updateStatus = (jobId, isFav) => {
-    dispatch(updateFavoriteStatus({ jobId, isFavorite: isFav }))
+  // Hàm fetch favorites từ API và đồng bộ
+  const fetchAndSyncFavorites = async () => {
+    try {
+      const result = await dispatch(getFavorites()).unwrap()
+      const ids = (result.data || []).map(fav => fav.job_id)
+      setFavoritesFromApi(ids)
+      return ids
+    } catch (error) {
+      console.error('Fetch favorites error:', error)
+      return []
+    }
   }
 
   return {
-    favorites,
     favoriteIds,
-    isLoading,
-    error,
-    total,
-    totalPages,
-    fetchFavorites,
-    toggle,
-    check,
-    clear,
+    addFavorite,
+    removeFavorite,
     isFavorite,
-    updateStatus
+    syncFavoriteIds,
+    setFavoritesFromApi,
+    fetchAndSyncFavorites
   }
 }

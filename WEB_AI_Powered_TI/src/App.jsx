@@ -1,7 +1,8 @@
 import { useEffect } from 'react'
 import { Routes, Route } from 'react-router-dom'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux' // THÊM useSelector
 import { getProfile } from '~/redux/slices/auth.slice'
+import { updateFavoriteStatus } from '~/redux/slices/favorite.slice' // THÊM IMPORT
 import CandidateLayout from '~/layouts/candidate/CandidateLayout'
 import Home from '~/pages/candidate/Home'
 import Jobs from '~/pages/candidate/Jobs'
@@ -16,14 +17,24 @@ import LanguageInitializer from '~/components/common/LanguageInitializer'
 
 function App() {
   const dispatch = useDispatch()
+  const { favoriteIds } = useSelector((state) => state.auth)
+  const { favoriteIds: favIds } = useSelector((state) => state.favorite)
 
   useEffect(() => {
-    // Luôn thử lấy profile khi app khởi động.
-    // Nếu có cookie accessToken hợp lệ -> BE trả về user -> Redux tự set isAuthenticated = true
-    // Nếu không có / hết hạn -> catch lỗi, coi như chưa đăng nhập, không cần làm gì thêm
     dispatch(getProfile())
   }, [dispatch])
 
+  useEffect(() => {
+    if (favoriteIds && favoriteIds.length > 0 && favIds.length === 0) {
+      favoriteIds.forEach(jobId => {
+        dispatch(updateFavoriteStatus({ jobId, isFavorite: true }))
+      })
+    }
+    // Nếu favorite slice có dữ liệu mà auth chưa có (trường hợp login sau)
+    if (favIds && favIds.length > 0 && favoriteIds.length === 0) {
+      // Cần sync ngược lại auth slice
+    }
+  }, [favoriteIds, favIds, dispatch])
 
   return (
     <>

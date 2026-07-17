@@ -4,6 +4,7 @@ import { useLanguage } from '~/hooks/useLanguage'
 import { jobApi } from '~/api/candidate/job.api'
 import { useDispatch } from 'react-redux'
 import { getFavorites } from '~/redux/slices/favorite.slice'
+import { syncFavorites } from '~/redux/slices/auth.slice'
 import { useAuth } from '~/hooks/useAuth'
 import SearchForm from '~/components/candidate/home/SearchForm'
 import JobFilters from '~/components/candidate/jobs/JobFilters'
@@ -84,7 +85,13 @@ const Jobs = () => {
   // Fetch favorites only when authenticated
   useEffect(() => {
     if (isAuthenticated) {
-      dispatch(getFavorites())
+      dispatch(getFavorites()).then((result) => {
+        // Đồng bộ favoriteIds từ API vào auth slice
+        if (result.payload?.data) {
+          const ids = result.payload.data.map(fav => fav.job_id)
+          dispatch(syncFavorites(ids))
+        }
+      })
     }
   }, [dispatch, isAuthenticated])
 
@@ -193,7 +200,10 @@ const Jobs = () => {
     const newParams = new URLSearchParams(searchParams)
     newParams.set('page', String(page))
     setSearchParams(newParams)
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+
+    setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }, 100)
   }
 
   // Handle select job

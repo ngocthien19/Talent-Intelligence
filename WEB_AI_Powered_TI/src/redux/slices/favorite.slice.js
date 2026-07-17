@@ -84,7 +84,6 @@ const favoriteSlice = createSlice({
       state.total = 0
       state.totalPages = 0
     },
-    // Cập nhật trạng thái yêu thích của một job (dùng cho JobCard)
     updateFavoriteStatus: (state, action) => {
       const { jobId, isFavorite } = action.payload
       if (isFavorite) {
@@ -93,7 +92,6 @@ const favoriteSlice = createSlice({
         }
       } else {
         state.favoriteIds = state.favoriteIds.filter(id => id !== jobId)
-        // Cũng xóa khỏi danh sách favorites nếu có
         state.favorites = state.favorites.filter(fav => fav.job_id !== jobId)
       }
     }
@@ -108,6 +106,7 @@ const favoriteSlice = createSlice({
       .addCase(toggleFavorite.fulfilled, (state, action) => {
         state.isLoading = false
         const { jobId, action: actionType } = action.payload
+
         if (actionType === 'added') {
           if (!state.favoriteIds.includes(jobId)) {
             state.favoriteIds.push(jobId)

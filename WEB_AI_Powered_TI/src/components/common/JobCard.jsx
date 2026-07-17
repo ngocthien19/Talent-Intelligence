@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { useDispatch, useSelector } from 'react-redux'
 import {
   FaBuilding,
   FaMapMarkerAlt,
@@ -10,12 +9,13 @@ import {
   FaRegBookmark,
   FaTag
 } from 'react-icons/fa'
-import { toggleFavorite } from '~/redux/slices/favorite.slice'
 import { toast } from 'react-toastify'
 import { useAuth } from '~/hooks/useAuth'
 import { useLanguage } from '~/hooks/useLanguage'
 import { formatSalary, getDaysAgo } from '~/utils/format'
 import { getExperienceLabel } from '~/utils/constant'
+import { useDispatch } from 'react-redux'
+import { toggleFavorite } from '~/redux/slices/favorite.slice'
 import {
   Tooltip,
   TooltipContent,
@@ -30,16 +30,17 @@ const JobCard = ({
   showCategory = false,
   variant = 'default'
 }) => {
-  const dispatch = useDispatch()
-  const { isAuthenticated } = useAuth()
   const { t } = useLanguage()
-  const { favoriteIds, isLoading } = useSelector((state) => state.favorite)
+  const dispatch = useDispatch() // THÊM
+  const { isAuthenticated, favoriteIds, addFavorite, removeFavorite, isFavorite: checkFavorite } = useAuth()
   const [isFavorite, setIsFavorite] = useState(false)
   const [isToggling, setIsToggling] = useState(false)
 
   useEffect(() => {
-    setIsFavorite(favoriteIds.includes(job.id))
-  }, [favoriteIds, job.id])
+    if (job?.id && checkFavorite) {
+      setIsFavorite(checkFavorite(job.id))
+    }
+  }, [favoriteIds, job?.id, checkFavorite])
 
   const handleToggleFavorite = async (e) => {
     e.preventDefault()
@@ -54,9 +55,18 @@ const JobCard = ({
 
     setIsToggling(true)
     try {
+      // SỬ DỤNG DISPATCH THAY VÌ GỌI API TRỰC TIẾP
       const result = await dispatch(toggleFavorite(job.id)).unwrap()
-      setIsFavorite(result.action === 'added')
-      toast.success(result.action === 'added' ? 'Đã thêm vào yêu thích' : 'Đã xóa khỏi yêu thích')
+
+      if (result.action === 'added') {
+        addFavorite(job.id)
+        setIsFavorite(true)
+        toast.success('Đã thêm vào yêu thích')
+      } else {
+        removeFavorite(job.id)
+        setIsFavorite(false)
+        toast.success('Đã xóa khỏi yêu thích')
+      }
     } catch (error) {
       toast.error(error || 'Thao tác thất bại')
     } finally {
@@ -134,9 +144,9 @@ const JobCard = ({
               <span className="p-1.5 rounded-lg text-brand-text/40 dark:text-gray-500 hover:text-brand-primary dark:hover:text-brand-primary hover:bg-brand-light/50 dark:hover:bg-gray-700 transition-all duration-300 cursor-pointer hover:scale-110 flex-shrink-0 inline-flex items-center justify-center">
                 <button
                   onClick={handleToggleFavorite}
-                  disabled={isToggling || isLoading}
+                  disabled={isToggling}
                   className="bg-transparent border-none p-0 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-                  aria-label={isFavorite ? t('common.removeFromFavorites') : t('common.addToFavorites')}
+                  aria-label={isFavorite ? 'Xóa khỏi yêu thích' : 'Thêm vào yêu thích'}
                 >
                   {isFavorite ? (
                     <FaBookmark size={18} className="text-brand-primary dark:text-brand-primary" />
@@ -149,8 +159,8 @@ const JobCard = ({
             <TooltipContent>
               <p>
                 {isFavorite
-                  ? t('common.removeFromFavorites') || 'Xóa khỏi yêu thích'
-                  : t('common.addToFavorites') || 'Thêm vào yêu thích'
+                  ? 'Xóa khỏi yêu thích'
+                  : 'Thêm vào yêu thích'
                 }
               </p>
             </TooltipContent>

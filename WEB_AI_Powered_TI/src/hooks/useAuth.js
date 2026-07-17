@@ -10,7 +10,11 @@ import {
   clearError,
   updateUserFields,
   forgotPassword,
-  resetPassword
+  resetPassword,
+  setFavorites,
+  addToFavorites,
+  removeFromFavorites,
+  syncFavorites
 } from '~/redux/slices/auth.slice'
 
 export const useAuth = () => {
@@ -24,7 +28,7 @@ export const useAuth = () => {
     isAuthenticated,
     isLoading,
     error,
-    favoriteIds
+    favoriteIds = []
   } = authState
 
   // ĐĂNG NHẬP
@@ -127,6 +131,47 @@ export const useAuth = () => {
     }
   }
 
+  const setFavoritesList = (ids) => {
+    dispatch(setFavorites(ids || []))
+  }
+
+  const syncFavoriteIds = (ids) => {
+    dispatch(syncFavorites(ids || []))
+  }
+
+  const addFavorite = (jobId) => {
+    const newFavorites = [...favoriteIds, jobId]
+    dispatch(addToFavorites(jobId))
+    dispatch(syncFavorites(newFavorites))
+    if (user) {
+      const updatedUser = { ...user, favoriteIds: newFavorites }
+      localStorage.setItem('user', JSON.stringify(updatedUser))
+    }
+  }
+
+  const removeFavorite = (jobId) => {
+    const newFavorites = favoriteIds.filter(id => id !== jobId)
+    dispatch(removeFromFavorites(jobId))
+    dispatch(syncFavorites(newFavorites))
+    if (user) {
+      const updatedUser = { ...user, favoriteIds: newFavorites }
+      localStorage.setItem('user', JSON.stringify(updatedUser))
+    }
+  }
+
+  const setFavoritesFromApi = (ids) => {
+    dispatch(syncFavorites(ids || []))
+    if (user) {
+      const updatedUser = { ...user, favoriteIds: ids || [] }
+      localStorage.setItem('user', JSON.stringify(updatedUser))
+    }
+  }
+
+  const isFavorite = (jobId) => {
+    if (!favoriteIds) return false
+    return favoriteIds.includes(jobId)
+  }
+
   // XÓA LỖI
   const clearAuthError = () => {
     dispatch(clearError())
@@ -138,7 +183,7 @@ export const useAuth = () => {
     isAuthenticated,
     isLoading,
     error,
-    favoriteIds,
+    favoriteIds: favoriteIds || [],
     login: handleLogin,
     register: handleRegister,
     verifyOtp: handleVerifyOtp,
@@ -148,6 +193,13 @@ export const useAuth = () => {
     logout: handleLogout,
     fetchProfile,
     updateProfile,
-    clearAuthError
+    clearAuthError,
+    setFavoritesList,
+    addFavorite,
+    removeFavorite,
+    isFavorite,
+    syncFavoriteIds, // Thêm hàm mới
+    setFavoritesFromApi // Thêm hàm mới
   }
+
 }

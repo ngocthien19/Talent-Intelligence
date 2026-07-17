@@ -24,8 +24,8 @@ const isAuthenticated = () => {
     if (!persistRoot) return false
 
     const parsed = JSON.parse(persistRoot)
-    const user = parsed.user ? JSON.parse(parsed.user) : null
-    return user?.isAuthenticated || false
+    const auth = parsed.auth ? JSON.parse(parsed.auth) : null
+    return auth?.isAuthenticated || false
   } catch (e) {
     return false
   }
