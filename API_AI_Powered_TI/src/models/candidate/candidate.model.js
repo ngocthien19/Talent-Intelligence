@@ -40,11 +40,14 @@ const candidateModel = {
     return result.rows[0]
   },
 
-  // Lấy danh sách ứng tuyển của candidate
+  // Lấy danh sách ứng tuyển của candidate - THÊM company_logo
   findByUserId: async (userId) => {
     const result = await pool.query(
-      `SELECT c.*, jd.title as job_title, jd.location as job_location,
-              comp.name as company_name
+      `SELECT c.*, 
+              jd.title as job_title, 
+              jd.location as job_location,
+              comp.name as company_name,
+              comp.logo as company_logo
        FROM candidates c
        LEFT JOIN job_descriptions jd ON c.jd_id = jd.id
        LEFT JOIN companies comp ON c.company_id = comp.id
@@ -66,12 +69,16 @@ const candidateModel = {
     return result.rows[0]
   },
 
-  // Lấy chi tiết ứng tuyển
+  // Lấy chi tiết ứng tuyển - THÊM company_logo
   findById: async (id, userId) => {
     const result = await pool.query(
-      `SELECT c.*, jd.title as job_title, jd.description as job_description,
-              jd.location as job_location, jd.required_skills,
-              comp.name as company_name, comp.logo as company_logo,
+      `SELECT c.*, 
+              jd.title as job_title, 
+              jd.description as job_description,
+              jd.location as job_location, 
+              jd.required_skills,
+              comp.name as company_name, 
+              comp.logo as company_logo,
               comp.culture_description as company_culture
        FROM candidates c
        LEFT JOIN job_descriptions jd ON c.jd_id = jd.id
@@ -82,12 +89,16 @@ const candidateModel = {
     return result.rows[0]
   },
 
-  // Lấy chi tiết ứng tuyển theo ID (không cần userId - cho HR)
+  // Lấy chi tiết ứng tuyển theo ID
   findByIdAdmin: async (id) => {
     const result = await pool.query(
-      `SELECT c.*, jd.title as job_title, jd.description as job_description,
-              jd.location as job_location, jd.required_skills,
-              comp.name as company_name, comp.logo as company_logo,
+      `SELECT c.*, 
+              jd.title as job_title, 
+              jd.description as job_description,
+              jd.location as job_location, 
+              jd.required_skills,
+              comp.name as company_name, 
+              comp.logo as company_logo,
               comp.culture_description as company_culture
        FROM candidates c
        LEFT JOIN job_descriptions jd ON c.jd_id = jd.id

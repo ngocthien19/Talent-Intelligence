@@ -1,11 +1,28 @@
 import notificationModel from '~/models/notification/notification.model'
 import { emitToUser, emitToCandidate, emitToCompany } from '~/providers/socket.provider'
+import candidateModel from '~/models/candidate/candidate.model'
 
 const notificationService = {
   // Gửi thông báo cho Candidate
-  sendToCandidate: async (candidateId, data) => {
+  sendToCandidate: async (userId, data) => {
+  // Tìm candidate từ user_id
+    const candidate = await candidateModel.getCandidateByUserId(userId)
+    if (!candidate) {
+    // Nếu chưa có candidate, tạo notification với user_id thay vì candidate_id
+      const notification = await notificationModel.create({
+        userId, // Dùng user_id thay vì candidate_id
+        type: data.type || 'system',
+        title: data.title,
+        content: data.content,
+        extraData: data.extraData || null,
+        isSent: true
+      })
+      return notification
+    }
+
+    // Nếu có candidate, dùng candidate_id
     const notification = await notificationModel.create({
-      candidateId,
+      candidateId: candidate.id,
       type: data.type || 'system',
       title: data.title,
       content: data.content,
@@ -14,7 +31,7 @@ const notificationService = {
     })
 
     // Real-time qua Socket.IO
-    emitToCandidate(candidateId, 'notification:new', {
+    emitToCandidate(candidate.id, 'notification:new', {
       id: notification.id,
       type: notification.type,
       title: notification.title,
