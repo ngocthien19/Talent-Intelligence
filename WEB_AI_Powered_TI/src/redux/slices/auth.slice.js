@@ -213,6 +213,13 @@ const authSlice = createSlice({
         state.isAuthenticated = true
         state.user = action.payload.user
         state.accessToken = action.payload.accessToken
+
+        if (action.payload.user?.favoriteIds) {
+          state.favoriteIds = action.payload.user.favoriteIds
+        } else {
+          state.favoriteIds = []
+        }
+
         state.error = null
       })
       .addCase(login.rejected, (state, action) => {

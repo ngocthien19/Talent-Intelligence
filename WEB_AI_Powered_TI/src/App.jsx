@@ -1,12 +1,16 @@
 import { useEffect } from 'react'
 import { Routes, Route } from 'react-router-dom'
-import { useDispatch, useSelector } from 'react-redux' // THÊM useSelector
-import { getProfile } from '~/redux/slices/auth.slice'
-import { updateFavoriteStatus } from '~/redux/slices/favorite.slice' // THÊM IMPORT
+import { useDispatch, useSelector } from 'react-redux'
+
+import { getProfile, syncFavorites } from '~/redux/slices/auth.slice'
+import { getFavorites } from '~/redux/slices/favorite.slice'
+
 import CandidateLayout from '~/layouts/candidate/CandidateLayout'
 import Home from '~/pages/candidate/Home'
 import Jobs from '~/pages/candidate/Jobs'
 import JobDetailPage from '~/pages/candidate/JobDetailPage'
+import Favorites from '~/pages/candidate/Favorites'
+
 import Login from '~/pages/auth/Login'
 import Register from '~/pages/auth/Register'
 import VerifyOtp from '~/pages/auth/VerifyOtp'
@@ -17,24 +21,23 @@ import LanguageInitializer from '~/components/common/LanguageInitializer'
 
 function App() {
   const dispatch = useDispatch()
-  const { favoriteIds } = useSelector((state) => state.auth)
-  const { favoriteIds: favIds } = useSelector((state) => state.favorite)
+
+  const { isAuthenticated } = useSelector((state) => state.auth)
 
   useEffect(() => {
     dispatch(getProfile())
   }, [dispatch])
 
   useEffect(() => {
-    if (favoriteIds && favoriteIds.length > 0 && favIds.length === 0) {
-      favoriteIds.forEach(jobId => {
-        dispatch(updateFavoriteStatus({ jobId, isFavorite: true }))
+    if (isAuthenticated) {
+      dispatch(getFavorites()).unwrap().then((result) => {
+        if (result?.data) {
+          const ids = result.data.map(fav => fav.job_id)
+          dispatch(syncFavorites(ids))
+        }
       })
     }
-    // Nếu favorite slice có dữ liệu mà auth chưa có (trường hợp login sau)
-    if (favIds && favIds.length > 0 && favoriteIds.length === 0) {
-      // Cần sync ngược lại auth slice
-    }
-  }, [favoriteIds, favIds, dispatch])
+  }, [isAuthenticated, dispatch])
 
   return (
     <>
@@ -53,6 +56,7 @@ function App() {
           <Route index element={<Home />} />
           <Route path="jobs" element={<Jobs />} />
           <Route path="jobs/:id" element={<JobDetailPage />} />
+          <Route path="favorites" element={<Favorites />} />
         </Route>
       </Routes>
     </>

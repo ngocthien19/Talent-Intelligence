@@ -16,7 +16,8 @@
     "darkMode": "Chế độ tối",
     "lightMode": "Chế độ sáng",
     "selectLanguage": "Chọn ngôn ngữ",
-    "appearance": "Giao diện"
+    "appearance": "Giao diện",
+    "favorites": "Công việc đã lưu"
   },
   "footer": {
     "brandDesc": "Nền tảng đánh giá và phát triển nhân sự thông minh, sử dụng AI để kết nối nhà tuyển dụng với ứng viên tiềm năng.",
@@ -101,7 +102,11 @@
   "common": {
     "addToFavorites": "Thêm vào yêu thích",
     "removeFromFavorites": "Xóa khỏi yêu thích",
-    "loginRequired": "Vui lòng đăng nhập để lưu việc làm"
+    "loginRequired": "Vui lòng đăng nhập để lưu việc làm",
+    "confirm": "Xác nhận",
+    "cancel": "Hủy",
+    "loading": "Đang xử lý...",
+    "deleting": "Đang xóa..."
   },
   "auth": {
     "login": "Đăng nhập",
@@ -173,5 +178,21 @@
     "resetPasswordPlaceholder": "••••••••",
     "forgotPasswordSubtitle": "Nhập email để nhận mã OTP đặt lại mật khẩu",
     "resetPasswordSentSubtitle": "Vui lòng kiểm tra email để đặt lại mật khẩu"
+  },
+  "favorites": {
+    "title": "Công việc đã lưu",
+    "count": "Đã lưu",
+    "jobs": "công việc",
+    "empty": "Chưa có công việc nào được lưu",
+    "emptyDesc": "Hãy tìm kiếm và lưu những công việc bạn quan tâm",
+    "browseJobs": "Tìm việc ngay",
+    "clearAll": "Xóa tất cả",
+    "loginRequired": "Vui lòng đăng nhập",
+    "loginToView": "Đăng nhập để xem danh sách công việc đã lưu",
+    "confirmTitle": "Xóa tất cả công việc đã lưu",
+    "confirmMessage": "Bạn có chắc chắn muốn xóa tất cả công việc đã lưu? Hành động này không thể hoàn tác.",
+    "confirmDelete": "Xóa tất cả",
+    "cleared": "Đã xóa tất cả công việc đã lưu",
+    "removed": "Đã xóa khỏi danh sách yêu thích"
   }
 }

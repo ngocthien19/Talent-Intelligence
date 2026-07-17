@@ -16,7 +16,8 @@
     "darkMode": "Dark mode",
     "lightMode": "Light mode",
     "selectLanguage": "Select language",
-    "appearance": "Appearance"
+    "appearance": "Appearance",
+    "favorites": "Saved Jobs"
   },
   "footer": {
     "brandDesc": "Smart talent assessment and development platform, using AI to connect employers with potential candidates.",
@@ -101,7 +102,11 @@
   "common": {
     "addToFavorites": "Add to favorites",
     "removeFromFavorites": "Remove from favorites",
-    "loginRequired": "Please login to save job"
+    "loginRequired": "Please login to save job",
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "loading": "Loading...",
+    "deleting": "Deleting..."
   },
   "auth": {
     "login": "ログイン",
@@ -173,5 +178,21 @@
     "resetPasswordPlaceholder": "••••••••",
     "forgotPasswordSubtitle": "Enter your email to receive OTP to reset password",
     "resetPasswordSentSubtitle": "Please check your email to reset your password"
+  },
+  "favorites": {
+    "title": "Saved Jobs",
+    "count": "Saved",
+    "jobs": "jobs",
+    "empty": "No saved jobs yet",
+    "emptyDesc": "Search and save jobs you're interested in",
+    "browseJobs": "Browse Jobs",
+    "clearAll": "Clear All",
+    "loginRequired": "Please login",
+    "loginToView": "Login to view your saved jobs",
+    "confirmTitle": "Clear All Saved Jobs",
+    "confirmMessage": "Are you sure you want to clear all saved jobs? This action cannot be undone.",
+    "confirmDelete": "Clear All",
+    "cleared": "All saved jobs have been cleared",
+    "removed": "Removed from favorites"
   }
 }

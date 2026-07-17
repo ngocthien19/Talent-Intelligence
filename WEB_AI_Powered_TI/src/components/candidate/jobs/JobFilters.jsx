@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useLanguage } from '~/hooks/useLanguage'
+import { motion, AnimatePresence } from 'framer-motion'
 import {
   FaFilter,
   FaTimes,
@@ -35,7 +36,6 @@ const JobFilters = ({ filters, onFilterChange, onClearFilters, onClearFilter }) 
   const filterOptions = filters.options || {}
   const activeFilters = filters.active || {}
 
-  // Lọc các filter đang active
   const getActiveFilterCount = () => {
     let count = 0
     if (activeFilters.category_id) count++
@@ -48,7 +48,6 @@ const JobFilters = ({ filters, onFilterChange, onClearFilters, onClearFilter }) 
 
   const activeCount = getActiveFilterCount()
 
-  // Lấy label cho salary range
   const getSalaryLabel = (value) => {
     if (!value) return 'Tất cả mức lương'
     const found = SALARY_RANGES.find(s => s.value === value)
@@ -56,7 +55,12 @@ const JobFilters = ({ filters, onFilterChange, onClearFilters, onClearFilter }) 
   }
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-custom dark:shadow-gray-800/30 p-4">
+    <motion.div
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+      className="bg-white dark:bg-gray-800 rounded-xl shadow-custom dark:shadow-gray-800/30 p-4"
+    >
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <FaFilter size={18} className="text-brand-text/60 dark:text-gray-400" />
@@ -64,57 +68,71 @@ const JobFilters = ({ filters, onFilterChange, onClearFilters, onClearFilter }) 
             {t('jobs.filters') || 'Bộ lọc'}
           </span>
           {activeCount > 0 && (
-            <span className="px-2 py-0.5 text-xs font-medium text-white bg-brand-primary rounded-full">
+            <motion.span
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              className="px-2 py-0.5 text-xs font-medium text-white bg-brand-primary rounded-full"
+            >
               {activeCount}
-            </span>
+            </motion.span>
           )}
         </div>
         {activeCount > 0 && (
-          <button
+          <motion.button
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.95 }}
             onClick={onClearFilters}
             className="px-3 py-1.5 text-sm font-medium text-brand-primary border border-brand-primary rounded-lg hover:bg-brand-primary hover:!text-white transition-all duration-300 cursor-pointer flex items-center gap-1.5"
           >
             <FaTimes size={14} />
             {t('jobs.clearAll') || 'Xóa tất cả'}
-          </button>
+          </motion.button>
         )}
       </div>
 
       {/* Active filters badges */}
-      {activeCount > 0 && (
-        <div className="flex flex-wrap gap-2 mb-4 pb-4 border-b border-brand-light dark:border-gray-700">
-          {activeFilters.category_id && (
-            <Badge
-              label={filterOptions.categories?.find(c => c.id === activeFilters.category_id)?.name || 'Danh mục'}
-              onRemove={() => onClearFilter('category_id')}
-            />
-          )}
-          {activeFilters.location && (
-            <Badge
-              label={activeFilters.location}
-              onRemove={() => onClearFilter('location')}
-            />
-          )}
-          {activeFilters.experience_level && (
-            <Badge
-              label={getExperienceLabel(activeFilters.experience_level)}
-              onRemove={() => onClearFilter('experience_level')}
-            />
-          )}
-          {activeFilters.employment_type && (
-            <Badge
-              label={getEmploymentTypeLabel(activeFilters.employment_type)}
-              onRemove={() => onClearFilter('employment_type')}
-            />
-          )}
-          {activeFilters.salary_range && (
-            <Badge
-              label={getSalaryLabel(activeFilters.salary_range)}
-              onRemove={() => onClearFilter('salary_range')}
-            />
-          )}
-        </div>
-      )}
+      <AnimatePresence>
+        {activeCount > 0 && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3 }}
+            className="flex flex-wrap gap-2 mb-4 pb-4 border-b border-brand-light dark:border-gray-700 overflow-hidden"
+          >
+            {activeFilters.category_id && (
+              <Badge
+                label={filterOptions.categories?.find(c => c.id === activeFilters.category_id)?.name || 'Danh mục'}
+                onRemove={() => onClearFilter('category_id')}
+              />
+            )}
+            {activeFilters.location && (
+              <Badge
+                label={activeFilters.location}
+                onRemove={() => onClearFilter('location')}
+              />
+            )}
+            {activeFilters.experience_level && (
+              <Badge
+                label={getExperienceLabel(activeFilters.experience_level)}
+                onRemove={() => onClearFilter('experience_level')}
+              />
+            )}
+            {activeFilters.employment_type && (
+              <Badge
+                label={getEmploymentTypeLabel(activeFilters.employment_type)}
+                onRemove={() => onClearFilter('employment_type')}
+              />
+            )}
+            {activeFilters.salary_range && (
+              <Badge
+                label={getSalaryLabel(activeFilters.salary_range)}
+                onRemove={() => onClearFilter('salary_range')}
+              />
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Filter dropdowns */}
       <div className="flex flex-wrap gap-3">
@@ -276,23 +294,31 @@ const JobFilters = ({ filters, onFilterChange, onClearFilters, onClearFilter }) 
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-    </div>
+    </motion.div>
   )
 }
 
 // Badge component for active filters
 const Badge = ({ label, onRemove }) => {
   return (
-    <span className="inline-flex items-center gap-1 px-3 py-1 text-sm bg-brand-light/70 dark:bg-gray-700 text-brand-text dark:text-gray-300 rounded-full border border-brand-light dark:border-gray-600 transition-all duration-200">
+    <motion.span
+      initial={{ opacity: 0, scale: 0.8 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.8 }}
+      transition={{ duration: 0.2 }}
+      className="inline-flex items-center gap-1 px-3 py-1 text-sm bg-brand-light/70 dark:bg-gray-700 text-brand-text dark:text-gray-300 rounded-full border border-brand-light dark:border-gray-600"
+    >
       {label}
-      <button
+      <motion.button
+        whileHover={{ scale: 1.2, rotate: 90 }}
+        whileTap={{ scale: 0.8 }}
         onClick={onRemove}
         className="hover:text-brand-primary dark:hover:text-white transition-colors duration-200 cursor-pointer"
         aria-label="Remove filter"
       >
         <FaTimes size={12} />
-      </button>
-    </span>
+      </motion.button>
+    </motion.span>
   )
 }
 

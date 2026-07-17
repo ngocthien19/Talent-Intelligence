@@ -55,7 +55,6 @@ const JobCard = ({
 
     setIsToggling(true)
     try {
-      // SỬ DỤNG DISPATCH THAY VÌ GỌI API TRỰC TIẾP
       const result = await dispatch(toggleFavorite(job.id)).unwrap()
 
       if (result.action === 'added') {
