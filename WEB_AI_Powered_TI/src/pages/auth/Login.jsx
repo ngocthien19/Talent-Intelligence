@@ -7,29 +7,52 @@ import { toast } from 'react-toastify'
 import { FaEye, FaEyeSlash, FaEnvelope, FaLock } from 'react-icons/fa'
 import AuthLayout from '~/layouts/auth/AuthLayout'
 import SocialLogin from '~/layouts/auth/SocialLogin'
+import { useDispatch } from 'react-redux'
+import { setUser } from '~/redux/slices/auth.slice'
 
 const Login = () => {
   const navigate = useNavigate()
   const location = useLocation()
+  const dispatch = useDispatch()
   const { t } = useLanguage()
-  const { login, isLoading, fetchProfile } = useAuth()
+  const { login, isLoading } = useAuth()
   const [showPassword, setShowPassword] = useState(false)
 
+  // Xử lý redirect từ Google
   useEffect(() => {
     const params = new URLSearchParams(location.search)
     const success = params.get('google_success')
     const error = params.get('error')
+    const accessToken = params.get('accessToken')
+    const userParam = params.get('user')
 
-    if (success === 'true') {
-      toast.success('Đăng nhập với Google thành công!')
-      navigate('/', { replace: true })
+    if (success === 'true' && accessToken && userParam) {
+      try {
+        const user = JSON.parse(decodeURIComponent(userParam))
+
+        localStorage.setItem('accessToken', accessToken)
+        localStorage.setItem('user', JSON.stringify(user))
+
+        dispatch(setUser(user))
+
+        toast.success('Đăng nhập với Google thành công!')
+        navigate('/', { replace: true })
+
+      } catch (err) {
+        toast.error('Có lỗi xảy ra khi đăng nhập với Google')
+        navigate('/login', { replace: true })
+      }
     }
 
     if (error) {
       toast.error(decodeURIComponent(error) || 'Đăng nhập với Google thất bại')
       navigate('/login', { replace: true })
     }
-  }, [location, navigate, fetchProfile])
+
+    if (location.search) {
+      window.history.replaceState({}, document.title, location.pathname)
+    }
+  }, [location, navigate, dispatch])
 
   const {
     register,

@@ -23,3 +23,29 @@ export const getDaysAgo = (date) => {
   if (diffDays === 1) return '1 ngày trước'
   return `${diffDays} ngày trước`
 }
+
+export const getAvatarUrl = (avatar) => {
+  if (!avatar) return null
+
+  // Nếu avatar là object có secure_url (avatar từ hệ thống - Cloudinary)
+  if (typeof avatar === 'object' && avatar.secure_url) {
+    return avatar.secure_url
+  }
+
+  // Nếu avatar là object có url (avatar từ hệ thống - dạng khác)
+  if (typeof avatar === 'object' && avatar.url) {
+    return avatar.url
+  }
+
+  // Nếu avatar là string URL (avatar từ Google)
+  if (typeof avatar === 'string') {
+    return avatar
+  }
+
+  return null
+}
+
+export const getInitials = (name) => {
+  if (!name) return 'U'
+  return name.charAt(0).toUpperCase()
+}
