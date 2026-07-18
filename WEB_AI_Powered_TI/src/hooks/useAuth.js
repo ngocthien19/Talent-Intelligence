@@ -31,9 +31,8 @@ export const useAuth = () => {
     favoriteIds = []
   } = authState
 
-  const isGoogleLogin = user?.google_id !== null && user?.google_id !== undefined
-
-  const hasPassword = user?.password_hash !== null && user?.password_hash !== undefined
+  const hasPassword = user?.hasPassword ?? true
+  const isGoogleLogin = !hasPassword
 
   // ĐĂNG NHẬP
   const handleLogin = async (loginData) => {
