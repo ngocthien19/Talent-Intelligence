@@ -183,7 +183,10 @@
     "newPasswordPlaceholder": "Enter new password...",
     "confirmPasswordPlaceholder": "Confirm new password...",
     "emailReadonly": "Email cannot be changed",
-    "clickToChangeAvatar": "Click the camera to change avatar"
+    "clickToChangeAvatar": "Click the camera to change avatar",
+    "googleLoginTitle": "Google Account",
+    "googleLoginDesc": "You are logged in with Google. Please change your password via Google for security.",
+    "goToGoogle": "Go to Google Security"
   },
   "auth": {
     "login": "ログイン",

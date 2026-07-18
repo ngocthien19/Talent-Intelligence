@@ -3,13 +3,10 @@ import { useAuth } from '~/hooks/useAuth'
 import { motion } from 'framer-motion'
 import {
   FaUser,
-  FaHistory,
-  FaHeart,
   FaKey,
   FaSignOutAlt,
   FaEnvelope,
-  FaPhone,
-  FaMapMarkerAlt
+  FaGoogle
 } from 'react-icons/fa'
 import { useNavigate } from 'react-router-dom'
 
@@ -38,7 +35,7 @@ const menuItemVariants = {
   })
 }
 
-const ProfileSidebar = ({ user, profile, activeTab, onTabChange }) => {
+const ProfileSidebar = ({ user, profile, activeTab, onTabChange, isGoogleLogin = false }) => {
   const { t } = useLanguage()
   const navigate = useNavigate()
   const { logout } = useAuth()
@@ -52,13 +49,17 @@ const ProfileSidebar = ({ user, profile, activeTab, onTabChange }) => {
       id: 'info',
       icon: FaUser,
       label: t('profile.info') || 'Thông tin cá nhân'
-    },
-    {
+    }
+  ]
+
+  // Chỉ hiển thị menu đổi mật khẩu nếu KHÔNG phải login Google
+  if (!isGoogleLogin) {
+    menuItems.push({
       id: 'password',
       icon: FaKey,
       label: t('profile.changePassword') || 'Đổi mật khẩu'
-    }
-  ]
+    })
+  }
 
   const handleLogout = async () => {
     await logout()
@@ -92,6 +93,17 @@ const ProfileSidebar = ({ user, profile, activeTab, onTabChange }) => {
           <FaEnvelope size={10} />
           {userEmail}
         </p>
+        {isGoogleLogin && (
+          <motion.span
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.3 }}
+            className="inline-flex items-center gap-1 mt-2 px-2.5 py-0.5 text-xs font-medium bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 rounded-full border border-blue-200 dark:border-blue-800"
+          >
+            <FaGoogle size={10} />
+            Google
+          </motion.span>
+        )}
       </div>
 
       {/* Menu */}

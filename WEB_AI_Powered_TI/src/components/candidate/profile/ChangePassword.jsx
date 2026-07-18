@@ -12,7 +12,8 @@ import {
   FaExclamationCircle,
   FaEye,
   FaEyeSlash,
-  FaShieldAlt
+  FaShieldAlt,
+  FaGoogle
 } from 'react-icons/fa'
 import { toast } from 'react-toastify'
 import { profileApi } from '~/api/candidate/profile.api'
@@ -46,7 +47,7 @@ const slideUp = {
   }
 }
 
-const ChangePassword = () => {
+const ChangePassword = ({ isGoogleLogin = false }) => {
   const { t } = useLanguage()
   const [isLoading, setIsLoading] = useState(false)
   const [showCurrentPassword, setShowCurrentPassword] = useState(false)
@@ -84,6 +85,60 @@ const ChangePassword = () => {
     } finally {
       setIsLoading(false)
     }
+  }
+
+  // Nếu login bằng Google, hiển thị thông báo
+  if (isGoogleLogin) {
+    return (
+      <motion.div
+        variants={slideUp}
+        initial="hidden"
+        animate="visible"
+        className="bg-white dark:bg-gray-800 rounded-xl shadow-custom dark:shadow-gray-800/30 overflow-hidden"
+      >
+        <div className="h-1 w-full bg-gradient-to-r from-brand-primary to-brand-accent" />
+        <div className="p-6 md:p-8 text-center py-16">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5 }}
+            className="w-20 h-20 mx-auto rounded-full bg-blue-50 dark:bg-blue-950/30 flex items-center justify-center mb-4"
+          >
+            <FaGoogle size={36} className="text-blue-500" />
+          </motion.div>
+          <motion.h3
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1, duration: 0.4 }}
+            className="text-xl font-bold text-brand-secondary dark:text-white mb-2"
+          >
+            {t('profile.googleLoginTitle') || 'Tài khoản Google'}
+          </motion.h3>
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.4 }}
+            className="text-brand-text/60 dark:text-gray-400 max-w-md mx-auto"
+          >
+            {t('profile.googleLoginDesc') || 'Bạn đang đăng nhập bằng tài khoản Google. Vui lòng đổi mật khẩu qua Google để bảo mật.'}
+          </motion.p>
+          <motion.a
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.4 }}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            href="https://myaccount.google.com/security"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 mt-6 px-6 py-2.5 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition-all duration-200 cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
+          >
+            <FaGoogle size={16} />
+            {t('profile.goToGoogle') || 'Đến Google Security'}
+          </motion.a>
+        </div>
+      </motion.div>
+    )
   }
 
   return (

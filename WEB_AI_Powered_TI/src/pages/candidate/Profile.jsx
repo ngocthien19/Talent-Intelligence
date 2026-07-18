@@ -26,7 +26,7 @@ const containerVariants = {
 const Profile = () => {
   useScrollToTop()
   const { t } = useLanguage()
-  const { user, fetchProfile } = useAuth()
+  const { user, fetchProfile, isGoogleLogin } = useAuth()
   const [isLoading, setIsLoading] = useState(true)
   const [profile, setProfile] = useState(null)
   const [activeTab, setActiveTab] = useState('info')
@@ -103,6 +103,7 @@ const Profile = () => {
               profile={profile}
               activeTab={activeTab}
               onTabChange={setActiveTab}
+              isGoogleLogin={isGoogleLogin}
             />
           </div>
 
@@ -114,7 +115,7 @@ const Profile = () => {
                 onUpdateSuccess={handleUpdateSuccess}
               />
             ) : (
-              <ChangePassword />
+              <ChangePassword isGoogleLogin={isGoogleLogin} />
             )}
           </div>
         </div>

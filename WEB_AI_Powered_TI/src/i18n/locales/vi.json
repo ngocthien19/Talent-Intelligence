@@ -183,7 +183,10 @@
     "newPasswordPlaceholder": "Nhập mật khẩu mới...",
     "confirmPasswordPlaceholder": "Xác nhận mật khẩu mới...",
     "emailReadonly": "Email không thể thay đổi",
-    "clickToChangeAvatar": "Click vào camera để đổi avatar"
+    "clickToChangeAvatar": "Click vào camera để đổi avatar",
+    "googleLoginTitle": "Tài khoản Google",
+    "googleLoginDesc": "Bạn đang đăng nhập bằng tài khoản Google. Vui lòng đổi mật khẩu qua Google để bảo mật.",
+    "goToGoogle": "Đến Google Security"
   },
   "auth": {
     "login": "Đăng nhập",
