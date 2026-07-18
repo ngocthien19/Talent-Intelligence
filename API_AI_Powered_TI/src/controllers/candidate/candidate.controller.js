@@ -29,11 +29,26 @@ const candidateController = {
   getApplications: async (req, res) => {
     try {
       const userId = req.user.id
-      const applications = await candidateService.getApplications(userId)
+      const { status, limit, page } = req.query
+
+      const applications = await candidateService.getApplications(userId, { status })
+
+      // Đơn giản hóa pagination
+      let result = applications
+      if (limit && page) {
+        const offset = (parseInt(page) - 1) * parseInt(limit)
+        result = applications.slice(offset, offset + parseInt(limit))
+      }
 
       return res.status(200).json({
         success: true,
-        data: applications
+        data: result,
+        pagination: {
+          total: applications.length,
+          limit: parseInt(limit) || applications.length,
+          page: parseInt(page) || 1,
+          totalPages: limit ? Math.ceil(applications.length / parseInt(limit)) : 1
+        }
       })
     } catch (error) {
       return res.status(500).json({
@@ -123,6 +138,89 @@ const candidateController = {
         data: {
           avatar: result.avatar
         }
+      })
+    } catch (error) {
+      return res.status(400).json({
+        success: false,
+        message: error.message
+      })
+    }
+  },
+
+  // Đổi mật khẩu
+  changePassword: async (req, res) => {
+    try {
+      const userId = req.user.id
+      const { currentPassword, newPassword } = req.body
+
+      const result = await candidateService.changePassword(userId, {
+        currentPassword,
+        newPassword
+      })
+
+      return res.status(200).json({
+        success: true,
+        message: result.message
+      })
+    } catch (error) {
+      return res.status(400).json({
+        success: false,
+        message: error.message
+      })
+    }
+  },
+
+  // Lấy số lượng ứng tuyển
+  getApplicationCount: async (req, res) => {
+    try {
+      const userId = req.user.id
+      const count = await candidateService.getApplicationCount(userId)
+
+      return res.status(200).json({
+        success: true,
+        data: { count }
+      })
+    } catch (error) {
+      return res.status(500).json({
+        success: false,
+        message: error.message
+      })
+    }
+  },
+
+  // Cập nhật trạng thái ứng tuyển
+  updateApplicationStatus: async (req, res) => {
+    try {
+      const userId = req.user.id
+      const { id } = req.params
+      const { status } = req.body
+
+      const application = await candidateService.updateApplicationStatus(userId, id, status)
+
+      return res.status(200).json({
+        success: true,
+        message: 'Cập nhật trạng thái thành công',
+        data: application
+      })
+    } catch (error) {
+      return res.status(400).json({
+        success: false,
+        message: error.message
+      })
+    }
+  },
+
+  // Xóa ứng tuyển
+  deleteApplication: async (req, res) => {
+    try {
+      const userId = req.user.id
+      const { id } = req.params
+
+      await candidateService.deleteApplication(userId, id)
+
+      return res.status(200).json({
+        success: true,
+        message: 'Xóa ứng tuyển thành công'
       })
     } catch (error) {
       return res.status(400).json({

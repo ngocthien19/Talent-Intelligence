@@ -40,7 +40,7 @@ const candidateModel = {
     return result.rows[0]
   },
 
-  // Lấy danh sách ứng tuyển của candidate - THÊM company_logo
+  // Lấy danh sách ứng tuyển của candidate
   findByUserId: async (userId) => {
     const result = await pool.query(
       `SELECT c.*, 
@@ -58,6 +58,7 @@ const candidateModel = {
     return result.rows
   },
 
+  // Lấy candidate theo user_id
   getCandidateByUserId: async (userId) => {
     const result = await pool.query(
       `SELECT c.*, u.fullname, u.email, u.phone
@@ -69,7 +70,7 @@ const candidateModel = {
     return result.rows[0]
   },
 
-  // Lấy chi tiết ứng tuyển - THÊM company_logo
+  // Lấy chi tiết ứng tuyển
   findById: async (id, userId) => {
     const result = await pool.query(
       `SELECT c.*, 
@@ -89,7 +90,7 @@ const candidateModel = {
     return result.rows[0]
   },
 
-  // Lấy chi tiết ứng tuyển theo ID
+  // Lấy chi tiết ứng tuyển theo ID (không cần userId - cho HR)
   findByIdAdmin: async (id) => {
     const result = await pool.query(
       `SELECT c.*, 
@@ -160,7 +161,7 @@ const candidateModel = {
   // Lấy thông tin hồ sơ user
   getProfile: async (userId) => {
     const result = await pool.query(
-      `SELECT id, email, fullname, phone, address, avatar, role_id, is_active, created_at
+      `SELECT id, email, fullname, phone, address, avatar, password_hash, role_id, is_active, created_at
        FROM users 
        WHERE id = $1`,
       [userId]
@@ -224,6 +225,18 @@ const candidateModel = {
     return result.rows[0]
   },
 
+  // Cập nhật mật khẩu
+  updatePassword: async (userId, hashedPassword) => {
+    const result = await pool.query(
+      `UPDATE users 
+       SET password_hash = $1, updated_at = CURRENT_TIMESTAMP
+       WHERE id = $2
+       RETURNING id, email, fullname, phone, address, avatar, role_id`,
+      [hashedPassword, userId]
+    )
+    return result.rows[0]
+  },
+
   // Cập nhật trạng thái đã gửi báo cáo
   updateNotified: async (candidateId) => {
     const result = await pool.query(
@@ -247,6 +260,33 @@ const candidateModel = {
       [candidateId]
     )
     return result.rows[0]
+  },
+
+  // Lấy số lượng ứng tuyển của candidate
+  countApplications: async (userId) => {
+    const result = await pool.query(
+      'SELECT COUNT(*) as count FROM candidates WHERE user_id = $1',
+      [userId]
+    )
+    return parseInt(result.rows[0]?.count || 0)
+  },
+
+  // Lấy danh sách ứng tuyển theo trạng thái
+  findByUserIdAndStatus: async (userId, status) => {
+    const result = await pool.query(
+      `SELECT c.*, 
+              jd.title as job_title, 
+              jd.location as job_location,
+              comp.name as company_name,
+              comp.logo as company_logo
+       FROM candidates c
+       LEFT JOIN job_descriptions jd ON c.jd_id = jd.id
+       LEFT JOIN companies comp ON c.company_id = comp.id
+       WHERE c.user_id = $1 AND c.status = $2
+       ORDER BY c.created_at DESC`,
+      [userId, status]
+    )
+    return result.rows
   }
 }
 

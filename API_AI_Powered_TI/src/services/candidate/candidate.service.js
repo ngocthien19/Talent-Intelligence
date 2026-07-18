@@ -3,6 +3,7 @@ import jobModel from '~/models/candidate/job/job.model'
 import parseService from '~/services/parse.service'
 import { CloudinaryProvider } from '~/providers/cloudinary.provider'
 import notificationService from '~/services/notification/notification.service'
+import { comparePassword, hashPassword } from '~/utils/bcrypt'
 
 const candidateService = {
   // Ứng tuyển công việc
@@ -29,7 +30,7 @@ const candidateService = {
       throw new Error('Bạn đã ứng tuyển công việc này rồi')
     }
 
-    // 3. Xử lý CV (file lúc này là buffer trong RAM, chưa hề lên Cloudinary)
+    // 3. Xử lý CV
     let cvText = ''
     let parsedData = null
     let cvUrl = ''
@@ -38,11 +39,9 @@ const candidateService = {
     let cvMimeType = ''
 
     if (file) {
-      // Parse nội dung trước (không phụ thuộc Cloudinary, fail nhanh nếu file lỗi)
       cvText = await parseService.parseFile(file.buffer, file.mimetype)
       parsedData = parseService.extractBasicInfo(cvText)
 
-      // Upload buffer lên Cloudinary (chỉ 1 lần upload duy nhất)
       const uploadResult = await CloudinaryProvider.uploadBuffer(file.buffer, {
         folder: `cvs/${user_id}`,
         resource_type: 'raw',
@@ -76,7 +75,7 @@ const candidateService = {
       jd_text: job.description
     })
 
-    // 5. Gửi thông báo cho HR (người đăng tuyển)
+    // 5. Gửi thông báo cho HR
     if (job.user_id) {
       await notificationService.sendToHR(job.user_id, {
         type: 'new_application',
@@ -95,7 +94,7 @@ const candidateService = {
       })
     }
 
-    // 6. Gửi thông báo cho Candidate (bản thân)
+    // 6. Gửi thông báo cho Candidate
     await notificationService.sendToCandidate(user_id, {
       type: 'application_submitted',
       title: 'Đã ứng tuyển thành công',
@@ -119,7 +118,13 @@ const candidateService = {
   },
 
   // Lấy danh sách ứng tuyển của candidate
-  getApplications: async (userId) => {
+  getApplications: async (userId, filters = {}) => {
+    const { status } = filters
+
+    if (status) {
+      return await candidateModel.findByUserIdAndStatus(userId, status)
+    }
+
     return await candidateModel.findByUserId(userId)
   },
 
@@ -159,6 +164,7 @@ const candidateService = {
     return updated
   },
 
+  // Upload avatar
   uploadAvatar: async (userId, file) => {
     if (!file) {
       throw new Error('Vui lòng chọn ảnh')
@@ -177,6 +183,62 @@ const candidateService = {
       avatar: avatarData,
       user: updated
     }
+  },
+
+  // Đổi mật khẩu
+  changePassword: async (userId, data) => {
+    const { currentPassword, newPassword } = data
+
+    // 1. Lấy thông tin user
+    const user = await candidateModel.getProfile(userId)
+    if (!user) {
+      throw new Error('Không tìm thấy người dùng')
+    }
+
+    // 2. Kiểm tra mật khẩu hiện tại
+    const isPasswordValid = await comparePassword(currentPassword, user.password_hash)
+    if (!isPasswordValid) {
+      throw new Error('Mật khẩu hiện tại không đúng')
+    }
+
+    // 3. Hash mật khẩu mới
+    const hashedPassword = await hashPassword(newPassword)
+
+    // 4. Cập nhật mật khẩu
+    await candidateModel.updatePassword(userId, hashedPassword)
+
+    return {
+      success: true,
+      message: 'Đổi mật khẩu thành công'
+    }
+  },
+
+  // Lấy số lượng ứng tuyển
+  getApplicationCount: async (userId) => {
+    return await candidateModel.countApplications(userId)
+  },
+
+  // Cập nhật trạng thái ứng tuyển
+  updateApplicationStatus: async (userId, applicationId, status) => {
+    // Kiểm tra quyền sở hữu
+    const application = await candidateModel.findById(applicationId, userId)
+    if (!application) {
+      throw new Error('Không tìm thấy ứng tuyển')
+    }
+
+    return await candidateModel.updateStatus(applicationId, status)
+  },
+
+  // Xóa ứng tuyển
+  deleteApplication: async (userId, applicationId) => {
+    // Kiểm tra quyền sở hữu
+    const application = await candidateModel.findById(applicationId, userId)
+    if (!application) {
+      throw new Error('Không tìm thấy ứng tuyển')
+    }
+
+    // Xóa ứng tuyển (có thể soft delete hoặc hard delete)
+    return await candidateModel.updateStatus(applicationId, 'rejected')
   }
 }
 
