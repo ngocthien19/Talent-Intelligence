@@ -4,10 +4,10 @@ const mockInterviewModel = {
   // Lấy candidate theo user_id
   getCandidateByUserId: async (userId) => {
     const result = await pool.query(
-      `SELECT c.*, u.fullname, u.email, u.phone
-       FROM candidates c
-       JOIN users u ON c.user_id = u.id
-       WHERE c.user_id = $1`,
+      `SELECT cp.*, u.fullname, u.email, u.phone
+       FROM candidate_profiles cp
+       JOIN users u ON cp.user_id = u.id
+       WHERE cp.user_id = $1`,
       [userId]
     )
     return result.rows[0]
@@ -16,10 +16,10 @@ const mockInterviewModel = {
   // Lấy thông tin candidate theo candidate_id
   getCandidateById: async (candidateId) => {
     const result = await pool.query(
-      `SELECT c.*, u.fullname, u.email, u.phone
-       FROM candidates c
-       JOIN users u ON c.user_id = u.id
-       WHERE c.id = $1`,
+      `SELECT cp.*, u.fullname, u.email, u.phone
+       FROM candidate_profiles cp
+       JOIN users u ON cp.user_id = u.id
+       WHERE cp.id = $1`,
       [candidateId]
     )
     return result.rows[0]
@@ -61,10 +61,10 @@ const mockInterviewModel = {
   // Lấy session
   getSession: async (sessionId) => {
     const result = await pool.query(
-      `SELECT s.*, c.name as candidate_name, c.email as candidate_email,
-              c.position_applied, c.user_id
+      `SELECT s.*, cp.name as candidate_name, cp.email as candidate_email,
+              cp.user_id
        FROM mock_interview_sessions s
-       LEFT JOIN candidates c ON s.candidate_id = c.id
+       LEFT JOIN candidate_profiles cp ON s.candidate_id = cp.id
        WHERE s.id = $1`,
       [sessionId]
     )
@@ -216,8 +216,8 @@ const mockInterviewModel = {
               COUNT(a.id) as answered_count
        FROM mock_interview_sessions s
        LEFT JOIN interview_answers a ON s.id = a.session_id
-       JOIN candidates c ON s.candidate_id = c.id
-       WHERE c.user_id = $1
+       JOIN candidate_profiles cp ON s.candidate_id = cp.id
+       WHERE cp.user_id = $1
        GROUP BY s.id
        ORDER BY s.created_at DESC
        LIMIT $2`,
@@ -231,10 +231,9 @@ const mockInterviewModel = {
     const result = await pool.query(
       `SELECT 
         s.*,
-        c.name as candidate_name,
-        c.email as candidate_email,
-        c.position_applied,
-        c.user_id,
+        cp.name as candidate_name,
+        cp.email as candidate_email,
+        cp.user_id,
         json_agg(
           json_build_object(
             'id', q.id,
@@ -248,11 +247,11 @@ const mockInterviewModel = {
           ) ORDER BY q.order ASC
         ) as questions
        FROM mock_interview_sessions s
-       LEFT JOIN candidates c ON s.candidate_id = c.id
-       LEFT JOIN interview_questions q ON q.candidate_id = c.id
+       LEFT JOIN candidate_profiles cp ON s.candidate_id = cp.id
+       LEFT JOIN interview_questions q ON q.candidate_id = cp.id
        LEFT JOIN interview_answers a ON a.question_id = q.id AND a.session_id = s.id
        WHERE s.id = $1
-       GROUP BY s.id, c.id`,
+       GROUP BY s.id, cp.id`,
       [sessionId]
     )
     return result.rows[0]
@@ -263,8 +262,8 @@ const mockInterviewModel = {
     const result = await pool.query(
       `SELECT s.id
        FROM mock_interview_sessions s
-       JOIN candidates c ON s.candidate_id = c.id
-       WHERE s.id = $1 AND c.user_id = $2`,
+       JOIN candidate_profiles cp ON s.candidate_id = cp.id
+       WHERE s.id = $1 AND cp.user_id = $2`,
       [sessionId, userId]
     )
     return result.rows.length > 0
@@ -281,7 +280,7 @@ const mockInterviewModel = {
     return result.rows[0]
   },
 
-  // Lấy tất cả câu trả lời của session (có cả điểm)
+  // Lấy tất cả câu trả lời của session
   getAnswersBySession: async (sessionId) => {
     const result = await pool.query(
       `SELECT a.*, q.question, q.category, q.difficulty
