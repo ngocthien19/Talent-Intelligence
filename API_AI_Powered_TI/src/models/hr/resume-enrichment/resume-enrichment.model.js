@@ -51,7 +51,7 @@ const resumeEnrichmentModel = {
     `
 
     const result = await pool.query(query, [
-      candidateId,
+      candidateId, // applicationId
       promotionSpeed || 0,
       promotionHistory ? JSON.stringify(promotionHistory) : null,
       employmentGaps ? JSON.stringify(employmentGaps) : null,
@@ -69,28 +69,28 @@ const resumeEnrichmentModel = {
   },
 
   // Lấy kết quả phân tích nâng cao
-  getEnrichment: async (candidateId) => {
+  getEnrichment: async (applicationId) => {
     const result = await pool.query(
       'SELECT * FROM resume_enrichment WHERE candidate_id = $1',
-      [candidateId]
+      [applicationId]
     )
     return result.rows[0]
   },
 
   // Kiểm tra đã phân tích chưa
-  hasEnrichment: async (candidateId) => {
+  hasEnrichment: async (applicationId) => {
     const result = await pool.query(
       'SELECT id FROM resume_enrichment WHERE candidate_id = $1',
-      [candidateId]
+      [applicationId]
     )
     return result.rows.length > 0
   },
 
   // Xóa phân tích
-  deleteEnrichment: async (candidateId) => {
+  deleteEnrichment: async (applicationId) => {
     await pool.query(
       'DELETE FROM resume_enrichment WHERE candidate_id = $1',
-      [candidateId]
+      [applicationId]
     )
     return true
   }

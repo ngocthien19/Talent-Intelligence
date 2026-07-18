@@ -1,16 +1,17 @@
 import notificationModel from '~/models/notification/notification.model'
 import { emitToUser, emitToCandidate, emitToCompany } from '~/providers/socket.provider'
-import candidateModel from '~/models/candidate/candidate.model'
+import candidateProfileModel from '~/models/candidate/candidate-profile.model'
 
 const notificationService = {
-  // Gửi thông báo cho Candidate
+  // Gửi thông báo cho Candidate - CẬP NHẬT
   sendToCandidate: async (userId, data) => {
-  // Tìm candidate từ user_id
-    const candidate = await candidateModel.getCandidateByUserId(userId)
-    if (!candidate) {
-    // Nếu chưa có candidate, tạo notification với user_id thay vì candidate_id
+    // Tìm candidate profile từ user_id
+    const profile = await candidateProfileModel.findByUserId(userId)
+
+    if (!profile) {
+      // Nếu chưa có profile, tạo notification với user_id thay vì candidate_id
       const notification = await notificationModel.create({
-        userId, // Dùng user_id thay vì candidate_id
+        userId, // Dùng user_id
         type: data.type || 'system',
         title: data.title,
         content: data.content,
@@ -20,9 +21,9 @@ const notificationService = {
       return notification
     }
 
-    // Nếu có candidate, dùng candidate_id
+    // Nếu có profile, dùng profile.id
     const notification = await notificationModel.create({
-      candidateId: candidate.id,
+      candidateId: profile.id, // Dùng profile.id
       type: data.type || 'system',
       title: data.title,
       content: data.content,
@@ -31,7 +32,7 @@ const notificationService = {
     })
 
     // Real-time qua Socket.IO
-    emitToCandidate(candidate.id, 'notification:new', {
+    emitToCandidate(profile.id, 'notification:new', {
       id: notification.id,
       type: notification.type,
       title: notification.title,
@@ -43,7 +44,7 @@ const notificationService = {
     return notification
   },
 
-  // Gửi thông báo cho HR
+  // Gửi thông báo cho HR - KHÔNG ĐỔI
   sendToHR: async (userId, data) => {
     const notification = await notificationModel.create({
       userId,
@@ -54,7 +55,6 @@ const notificationService = {
       isSent: true
     })
 
-    // Real-time qua Socket.IO
     emitToUser(userId, 'notification:new', {
       id: notification.id,
       type: notification.type,
@@ -67,7 +67,7 @@ const notificationService = {
     return notification
   },
 
-  // Gửi thông báo cho Company (tất cả HR trong công ty)
+  // Gửi thông báo cho Company - KHÔNG ĐỔI
   sendToCompany: async (companyId, data) => {
     const notification = await notificationModel.create({
       companyId,
@@ -78,7 +78,6 @@ const notificationService = {
       isSent: true
     })
 
-    // Real-time qua Socket.IO
     emitToCompany(companyId, 'notification:new', {
       id: notification.id,
       type: notification.type,
@@ -91,7 +90,7 @@ const notificationService = {
     return notification
   },
 
-  // Gửi thông báo cho nhiều người cùng lúc
+  // ... các hàm còn lại giữ nguyên
   sendToMany: async (recipients, data) => {
     const notifications = []
     for (const recipient of recipients) {
@@ -106,7 +105,6 @@ const notificationService = {
     return notifications
   },
 
-  // Lấy danh sách thông báo của candidate
   getByCandidate: async (candidateId, limit = 20, page = 1) => {
     const offset = (page - 1) * limit
     const notifications = await notificationModel.getByCandidate(
@@ -127,7 +125,6 @@ const notificationService = {
     }
   },
 
-  // Lấy danh sách thông báo của HR
   getByHR: async (userId, limit = 20, page = 1) => {
     const offset = (page - 1) * limit
     const notifications = await notificationModel.getByUser(
@@ -148,7 +145,6 @@ const notificationService = {
     }
   },
 
-  // Lấy thông báo chưa đọc
   getUnread: async (userId, role) => {
     if (role === 'candidate') {
       return await notificationModel.getUnreadByCandidate(userId)
@@ -156,7 +152,6 @@ const notificationService = {
     return await notificationModel.getUnreadByUser(userId)
   },
 
-  // Đếm thông báo chưa đọc
   countUnread: async (userId, role) => {
     if (role === 'candidate') {
       return await notificationModel.countUnreadByCandidate(userId)
@@ -164,12 +159,10 @@ const notificationService = {
     return await notificationModel.countUnreadByUser(userId)
   },
 
-  // Đánh dấu đã đọc
   markAsRead: async (id) => {
     return await notificationModel.markAsRead(id)
   },
 
-  // Đánh dấu tất cả đã đọc
   markAllAsRead: async (userId, role) => {
     if (role === 'candidate') {
       return await notificationModel.markAllAsReadByCandidate(userId)
@@ -177,12 +170,10 @@ const notificationService = {
     return await notificationModel.markAllAsReadByUser(userId)
   },
 
-  // Xóa thông báo
   delete: async (id) => {
     return await notificationModel.delete(id)
   },
 
-  // Xóa tất cả thông báo
   deleteAll: async (userId, role) => {
     if (role === 'candidate') {
       return await notificationModel.deleteAllByCandidate(userId)

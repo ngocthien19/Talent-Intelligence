@@ -1,5 +1,6 @@
 import bcrypt from 'bcryptjs'
 import authModel from '~/models/auth/auth.model'
+import candidateProfileModel from '~/models/candidate/candidate-profile.model'
 import { EmailProvider } from '~/providers/email.provider'
 import { JwtProvider } from '~/providers/jwt.provider'
 import { env } from '~/config/environment'
@@ -228,8 +229,28 @@ const authService = {
         })
       }
     }
+    user = await authModel.getLoginUserById(user.id)
 
-    // 5. Tạo token
+    // 5. Tạo hoặc cập nhật candidate_profile với avatar từ Google
+    let profile = await candidateProfileModel.findByUserId(user.id)
+
+    if (!profile) {
+      // Tạo mới profile với avatar từ Google
+      await candidateProfileModel.create({
+        user_id: user.id,
+        name: user.fullname || fullname,
+        email: user.email,
+        phone: user.phone || '',
+        address: user.address || '',
+        avatar: user.avatar || null
+      })
+    } else if (user.avatar && !profile.avatar) {
+      await candidateProfileModel.update(profile.id, {
+        avatar: user.avatar
+      })
+    }
+
+    // 6. Tạo token
     const userInfo = {
       id: user.id,
       email: user.email,
@@ -248,10 +269,10 @@ const authService = {
       env.JWT_REFRESH_EXPIRE
     )
 
-    // 6. Lưu refresh token
+    // 7. Lưu refresh token
     await authModel.updateRefreshToken(user.id, refreshToken)
 
-    // 7. Cập nhật last login
+    // 8. Cập nhật last login
     await authModel.updateLastLogin(user.id)
 
     return {

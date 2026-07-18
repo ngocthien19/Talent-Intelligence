@@ -1,26 +1,32 @@
 import semanticSearchModel from '~/models/hr/semantic-search/semantic-search.model'
 import { generateEmbedding } from '~/providers/gemini.provider'
-import candidateModel from '~/models/candidate/candidate.model'
+import applicationModel from '~/models/candidate/application.model'
+import candidateProfileModel from '~/models/candidate/candidate-profile.model'
 
 const semanticSearchService = {
   // Tạo embedding cho candidate (gọi khi upload CV hoặc phân tích)
-  generateCandidateEmbedding: async (candidateId) => {
-    // 1. Lấy thông tin candidate
-    const candidate = await candidateModel.findByIdAdmin(candidateId)
-    if (!candidate) {
-      throw new Error('Không tìm thấy ứng viên')
+  generateCandidateEmbedding: async (applicationId) => {
+    // 1. Lấy thông tin application và profile
+    const application = await applicationModel.findByIdAdmin(applicationId)
+    if (!application) {
+      throw new Error('Không tìm thấy đơn ứng tuyển')
+    }
+
+    const profile = await candidateProfileModel.findById(application.candidate_profile_id)
+    if (!profile) {
+      throw new Error('Không tìm thấy hồ sơ ứng viên')
     }
 
     // 2. Tạo text để embedding (kết hợp các thông tin)
-    const skills = candidate.parsed_data?.skills || []
+    const skills = profile.parsed_data?.skills || []
     const skillsText = skills.join(', ')
 
     const textForEmbedding = `
-      Tên: ${candidate.name}
-      Vị trí ứng tuyển: ${candidate.position_applied}
+      Tên: ${profile.name}
+      Vị trí ứng tuyển: ${application.position}
       Kỹ năng: ${skillsText}
-      Mô tả công việc: ${candidate.jd_text || ''}
-      CV: ${candidate.cv_text || ''}
+      Mô tả công việc: ${application.jd_text || ''}
+      CV: ${profile.cv_text || ''}
     `.trim()
 
     if (!textForEmbedding || textForEmbedding.length < 10) {
@@ -30,12 +36,12 @@ const semanticSearchService = {
     // 3. Gọi Gemini embedding
     const embedding = await generateEmbedding(textForEmbedding)
 
-    // 4. Lưu vào database
-    await semanticSearchModel.saveEmbedding(candidateId, embedding, 'full_text')
+    // 4. Lưu vào database (sử dụng application_id)
+    await semanticSearchModel.saveEmbedding(applicationId, embedding, 'full_text')
 
     return {
       success: true,
-      candidateId,
+      applicationId,
       embeddingLength: embedding.length
     }
   },
@@ -62,15 +68,15 @@ const semanticSearchService = {
 
   // Tạo embedding cho tất cả candidates (chạy 1 lần)
   generateAllEmbeddings: async (companyId) => {
-    const candidates = await semanticSearchModel.getCandidateIdsByCompany(companyId)
+    const applications = await semanticSearchModel.getApplicationIdsByCompany(companyId)
 
     const results = []
-    for (const candidate of candidates) {
+    for (const app of applications) {
       try {
-        const result = await semanticSearchService.generateCandidateEmbedding(candidate.id)
-        results.push({ id: candidate.id, success: true })
+        const result = await semanticSearchService.generateCandidateEmbedding(app.id)
+        results.push({ id: app.id, success: true })
       } catch (error) {
-        results.push({ id: candidate.id, success: false, error: error.message })
+        results.push({ id: app.id, success: false, error: error.message })
       }
     }
 
@@ -78,13 +84,13 @@ const semanticSearchService = {
   },
 
   // Kiểm tra embedding đã tồn tại
-  hasEmbedding: async (candidateId) => {
-    return await semanticSearchModel.hasEmbedding(candidateId)
+  hasEmbedding: async (applicationId) => {
+    return await semanticSearchModel.hasEmbedding(applicationId)
   },
 
   // Xóa embedding
-  deleteEmbedding: async (candidateId) => {
-    return await semanticSearchModel.deleteEmbedding(candidateId)
+  deleteEmbedding: async (applicationId) => {
+    return await semanticSearchModel.deleteEmbedding(applicationId)
   }
 }
 

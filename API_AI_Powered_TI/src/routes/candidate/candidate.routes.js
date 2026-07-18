@@ -1,6 +1,7 @@
 import express from 'express'
 import candidateController from '~/controllers/candidate/candidate.controller'
 import { authGuard } from '~/middlewares/auth.guard'
+import { ensureCandidate } from '~/middlewares/ensureCandidate.middleware'
 import { CloudinaryProvider } from '~/providers/cloudinary.provider'
 import validate from '~/middlewares/validate.middleware'
 import {
@@ -17,6 +18,7 @@ const router = express.Router()
 
 // Tất cả routes cần đăng nhập
 router.use(authGuard.isAuthorized)
+router.use(ensureCandidate)
 
 // Ứng tuyển công việc
 router.post(
@@ -71,7 +73,6 @@ router.put(
 router.post(
   '/avatar',
   CloudinaryProvider.uploadAvatar,
-  validate(uploadAvatarValidation, 'file'),
   candidateController.uploadAvatar
 )
 

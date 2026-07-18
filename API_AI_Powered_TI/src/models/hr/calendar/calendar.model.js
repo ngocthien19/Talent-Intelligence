@@ -28,7 +28,7 @@ const calendarModel = {
     `
 
     const result = await pool.query(query, [
-      candidateId,
+      candidateId, // applicationId
       interviewDate,
       duration || 60,
       location || null,
@@ -40,13 +40,17 @@ const calendarModel = {
     return result.rows[0]
   },
 
-  // Lấy danh sách lịch phỏng vấn theo candidate
+  // Lấy danh sách lịch phỏng vấn theo candidate (application)
   getSchedulesByCandidate: async (candidateId) => {
     const result = await pool.query(
-      `SELECT s.*, c.name as candidate_name, c.email as candidate_email,
-              c.position_applied, c.phone as candidate_phone
+      `SELECT s.*, 
+              a.position as position_applied,
+              cp.name as candidate_name, 
+              cp.email as candidate_email,
+              cp.phone as candidate_phone
        FROM interview_schedules s
-       LEFT JOIN candidates c ON s.candidate_id = c.id
+       LEFT JOIN applications a ON s.candidate_id = a.id
+       LEFT JOIN candidate_profiles cp ON a.candidate_profile_id = cp.id
        WHERE s.candidate_id = $1
        ORDER BY s.interview_date ASC`,
       [candidateId]
@@ -57,11 +61,15 @@ const calendarModel = {
   // Lấy danh sách lịch phỏng vấn theo công ty
   getSchedulesByCompany: async (companyId, limit = 20, offset = 0) => {
     const result = await pool.query(
-      `SELECT s.*, c.name as candidate_name, c.email as candidate_email,
-              c.position_applied, c.phone as candidate_phone
+      `SELECT s.*, 
+              a.position as position_applied,
+              cp.name as candidate_name, 
+              cp.email as candidate_email,
+              cp.phone as candidate_phone
        FROM interview_schedules s
-       LEFT JOIN candidates c ON s.candidate_id = c.id
-       WHERE c.company_id = $1
+       LEFT JOIN applications a ON s.candidate_id = a.id
+       LEFT JOIN candidate_profiles cp ON a.candidate_profile_id = cp.id
+       WHERE a.company_id = $1
        ORDER BY s.interview_date ASC
        LIMIT $2 OFFSET $3`,
       [companyId, limit, offset]
@@ -72,12 +80,17 @@ const calendarModel = {
   // Lấy chi tiết lịch phỏng vấn
   getScheduleById: async (id) => {
     const result = await pool.query(
-      `SELECT s.*, c.name as candidate_name, c.email as candidate_email,
-              c.position_applied, c.phone as candidate_phone,
-              c.company_id, comp.name as company_name
+      `SELECT s.*, 
+              a.position as position_applied,
+              a.company_id,
+              cp.name as candidate_name, 
+              cp.email as candidate_email,
+              cp.phone as candidate_phone,
+              comp.name as company_name
        FROM interview_schedules s
-       LEFT JOIN candidates c ON s.candidate_id = c.id
-       LEFT JOIN companies comp ON c.company_id = comp.id
+       LEFT JOIN applications a ON s.candidate_id = a.id
+       LEFT JOIN candidate_profiles cp ON a.candidate_profile_id = cp.id
+       LEFT JOIN companies comp ON a.company_id = comp.id
        WHERE s.id = $1`,
       [id]
     )
@@ -155,11 +168,14 @@ const calendarModel = {
   // Lấy lịch sắp tới
   getUpcomingSchedules: async (companyId, limit = 5) => {
     const result = await pool.query(
-      `SELECT s.*, c.name as candidate_name, c.email as candidate_email,
-              c.position_applied
+      `SELECT s.*, 
+              a.position as position_applied,
+              cp.name as candidate_name, 
+              cp.email as candidate_email
        FROM interview_schedules s
-       LEFT JOIN candidates c ON s.candidate_id = c.id
-       WHERE c.company_id = $1
+       LEFT JOIN applications a ON s.candidate_id = a.id
+       LEFT JOIN candidate_profiles cp ON a.candidate_profile_id = cp.id
+       WHERE a.company_id = $1
        AND s.interview_date > NOW()
        AND s.status = 'scheduled'
        ORDER BY s.interview_date ASC
@@ -172,11 +188,14 @@ const calendarModel = {
   // Lấy lịch hôm nay
   getTodaySchedules: async (companyId) => {
     const result = await pool.query(
-      `SELECT s.*, c.name as candidate_name, c.email as candidate_email,
-              c.position_applied
+      `SELECT s.*, 
+              a.position as position_applied,
+              cp.name as candidate_name, 
+              cp.email as candidate_email
        FROM interview_schedules s
-       LEFT JOIN candidates c ON s.candidate_id = c.id
-       WHERE c.company_id = $1
+       LEFT JOIN applications a ON s.candidate_id = a.id
+       LEFT JOIN candidate_profiles cp ON a.candidate_profile_id = cp.id
+       WHERE a.company_id = $1
        AND s.interview_date::date = CURRENT_DATE
        ORDER BY s.interview_date ASC`,
       [companyId]

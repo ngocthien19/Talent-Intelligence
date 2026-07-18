@@ -5,7 +5,7 @@ const calendarController = {
   createSchedule: async (req, res) => {
     try {
       const {
-        candidateId,
+        applicationId,
         interviewDate,
         duration,
         location,
@@ -14,8 +14,15 @@ const calendarController = {
         autoCreateCalendar
       } = req.body
 
+      if (!applicationId) {
+        return res.status(400).json({
+          success: false,
+          message: 'Vui lòng cung cấp applicationId'
+        })
+      }
+
       const schedule = await calendarService.createSchedule({
-        candidateId,
+        applicationId,
         interviewDate,
         duration,
         location,

@@ -1,13 +1,32 @@
 import resumeEnrichmentModel from '~/models/hr/resume-enrichment/resume-enrichment.model'
-import candidateModel from '~/models/candidate/candidate.model'
+import applicationModel from '~/models/candidate/application.model'
+import candidateProfileModel from '~/models/candidate/candidate-profile.model'
 
 const resumeEnrichmentService = {
   // Phân tích nâng cao CV
-  analyzeResume: async (candidateId) => {
-    // 1. Lấy thông tin candidate
-    const candidate = await candidateModel.findByIdAdmin(candidateId)
-    if (!candidate) {
-      throw new Error('Không tìm thấy ứng viên')
+  analyzeResume: async (applicationId) => {
+    // 1. Lấy thông tin application và profile
+    const application = await applicationModel.findByIdAdmin(applicationId)
+    if (!application) {
+      throw new Error('Không tìm thấy đơn ứng tuyển')
+    }
+
+    const profile = await candidateProfileModel.findById(application.candidate_profile_id)
+    if (!profile) {
+      throw new Error('Không tìm thấy hồ sơ ứng viên')
+    }
+
+    // Kết hợp dữ liệu
+    const candidate = {
+      ...application,
+      ...profile,
+      name: profile.name,
+      email: profile.email,
+      phone: profile.phone,
+      address: profile.address,
+      position_applied: application.position,
+      cv_text: profile.cv_text,
+      parsed_data: profile.parsed_data
     }
 
     const cvText = candidate.cv_text || ''
@@ -30,7 +49,7 @@ const resumeEnrichmentService = {
 
     // 7. Tổng hợp kết quả
     const enrichmentData = {
-      candidateId,
+      candidateId: applicationId,
       promotionSpeed: promotionAnalysis.speed,
       promotionHistory: promotionAnalysis.history,
       employmentGaps: gapAnalysis.gaps,
@@ -63,8 +82,8 @@ const resumeEnrichmentService = {
   },
 
   // Lấy kết quả phân tích
-  getEnrichment: async (candidateId) => {
-    const result = await resumeEnrichmentModel.getEnrichment(candidateId)
+  getEnrichment: async (applicationId) => {
+    const result = await resumeEnrichmentModel.getEnrichment(applicationId)
     if (!result) {
       throw new Error('Chưa có phân tích nâng cao cho ứng viên này')
     }
@@ -72,31 +91,26 @@ const resumeEnrichmentService = {
   },
 
   // Kiểm tra đã phân tích chưa
-  hasEnrichment: async (candidateId) => {
-    return await resumeEnrichmentModel.hasEnrichment(candidateId)
+  hasEnrichment: async (applicationId) => {
+    return await resumeEnrichmentModel.hasEnrichment(applicationId)
   },
 
   // Xóa phân tích
-  deleteEnrichment: async (candidateId) => {
-    return await resumeEnrichmentModel.deleteEnrichment(candidateId)
+  deleteEnrichment: async (applicationId) => {
+    return await resumeEnrichmentModel.deleteEnrichment(applicationId)
   }
 }
 
-// 1. Phân tích tốc độ thăng tiến
+// Các hàm helper giữ nguyên (không thay đổi)
 async function analyzePromotion(cvText, parsedData) {
-  // Tìm kiếm các vị trí công việc
   const jobTitles = extractJobTitles(cvText)
-
-  // Phân tích thăng tiến
   const history = []
   let speed = 0
 
   if (jobTitles.length >= 2) {
-    // So sánh các vị trí
     for (let i = 1; i < jobTitles.length; i++) {
       const prev = jobTitles[i - 1]
       const curr = jobTitles[i]
-
       const isPromotion = checkPromotion(prev.title, curr.title)
       history.push({
         from: prev.title,
@@ -106,8 +120,6 @@ async function analyzePromotion(cvText, parsedData) {
         isPromotion
       })
     }
-
-    // Tính tốc độ thăng tiến
     const promotions = history.filter(h => h.isPromotion).length
     speed = promotions / history.length * 100
   }
@@ -119,7 +131,6 @@ async function analyzePromotion(cvText, parsedData) {
   }
 }
 
-// 2. Phân tích khoảng trống nghỉ việc
 async function analyzeEmploymentGaps(cvText, parsedData) {
   const dates = extractWorkDates(cvText)
   const gaps = []
@@ -128,7 +139,6 @@ async function analyzeEmploymentGaps(cvText, parsedData) {
   for (let i = 1; i < dates.length; i++) {
     const prevEnd = dates[i - 1].endDate
     const currStart = dates[i].startDate
-
     if (prevEnd && currStart) {
       const gapMonths = calculateMonthDifference(prevEnd, currStart)
       if (gapMonths > 3) {
@@ -151,13 +161,10 @@ async function analyzeEmploymentGaps(cvText, parsedData) {
   }
 }
 
-// 3. Phân tích độ chi tiết của thành tích
 async function analyzeAchievementDetail(cvText) {
-  // Đếm số lượng số liệu cụ thể
   const numberRegex = /[0-9]+%?|tăng|giảm|gấp đôi|gấp ba|\d+ năm|\d+ tháng/g
   const matches = cvText.match(numberRegex) || []
 
-  // Đếm số lượng thành tích có số liệu
   const achievementPatterns = [
     /tăng\s+[0-9]+%/gi,
     /giảm\s+[0-9]+%/gi,
@@ -173,7 +180,6 @@ async function analyzeAchievementDetail(cvText) {
     score += count * 2
   }
 
-  // Điểm tối đa 100
   return {
     score: Math.min(score, 100),
     hasMetrics: score > 20,
@@ -182,11 +188,8 @@ async function analyzeAchievementDetail(cvText) {
   }
 }
 
-// 4. Phân tích đa dạng kỹ năng
 async function analyzeSkillDiversity(parsedData) {
   const skills = parsedData.skills || []
-
-  // Phân loại kỹ năng
   const categories = {
     'Programming Languages': 0,
     'Frameworks & Libraries': 0,
@@ -226,7 +229,6 @@ async function analyzeSkillDiversity(parsedData) {
   }
 }
 
-// 5. Phân tích xu hướng công nghệ
 async function analyzeTechTrends(cvText, parsedData) {
   const skills = parsedData.skills || []
 
@@ -261,13 +263,11 @@ async function analyzeTechTrends(cvText, parsedData) {
 }
 
 function extractJobTitles(cvText) {
-  // Regex đơn giản để tìm vị trí công việc
   const patterns = [
     /(?:vị trí|position|title)[:\s]+([^\n]+)/gi,
     /(?:làm việc tại|work at)[:\s]+([^\n]+)/gi,
     /(?:chức vụ|role)[:\s]+([^\n]+)/gi
   ]
-
   const titles = []
   for (const pattern of patterns) {
     const matches = cvText.match(pattern)
@@ -278,16 +278,13 @@ function extractJobTitles(cvText) {
       }
     }
   }
-
   return titles.map(t => ({ title: t, date: null }))
 }
 
 function extractWorkDates(cvText) {
-  // Regex để tìm ngày tháng trong kinh nghiệm làm việc
   const dateRegex = /(\d{1,2}\/\d{4}|\d{4})\s*[-–—]\s*(\d{1,2}\/\d{4}|\d{4}|Present|Hiện tại)/gi
   const dates = []
   const matches = cvText.match(dateRegex)
-
   if (matches) {
     for (const match of matches) {
       const parts = match.split(/\s*[-–—]\s*/)
@@ -299,57 +296,42 @@ function extractWorkDates(cvText) {
       }
     }
   }
-
   return dates
 }
 
 function checkPromotion(from, to) {
   const seniorKeywords = ['senior', 'lead', 'principal', 'manager', 'director', 'head', 'chief', 'vp', 'c-level']
   const juniorKeywords = ['junior', 'intern', 'associate', 'entry', 'trainee']
-
   const fromLower = from.toLowerCase()
   const toLower = to.toLowerCase()
-
   for (const keyword of seniorKeywords) {
-    if (toLower.includes(keyword) && !fromLower.includes(keyword)) {
-      return true
-    }
+    if (toLower.includes(keyword) && !fromLower.includes(keyword)) return true
   }
-
   for (const keyword of juniorKeywords) {
-    if (fromLower.includes(keyword) && !toLower.includes(keyword)) {
-      return true
-    }
+    if (fromLower.includes(keyword) && !toLower.includes(keyword)) return true
   }
-
   return false
 }
 
 function calculateMonthDifference(start, end) {
-  // Đơn giản hóa: giả định định dạng MM/YYYY
   const [sMonth, sYear] = start.includes('/') ? start.split('/') : [1, parseInt(start)]
   const [eMonth, eYear] = end.includes('/') ? end.split('/') : [1, parseInt(end)]
-
   return (parseInt(eYear) - parseInt(sYear)) * 12 + (parseInt(eMonth) - parseInt(sMonth))
 }
 
 function generateSummary(promotion, gaps, achievement, skillDiversity, tech) {
   const parts = []
-
   if (promotion.jobCount >= 2) {
     parts.push(`Tốc độ thăng tiến: ${promotion.speed}% (${promotion.history.length} lần thăng tiến)`)
   }
-
   if (gaps.hasGap) {
     parts.push(`Có ${gaps.gaps.length} khoảng trống nghỉ việc (tổng ${gaps.totalGapMonths} tháng)`)
   } else {
     parts.push('Không có khoảng trống nghỉ việc')
   }
-
   parts.push(`Độ chi tiết thành tích: ${achievement.level} (${achievement.score}/100)`)
   parts.push(`Đa dạng kỹ năng: ${skillDiversity.diversityLevel}`)
   parts.push(`Công nghệ sử dụng: ${tech.categories.length} lĩnh vực`)
-
   return parts.join(' | ')
 }
 
