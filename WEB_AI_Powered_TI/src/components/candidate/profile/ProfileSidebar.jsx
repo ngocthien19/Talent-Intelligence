@@ -44,6 +44,7 @@ const ProfileSidebar = ({ user, profile, activeTab, onTabChange, isGoogleLogin =
   const displayName = profile?.fullname || user?.fullname || 'User'
   const userEmail = profile?.email || user?.email || ''
 
+  // Menu items - chỉ hiển thị đổi mật khẩu nếu KHÔNG phải login Google
   const menuItems = [
     {
       id: 'info',
@@ -52,7 +53,6 @@ const ProfileSidebar = ({ user, profile, activeTab, onTabChange, isGoogleLogin =
     }
   ]
 
-  // Chỉ hiển thị menu đổi mật khẩu nếu KHÔNG phải login Google
   if (!isGoogleLogin) {
     menuItems.push({
       id: 'password',
@@ -93,6 +93,7 @@ const ProfileSidebar = ({ user, profile, activeTab, onTabChange, isGoogleLogin =
           <FaEnvelope size={10} />
           {userEmail}
         </p>
+        {/* Badge Google nếu login bằng Google */}
         {isGoogleLogin && (
           <motion.span
             initial={{ opacity: 0, scale: 0.8 }}
