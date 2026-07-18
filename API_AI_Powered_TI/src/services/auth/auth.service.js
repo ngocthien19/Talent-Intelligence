@@ -187,7 +187,8 @@ const authService = {
         roleName: user.role_name,
         avatar: user.avatar,
         isActive: user.is_active,
-        companyId: user.company_id
+        companyId: user.company_id,
+        hasPassword: !!user.password_hash
       },
       accessToken,
       refreshToken,
@@ -285,7 +286,8 @@ const authService = {
         roleId: user.role_id,
         roleName: user.role_name,
         avatar: user.avatar,
-        isActive: user.is_active
+        isActive: user.is_active,
+        hasPassword: !!user.password_hash
       },
       tokens: {
         accessToken,
