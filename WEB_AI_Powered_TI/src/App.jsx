@@ -12,6 +12,7 @@ import JobDetailPage from '~/pages/candidate/JobDetailPage'
 import Favorites from '~/pages/candidate/Favorites'
 import Applications from '~/pages/candidate/Applications'
 import ApplicationDetail from '~/pages/candidate/ApplicationDetail'
+import Profile from '~/pages/candidate/Profile'
 
 
 import Login from '~/pages/auth/Login'
@@ -62,6 +63,7 @@ function App() {
           <Route path="favorites" element={<Favorites />} />
           <Route path="applications" element={<Applications />} />
           <Route path="applications/:id" element={<ApplicationDetail />} />
+          <Route path="profile" element={<Profile />} />
 
         </Route>
       </Routes>
