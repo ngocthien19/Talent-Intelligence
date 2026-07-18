@@ -7,10 +7,7 @@ const candidateController = {
       const userId = req.user.id
       const file = req.file
 
-      const result = await candidateService.applyJob(
-        { ...req.body, user_id: userId },
-        file
-      )
+      const result = await candidateService.applyJob(userId, req.body, file)
 
       return res.status(201).json({
         success: true,

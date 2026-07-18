@@ -156,6 +156,7 @@ const candidateService = {
       phone: profile.phone || user?.phone || '',
       address: profile.address || user?.address || '',
       avatar: avatar,
+      hasPassword: !!user?.password_hash,
       cv_text: profile.cv_text,
       cv_url: profile.cv_url,
       cv_original_name: profile.cv_original_name,

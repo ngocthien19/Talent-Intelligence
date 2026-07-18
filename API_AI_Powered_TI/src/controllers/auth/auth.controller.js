@@ -136,7 +136,8 @@ const authController = {
         roleName: user.roleName || user.role_name,
         avatar: user.avatar || null,
         isActive: user.is_active,
-        companyId: user.companyId || user.company_id || null
+        companyId: user.companyId || user.company_id || null,
+        hasPassword: !!user.password_hash
       }
 
       const frontendUrl = env.FRONTEND_URL || 'http://localhost:5173'
