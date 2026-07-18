@@ -16,7 +16,10 @@ export const profileApi = {
 
   // Đổi mật khẩu
   changePassword: async (data) => {
-    const response = await authorizedAxiosInstance.put(`${DEV_API_URL}/api/auth/change-password`, data)
+    const response = await authorizedAxiosInstance.put(
+      `${DEV_API_URL}/api/candidates/change-password`,
+      data
+    )
     return response.data
   },
 

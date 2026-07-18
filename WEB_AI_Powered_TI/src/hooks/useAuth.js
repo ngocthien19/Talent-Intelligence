@@ -31,6 +31,10 @@ export const useAuth = () => {
     favoriteIds = []
   } = authState
 
+  const isGoogleLogin = user?.google_id !== null && user?.google_id !== undefined
+
+  const hasPassword = user?.password_hash !== null && user?.password_hash !== undefined
+
   // ĐĂNG NHẬP
   const handleLogin = async (loginData) => {
     try {
@@ -184,6 +188,8 @@ export const useAuth = () => {
     isLoading,
     error,
     favoriteIds: favoriteIds || [],
+    isGoogleLogin,
+    hasPassword,
     login: handleLogin,
     register: handleRegister,
     verifyOtp: handleVerifyOtp,
@@ -198,8 +204,8 @@ export const useAuth = () => {
     addFavorite,
     removeFavorite,
     isFavorite,
-    syncFavoriteIds, // Thêm hàm mới
-    setFavoritesFromApi // Thêm hàm mới
+    syncFavoriteIds,
+    setFavoritesFromApi
   }
 
 }
