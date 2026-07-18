@@ -21,14 +21,6 @@ export const changePasswordValidation = Joi.object({
       'string.min': 'Mật khẩu mới phải có ít nhất 6 ký tự',
       'string.max': 'Mật khẩu mới không được vượt quá 50 ký tự',
       'any.invalid': 'Mật khẩu mới phải khác mật khẩu hiện tại'
-    }),
-  confirmPassword: Joi.string()
-    .required()
-    .valid(Joi.ref('newPassword'))
-    .messages({
-      'any.required': 'Vui lòng xác nhận mật khẩu mới',
-      'string.empty': 'Vui lòng xác nhận mật khẩu mới',
-      'any.only': 'Mật khẩu xác nhận không khớp'
     })
 })
 
