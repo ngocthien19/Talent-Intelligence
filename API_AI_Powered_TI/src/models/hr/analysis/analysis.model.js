@@ -72,14 +72,13 @@ const analysisModel = {
   },
 
   // Lấy kết quả phân tích
-  getAnalysisResult: async (candidateId) => {
+  getAnalysisResult: async (applicationId) => {
     const result = await pool.query(
-      `SELECT * FROM analyses
-       WHERE candidate_id = $1
-       AND analysis_type = 'full_analysis'
-       ORDER BY created_at DESC
+      `SELECT * FROM analyses 
+       WHERE candidate_id = $1 
+       ORDER BY created_at DESC 
        LIMIT 1`,
-      [candidateId]
+      [applicationId]
     )
     return result.rows[0]
   },

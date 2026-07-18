@@ -1,6 +1,7 @@
 import calendarModel from '~/models/hr/calendar/calendar.model'
 import { createCalendarEvent, deleteCalendarEvent } from '~/providers/google-calendar.provider'
-import candidateModel from '~/models/candidate/candidate.model'
+import applicationModel from '~/models/candidate/application.model'
+import candidateProfileModel from '~/models/candidate/candidate-profile.model'
 import { EmailProvider } from '~/providers/email.provider'
 import notificationService from '~/services/notification/notification.service'
 
@@ -22,7 +23,7 @@ const calendarService = {
   // Tạo lịch phỏng vấn
   createSchedule: async (data) => {
     const {
-      candidateId,
+      applicationId, // Thay vì candidateId
       interviewDate,
       duration,
       location,
@@ -31,15 +32,31 @@ const calendarService = {
       autoCreateCalendar = true
     } = data
 
-    const candidate = await candidateModel.findByIdAdmin(candidateId)
-    if (!candidate) {
-      throw new Error('Không tìm thấy ứng viên')
+    // Lấy thông tin application và profile
+    const application = await applicationModel.findByIdAdmin(applicationId)
+    if (!application) {
+      throw new Error('Không tìm thấy đơn ứng tuyển')
+    }
+
+    const profile = await candidateProfileModel.findById(application.candidate_profile_id)
+    if (!profile) {
+      throw new Error('Không tìm thấy hồ sơ ứng viên')
+    }
+
+    // Kết hợp dữ liệu
+    const candidate = {
+      ...application,
+      ...profile,
+      name: profile.name,
+      email: profile.email,
+      phone: profile.phone,
+      position_applied: application.position
     }
 
     const finalMeetLink = meetLink || generateMeetLink()
 
     const schedule = await calendarModel.createSchedule({
-      candidateId,
+      candidateId: applicationId, // Vẫn lưu applicationId vào candidate_id
       interviewDate,
       duration,
       location: location || 'Google Meet',
@@ -57,7 +74,7 @@ const calendarService = {
 
     await sendInterviewConfirmation(candidate, schedule, finalMeetLink)
 
-    await notificationService.sendToCandidate(candidateId, {
+    await notificationService.sendToCandidate(profile.user_id, {
       type: 'interview_invite',
       title: `Lịch phỏng vấn - ${candidate.position_applied}`,
       content: `Bạn có lịch phỏng vấn vào lúc ${new Date(interviewDate).toLocaleString('vi-VN')}`,
@@ -81,9 +98,24 @@ const calendarService = {
       throw new Error('Không tìm thấy lịch phỏng vấn')
     }
 
-    const candidate = await candidateModel.findByIdAdmin(schedule.candidate_id)
-    if (!candidate) {
-      throw new Error('Không tìm thấy ứng viên')
+    // Lấy thông tin application và profile
+    const application = await applicationModel.findByIdAdmin(schedule.candidate_id)
+    if (!application) {
+      throw new Error('Không tìm thấy đơn ứng tuyển')
+    }
+
+    const profile = await candidateProfileModel.findById(application.candidate_profile_id)
+    if (!profile) {
+      throw new Error('Không tìm thấy hồ sơ ứng viên')
+    }
+
+    const candidate = {
+      ...application,
+      ...profile,
+      name: profile.name,
+      email: profile.email,
+      phone: profile.phone,
+      position_applied: application.position
     }
 
     const meetLink = schedule.meeting_link || generateMeetLink()
@@ -198,7 +230,7 @@ Ghi chú: ${schedule.notes || 'Không có ghi chú'}
   }
 }
 
-// Gửi email xác nhận phỏng vấn
+// Gửi email xác nhận phỏng vấn (giữ nguyên)
 async function sendInterviewConfirmation(candidate, schedule, meetingLink) {
   const htmlContent = `
 <!DOCTYPE html>

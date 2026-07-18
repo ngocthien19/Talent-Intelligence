@@ -170,12 +170,10 @@ const candidateController = {
     }
   },
 
-  // Lấy số lượng ứng tuyển
   getApplicationCount: async (req, res) => {
     try {
       const userId = req.user.id
       const count = await candidateService.getApplicationCount(userId)
-
       return res.status(200).json({
         success: true,
         data: { count }

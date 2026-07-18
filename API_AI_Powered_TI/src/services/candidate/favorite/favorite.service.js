@@ -1,18 +1,11 @@
 import favoriteModel from '~/models/candidate/favorite/favorite.model'
-import candidateModel from '~/models/candidate/candidate.model'
-import pool from '~/config/db.js'
+import candidateService from '~/services/candidate/candidate.service'
+import pool from '~/config/db'
 
 const favoriteService = {
-  // Toggle yêu thích
   toggleFavorite: async (userId, jobId) => {
-    const candidate = await candidateModel.getCandidateByUserId(userId)
-    if (!candidate) {
-      throw new Error('Không tìm thấy hồ sơ ứng viên. Vui lòng tạo hồ sơ trước.')
-    }
+    const profile = await candidateService.ensureProfileExists(userId)
 
-    const candidateId = candidate.id
-
-    // Kiểm tra job tồn tại
     const jobResult = await pool.query(
       'SELECT id FROM job_descriptions WHERE id = $1 AND is_active = true',
       [jobId]
@@ -22,46 +15,28 @@ const favoriteService = {
       throw new Error('Không tìm thấy công việc')
     }
 
-    return await favoriteModel.toggleFavorite(candidateId, jobId)
+    return await favoriteModel.toggleFavorite(profile.id, jobId)
   },
 
-  // Lấy danh sách yêu thích
   getFavorites: async (userId, limit = 20, page = 1) => {
-    const candidate = await candidateModel.getCandidateByUserId(userId)
-    if (!candidate) {
-      throw new Error('Không tìm thấy hồ sơ ứng viên')
-    }
-
-    const candidateId = candidate.id
+    const profile = await candidateService.ensureProfileExists(userId)
     const offset = (page - 1) * limit
-    return await favoriteModel.getFavorites(candidateId, parseInt(limit), parseInt(offset))
+    return await favoriteModel.getFavorites(profile.id, parseInt(limit), parseInt(offset))
   },
 
-  // Kiểm tra đã yêu thích chưa
   isFavorite: async (userId, jobId) => {
-    const candidate = await candidateModel.getCandidateByUserId(userId)
-    if (!candidate) {
-      return false
-    }
-
-    const candidateId = candidate.id
-    return await favoriteModel.isFavorite(candidateId, jobId)
+    const profile = await candidateService.ensureProfileExists(userId)
+    return await favoriteModel.isFavorite(profile.id, jobId)
   },
 
-  // Lấy số lượng yêu thích của job
+  // FIX BUG: gọi đúng hàm
   getFavoriteCount: async (jobId) => {
-    return await favoriteModel.getCandidateByUserId(jobId)
+    return await favoriteModel.getFavoriteCount(jobId)
   },
 
-  // Xóa tất cả yêu thích
   clearFavorites: async (userId) => {
-    const candidate = await candidateModel.getCandidateByUserId(userId)
-    if (!candidate) {
-      throw new Error('Không tìm thấy hồ sơ ứng viên')
-    }
-
-    const candidateId = candidate.id
-    return await favoriteModel.clearFavorites(candidateId)
+    const profile = await candidateService.ensureProfileExists(userId)
+    return await favoriteModel.clearFavorites(profile.id)
   }
 }
 

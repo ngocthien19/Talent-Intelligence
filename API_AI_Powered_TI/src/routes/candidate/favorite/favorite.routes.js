@@ -1,6 +1,7 @@
 import express from 'express'
 import favoriteController from '~/controllers/candidate/favorite/favorite.controller'
 import { authGuard } from '~/middlewares/auth.guard'
+import { ensureCandidate } from '~/middlewares/ensureCandidate.middleware'
 import { ROLES } from '~/utils/constants'
 import validate from '~/middlewares/validate.middleware'
 import {
@@ -13,6 +14,7 @@ const router = express.Router()
 // Tất cả routes cần đăng nhập và là candidate
 router.use(authGuard.isAuthorized)
 router.use(authGuard.authorize(ROLES.CANDIDATE))
+router.use(ensureCandidate)
 
 // Toggle yêu thích (thêm/xóa)
 router.post(

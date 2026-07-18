@@ -1,8 +1,8 @@
 import pool from '~/config/db'
 
 const semanticSearchModel = {
-  // Lưu embedding cho candidate
-  saveEmbedding: async (candidateId, embedding, contentType = 'full_text') => {
+  // Lưu embedding cho application
+  saveEmbedding: async (applicationId, embedding, contentType = 'full_text') => {
     const query = `
       INSERT INTO candidate_embeddings (candidate_id, embedding, content_type)
       VALUES ($1, $2::vector, $3)
@@ -10,30 +10,34 @@ const semanticSearchModel = {
       DO UPDATE SET embedding = $2::vector, updated_at = CURRENT_TIMESTAMP
       RETURNING *
     `
-    const result = await pool.query(query, [candidateId, JSON.stringify(embedding), contentType])
+    const result = await pool.query(query, [applicationId, JSON.stringify(embedding), contentType])
     return result.rows[0]
   },
 
-  // Tìm kiếm ngữ nghĩa
+  // Tìm kiếm ngữ nghĩa (JOIN với applications và candidate_profiles)
   semanticSearch: async (embedding, limit = 20, threshold = 0.6) => {
     const query = `
       SELECT 
-        ce.candidate_id,
-        c.name,
-        c.email,
-        c.phone,
-        c.position_applied,
-        c.overall_score,
-        c.skills_match_score,
-        c.culture_fit_score,
-        c.retention_score,
-        c.status,
-        c.created_at,
-        c.cv_url,
-        c.parsed_data,
+        ce.candidate_id as application_id,
+        a.id as application_id,
+        a.position as position_applied,
+        a.status,
+        a.overall_score,
+        a.skills_match_score,
+        a.culture_fit_score,
+        a.retention_score,
+        a.created_at,
+        cp.id as candidate_profile_id,
+        cp.name,
+        cp.email,
+        cp.phone,
+        cp.cv_url,
+        cp.parsed_data,
+        cp.skills,
         1 - (ce.embedding <=> $1::vector) as similarity
       FROM candidate_embeddings ce
-      JOIN candidates c ON ce.candidate_id = c.id
+      JOIN applications a ON ce.candidate_id = a.id
+      JOIN candidate_profiles cp ON a.candidate_profile_id = cp.id
       WHERE 1 - (ce.embedding <=> $1::vector) > $2
       AND ce.content_type = 'full_text'
       ORDER BY ce.embedding <=> $1::vector
@@ -58,38 +62,38 @@ const semanticSearchModel = {
 
     // Company ID
     if (companyId) {
-      conditions.push(`c.company_id = $${paramIndex}`)
+      conditions.push(`a.company_id = $${paramIndex}`)
       params.push(companyId)
       paramIndex++
     }
 
     // Filter status
     if (status) {
-      conditions.push(`c.status = $${paramIndex}`)
+      conditions.push(`a.status = $${paramIndex}`)
       params.push(status)
       paramIndex++
     }
 
     // Filter score
     if (minScore !== undefined && minScore !== null) {
-      conditions.push(`c.overall_score >= $${paramIndex}`)
+      conditions.push(`a.overall_score >= $${paramIndex}`)
       params.push(minScore)
       paramIndex++
     }
     if (maxScore !== undefined && maxScore !== null) {
-      conditions.push(`c.overall_score <= $${paramIndex}`)
+      conditions.push(`a.overall_score <= $${paramIndex}`)
       params.push(maxScore)
       paramIndex++
     }
 
     // Filter date
     if (startDate) {
-      conditions.push(`c.created_at::date >= $${paramIndex}`)
+      conditions.push(`a.created_at::date >= $${paramIndex}`)
       params.push(startDate)
       paramIndex++
     }
     if (endDate) {
-      conditions.push(`c.created_at::date <= $${paramIndex}`)
+      conditions.push(`a.created_at::date <= $${paramIndex}`)
       params.push(endDate)
       paramIndex++
     }
@@ -98,22 +102,26 @@ const semanticSearchModel = {
 
     const query = `
       SELECT 
-        ce.candidate_id,
-        c.name,
-        c.email,
-        c.phone,
-        c.position_applied,
-        c.overall_score,
-        c.skills_match_score,
-        c.culture_fit_score,
-        c.retention_score,
-        c.status,
-        c.created_at,
-        c.cv_url,
-        c.parsed_data,
+        ce.candidate_id as application_id,
+        a.id as application_id,
+        a.position as position_applied,
+        a.status,
+        a.overall_score,
+        a.skills_match_score,
+        a.culture_fit_score,
+        a.retention_score,
+        a.created_at,
+        cp.id as candidate_profile_id,
+        cp.name,
+        cp.email,
+        cp.phone,
+        cp.cv_url,
+        cp.parsed_data,
+        cp.skills,
         1 - (ce.embedding <=> $1::vector) as similarity
       FROM candidate_embeddings ce
-      JOIN candidates c ON ce.candidate_id = c.id
+      JOIN applications a ON ce.candidate_id = a.id
+      JOIN candidate_profiles cp ON a.candidate_profile_id = cp.id
       ${whereClause}
       AND ce.content_type = 'full_text'
       ORDER BY ce.embedding <=> $1::vector
@@ -125,28 +133,28 @@ const semanticSearchModel = {
     return result.rows
   },
 
-  // Lấy tất cả candidate IDs theo company
-  getCandidateIdsByCompany: async (companyId) => {
+  // Lấy tất cả application IDs theo company
+  getApplicationIdsByCompany: async (companyId) => {
     const result = await pool.query(
-      'SELECT id FROM candidates WHERE company_id = $1',
+      'SELECT id FROM applications WHERE company_id = $1',
       [companyId]
     )
     return result.rows
   },
 
-  // Lấy tất cả embedding của candidate
-  getCandidateEmbeddings: async (candidateId) => {
+  // Lấy tất cả embedding của application
+  getApplicationEmbeddings: async (applicationId) => {
     const result = await pool.query(
       'SELECT * FROM candidate_embeddings WHERE candidate_id = $1',
-      [candidateId]
+      [applicationId]
     )
     return result.rows
   },
 
   // Xóa embedding
-  deleteEmbedding: async (candidateId, contentType = null) => {
+  deleteEmbedding: async (applicationId, contentType = null) => {
     let query = 'DELETE FROM candidate_embeddings WHERE candidate_id = $1'
-    const params = [candidateId]
+    const params = [applicationId]
 
     if (contentType) {
       query += ' AND content_type = $2'
@@ -158,10 +166,10 @@ const semanticSearchModel = {
   },
 
   // Kiểm tra embedding đã tồn tại chưa
-  hasEmbedding: async (candidateId) => {
+  hasEmbedding: async (applicationId) => {
     const result = await pool.query(
       'SELECT id FROM candidate_embeddings WHERE candidate_id = $1',
-      [candidateId]
+      [applicationId]
     )
     return result.rows.length > 0
   }
