@@ -101,6 +101,7 @@
     "optional": "任意",
     "coverLetterPlaceholder": "自己紹介とこのポジションに適している理由を簡単に説明してください...",
     "submitApplication": "応募を送信",
+    "minChars": "最小0文字",
     "validation": {
       "cvRequired": "応募するにはCVを選択してください",
       "cvFileType": "PDFまたはWordファイルをアップロードしてください",

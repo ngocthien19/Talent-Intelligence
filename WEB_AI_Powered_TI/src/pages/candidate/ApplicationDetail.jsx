@@ -26,7 +26,6 @@ import { applicationApi } from '~/api/candidate/application.api'
 import { toast } from 'react-toastify'
 import { useScrollToTop } from '~/hooks/useScrollToTop'
 
-
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
@@ -245,8 +244,6 @@ const ApplicationDetail = () => {
             {/* Header Row: Title + Back Button */}
             <motion.div
               variants={fadeUp}
-              className="flex flex-wrap items-center justify-between gap-4 mb-6"
-              style={{ borderBottom: '1px solid', borderColor: 'rgba(229, 231, 235, 0.5)' }}
               className="flex flex-wrap items-center justify-between gap-4 pb-4 mb-6 border-b border-brand-light/50 dark:border-gray-700/50"
             >
               {/* Title - bên trái */}
@@ -289,7 +286,7 @@ const ApplicationDetail = () => {
                 )}
                 <div>
                   <h1 className="text-2xl font-extrabold text-brand-secondary dark:text-white">
-                    {application.job_title || application.position_applied}
+                    {application.job_title || application.position}
                   </h1>
                   <p className="text-brand-text dark:text-gray-400 flex items-center gap-1">
                     <FaBuilding size={14} />
@@ -310,23 +307,29 @@ const ApplicationDetail = () => {
               </div>
             </motion.div>
 
-            {/* Candidate Info */}
+            {/* Candidate Info - SỬA: dùng candidate_name và candidate_email */}
             <motion.div
               variants={slideLeft}
               className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 p-4 bg-brand-bg/50 dark:bg-gray-800/50 rounded-xl"
             >
               <div className="flex items-center gap-3 text-sm">
                 <FaUser size={16} className="text-brand-text/40 dark:text-gray-500" />
-                <span className="text-brand-text dark:text-gray-300">{application.name}</span>
+                <span className="text-brand-text dark:text-gray-300">
+                  {application.candidate_name || application.name || 'Chưa cập nhật'}
+                </span>
               </div>
               <div className="flex items-center gap-3 text-sm">
                 <FaEnvelope size={16} className="text-brand-text/40 dark:text-gray-500" />
-                <span className="text-brand-text dark:text-gray-300">{application.email}</span>
+                <span className="text-brand-text dark:text-gray-300">
+                  {application.candidate_email || application.email || 'Chưa cập nhật'}
+                </span>
               </div>
-              {application.phone && (
+              {application.candidate_phone && (
                 <div className="flex items-center gap-3 text-sm">
                   <FaPhone size={16} className="text-brand-text/40 dark:text-gray-500" />
-                  <span className="text-brand-text dark:text-gray-300">{application.phone}</span>
+                  <span className="text-brand-text dark:text-gray-300">
+                    {application.candidate_phone}
+                  </span>
                 </div>
               )}
               <div className="flex items-center gap-3 text-sm">
@@ -353,7 +356,7 @@ const ApplicationDetail = () => {
                       size={24}
                       className={`${application.cv_mime_type?.includes('pdf') ? 'text-red-500' : application.cv_mime_type?.includes('word') ? 'text-blue-500' : 'text-brand-text/60'}`}
                     />
-                    <div className="min-w-0">
+                    <div className="min-w-0">{t('applications.coverLetter') || 'Thư giới thiệu'}
                       <p className="text-sm font-medium text-brand-secondary dark:text-white truncate">
                         {application.cv_original_name || 'CV.pdf'}
                       </p>
@@ -384,7 +387,7 @@ const ApplicationDetail = () => {
             </motion.div>
 
             {/* Cover Letter */}
-            {application.cover_letter && (
+            {application.cover_letter_text && (
               <motion.div
                 variants={slideLeft}
                 className="mb-6"
@@ -395,7 +398,7 @@ const ApplicationDetail = () => {
                 </h3>
                 <div className="p-4 bg-brand-bg/50 dark:bg-gray-800/50 rounded-xl">
                   <p className="text-brand-text dark:text-gray-300 whitespace-pre-line">
-                    {application.cover_letter}
+                    {application.cover_letter_text || application.cover_letter}
                   </p>
                 </div>
               </motion.div>

@@ -101,6 +101,7 @@
     "optional": "optional",
     "coverLetterPlaceholder": "Briefly introduce yourself and why you're suitable for this position...",
     "submitApplication": "Submit Application",
+    "minChars": "Minimum 0 characters",
     "validation": {
       "cvRequired": "Please select your CV to apply",
       "cvFileType": "Please upload PDF or Word file",
