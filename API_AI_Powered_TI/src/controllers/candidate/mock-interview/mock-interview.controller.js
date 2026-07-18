@@ -15,14 +15,7 @@ const mockInterviewController = {
         })
       }
 
-      if (candidateId !== userId) {
-        return res.status(403).json({
-          success: false,
-          message: 'Bạn không có quyền thực hiện hành động này'
-        })
-      }
-
-      const result = await mockInterviewService.startSession(candidateId, jobId, numberOfQuestions)
+      const result = await mockInterviewService.startSession(userId, jobId, numberOfQuestions)
 
       return res.status(201).json({
         success: true,

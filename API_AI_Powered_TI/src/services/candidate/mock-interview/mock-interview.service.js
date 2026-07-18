@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from 'uuid'
 const mockInterviewService = {
   // BẮT ĐẦU PHỎNG VẤN
   startSession: async (userId, jobId = null, numberOfQuestions = 5) => {
-    // 1. Lấy candidate theo userId
+  // 1. Lấy candidate profile theo userId
     const candidate = await mockInterviewModel.getCandidateByUserId(userId)
     if (!candidate) {
       throw new Error('Không tìm thấy hồ sơ ứng viên. Vui lòng tạo hồ sơ trước.')
