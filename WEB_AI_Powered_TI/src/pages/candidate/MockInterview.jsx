@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useLanguage } from '~/hooks/useLanguage'
 import { useAuth } from '~/hooks/useAuth'
 import { mockInterviewApi } from '~/api/candidate/mock-interview.api'
+import ConfirmModal from '~/components/common/ConfirmModal'
 import {
   FaRobot,
   FaUser,
@@ -73,9 +74,23 @@ const MockInterviewChat = () => {
   const [isSending, setIsSending] = useState(false)
   const [isCreatingSession, setIsCreatingSession] = useState(false)
   const [isInitialized, setIsInitialized] = useState(false)
+  const [shouldScrollToBottom, setShouldScrollToBottom] = useState(false)
+
+  // Modal states
+  const [modalConfig, setModalConfig] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    confirmText: 'Xác nhận',
+    cancelText: 'Hủy',
+    type: 'danger',
+    onConfirm: null
+  })
 
   const messagesEndRef = useRef(null)
+  const messagesContainerRef = useRef(null)
   const inputRef = useRef(null)
+  const isUserScrolling = useRef(false)
 
   // Lưu session ID vào localStorage
   const saveCurrentSessionId = (sessionId) => {
@@ -90,10 +105,20 @@ const MockInterviewChat = () => {
     return localStorage.getItem('mockInterview_currentSessionId')
   }
 
-  // Tự động scroll
+  // Scroll đến cuối vùng tin nhắn
+  const scrollToBottom = () => {
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight
+    }
+  }
+
+  // Tự động scroll khi có tin nhắn mới
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
+    if (shouldScrollToBottom && !isUserScrolling.current) {
+      scrollToBottom()
+      setShouldScrollToBottom(false)
+    }
+  }, [messages, shouldScrollToBottom])
 
   // Focus input
   useEffect(() => {
@@ -126,10 +151,12 @@ const MockInterviewChat = () => {
         const session = response.data
         if (session.messages && session.messages.length > 0) {
           setMessages(session.messages)
+          setTimeout(() => scrollToBottom(), 100)
         } else {
           const historyResponse = await mockInterviewApi.getChatHistory(sessionId)
           if (historyResponse.success) {
             setMessages(historyResponse.data || [])
+            setTimeout(() => scrollToBottom(), 100)
           }
         }
         setCurrentSession(session)
@@ -153,10 +180,8 @@ const MockInterviewChat = () => {
       if (response.success) {
         const session = response.data.session
 
-        // Reset messages trước khi set session mới
         setMessages([])
 
-        // Set session mới với status in_progress
         const newSession = {
           ...session,
           status: 'in_progress'
@@ -164,20 +189,22 @@ const MockInterviewChat = () => {
         setCurrentSession(newSession)
         saveCurrentSessionId(newSession.id)
 
-        // Tin nhắn chào mừng
+        // Sử dụng welcomeMessage từ i18n nếu có, fallback từ API
+        const welcomeMessage = response.data.welcomeMessage || t('mockInterview.welcomeMessage')
+
         const welcomeMsg = {
           id: `welcome-${Date.now()}`,
           sender: 'ai',
-          message: response.data.welcomeMessage || 'Chào bạn! Tôi là trợ lý phỏng vấn AI. Hãy bắt đầu bằng cách giới thiệu về bản thân bạn nhé!',
+          message: welcomeMessage,
           created_at: new Date()
         }
         setMessages([welcomeMsg])
 
-        // Cập nhật danh sách sessions
-        await loadSessions()
-        toast.success('Đã tạo phiên phỏng vấn mới')
+        setTimeout(() => scrollToBottom(), 100)
 
-        // Focus vào input
+        await loadSessions()
+        toast.success(t('mockInterview.startSuccess'))
+
         setTimeout(() => inputRef.current?.focus(), 100)
 
         return newSession
@@ -197,14 +224,31 @@ const MockInterviewChat = () => {
     await loadSessionDetail(session.id)
   }
 
+  // Hiển thị modal xác nhận
+  const showConfirmModal = (title, message, confirmText, type, onConfirm) => {
+    setModalConfig({
+      isOpen: true,
+      title,
+      message,
+      confirmText: confirmText || t('common.confirm'),
+      cancelText: t('common.cancel'),
+      type: type || 'danger',
+      onConfirm: onConfirm
+    })
+  }
+
+  // Đóng modal
+  const closeModal = () => {
+    setModalConfig(prev => ({ ...prev, isOpen: false }))
+  }
+
   // Gửi tin nhắn
   const sendMessage = async () => {
     const message = input.trim()
     if (!message || !currentSession || isSending) return
 
-    // Kiểm tra nếu session đã completed thì không cho gửi
     if (currentSession.status === 'completed') {
-      toast.warning('Phiên này đã kết thúc. Vui lòng tạo phiên mới để tiếp tục.')
+      toast.warning(t('mockInterview.endedWarning'))
       return
     }
 
@@ -221,6 +265,7 @@ const MockInterviewChat = () => {
     }
 
     setMessages(prev => [...prev, userMessage])
+    setShouldScrollToBottom(true)
 
     try {
       const response = await mockInterviewApi.sendMessage(
@@ -240,6 +285,7 @@ const MockInterviewChat = () => {
         setCurrentSession(response.data.session)
         saveCurrentSessionId(response.data.session?.id || currentSession.id)
         await loadSessions()
+        setShouldScrollToBottom(true)
       }
     } catch (error) {
       toast.error(error?.message || 'Không thể gửi tin nhắn')
@@ -249,20 +295,33 @@ const MockInterviewChat = () => {
     }
   }
 
-  // Kết thúc phỏng vấn
-  const endInterview = async () => {
+  // Kết thúc phỏng vấn - Hiển thị modal
+  const handleEndInterview = () => {
     if (!currentSession) return
     if (currentSession.status === 'completed') {
-      toast.info('Phiên này đã kết thúc')
+      toast.info(t('mockInterview.alreadyEnded'))
       return
     }
-    if (!confirm('Bạn có chắc muốn kết thúc phỏng vấn?')) return
 
+    showConfirmModal(
+      t('mockInterview.endConfirm'),
+      t('mockInterview.endConfirmMessage'),
+      t('mockInterview.endConfirmButton'),
+      'warning',
+      async () => {
+        await endInterview()
+        closeModal()
+      }
+    )
+  }
+
+  // Xử lý kết thúc phỏng vấn
+  const endInterview = async () => {
     setIsLoading(true)
     try {
       const response = await mockInterviewApi.endSession(currentSession.id)
       if (response.success) {
-        toast.success('Đã kết thúc phỏng vấn')
+        toast.success(t('mockInterview.endSuccess'))
         const session = response.data.session
         setCurrentSession(session)
         saveCurrentSessionId(session.id)
@@ -275,6 +334,7 @@ const MockInterviewChat = () => {
             created_at: new Date(),
             metadata: { type: 'summary' }
           }])
+          setShouldScrollToBottom(true)
         }
 
         await loadSessions()
@@ -286,11 +346,28 @@ const MockInterviewChat = () => {
     }
   }
 
-  // Xóa phiên
-  const deleteSession = async (sessionId, e) => {
+  // Xóa phiên - Hiển thị modal
+  const handleDeleteSession = (sessionId, e) => {
     e?.stopPropagation()
-    if (!confirm('Bạn có chắc muốn xóa phiên phỏng vấn này?')) return
 
+    const session = sessions.find(s => s.id === sessionId)
+    const sessionTitle = session?.title ||
+      `${t('mockInterview.session')} ${new Date(session?.created_at).toLocaleDateString('vi-VN')}`
+
+    showConfirmModal(
+      t('mockInterview.deleteConfirm'),
+      t('mockInterview.deleteConfirmMessage', { title: sessionTitle }),
+      t('mockInterview.deleteConfirmButton'),
+      'danger',
+      async () => {
+        await deleteSession(sessionId)
+        closeModal()
+      }
+    )
+  }
+
+  // Xử lý xóa phiên
+  const deleteSession = async (sessionId) => {
     try {
       await mockInterviewApi.deleteSession(sessionId)
       await loadSessions()
@@ -298,13 +375,12 @@ const MockInterviewChat = () => {
         setCurrentSession(null)
         setMessages([])
         localStorage.removeItem('mockInterview_currentSessionId')
-        // Tự động tạo phiên mới nếu không còn phiên nào
         const remainingSessions = sessions.filter(s => s.id !== sessionId)
         if (remainingSessions.length === 0) {
           await createNewSession()
         }
       }
-      toast.success('Đã xóa phiên phỏng vấn')
+      toast.success(t('mockInterview.deleteSuccess'))
     } catch (error) {
       toast.error('Không thể xóa phiên phỏng vấn')
     }
@@ -318,7 +394,6 @@ const MockInterviewChat = () => {
       const sessionList = await loadSessions()
       const storedSessionId = getStoredSessionId()
 
-      // Nếu có session ID trong localStorage
       if (storedSessionId) {
         const sessionExists = sessionList.some(s => s.id === storedSessionId)
         if (sessionExists) {
@@ -328,7 +403,6 @@ const MockInterviewChat = () => {
         }
       }
 
-      // Nếu có session trong danh sách (ưu tiên session đang diễn ra)
       if (sessionList.length > 0) {
         const activeSession = sessionList.find(s => s.status === 'in_progress')
         const firstSession = activeSession || sessionList[0]
@@ -337,7 +411,6 @@ const MockInterviewChat = () => {
         return
       }
 
-      // Không có session nào, tạo mới
       await createNewSession()
       setIsInitialized(true)
     }
@@ -353,6 +426,13 @@ const MockInterviewChat = () => {
     }
   }
 
+  // Theo dõi scroll của user trong vùng tin nhắn
+  const handleScroll = (e) => {
+    const { scrollTop, scrollHeight, clientHeight } = e.target
+    const isAtBottom = scrollHeight - scrollTop - clientHeight < 10
+    isUserScrolling.current = !isAtBottom
+  }
+
   if (!isAuthenticated) {
     return (
       <motion.div
@@ -363,10 +443,10 @@ const MockInterviewChat = () => {
         <div className="max-w-4xl mx-auto bg-white dark:bg-gray-800 rounded-xl shadow-custom p-12 text-center">
           <FaRobot size={48} className="text-brand-light/60 dark:text-gray-700 mx-auto mb-4" />
           <h2 className="text-2xl font-bold text-brand-secondary dark:text-white mb-2">
-            Vui lòng đăng nhập
+            {t('mockInterview.loginRequired')}
           </h2>
           <p className="text-brand-text dark:text-gray-400">
-            Đăng nhập để sử dụng tính năng phỏng vấn thử với AI
+            {t('mockInterview.loginToUse')}
           </p>
         </div>
       </motion.div>
@@ -381,311 +461,324 @@ const MockInterviewChat = () => {
     )
   }
 
-  // Phân loại session
   const activeSessions = sessions.filter(s => s.status === 'in_progress')
   const completedSessions = sessions.filter(s => s.status === 'completed')
 
   return (
-    <motion.div
-      initial="hidden"
-      animate="visible"
-      variants={containerVariants}
-      className="app-container py-6 h-[calc(100vh-120px)]"
-    >
-      <div className="max-w-6xl mx-auto h-full flex gap-4">
-        {/* Sidebar - Luôn hiển thị */}
-        <div className="w-80 flex-shrink-0 h-full bg-white dark:bg-gray-800 rounded-xl shadow-custom p-4 flex flex-col overflow-hidden">
-          {/* Sidebar Header */}
-          <div className="flex items-center justify-between mb-4 flex-shrink-0">
-            <h3 className="font-semibold text-brand-secondary dark:text-white flex items-center gap-2">
-              <FaHistory size={16} className="text-brand-primary" />
-              Lịch sử chat
-            </h3>
-            <span className="text-xs text-brand-text/60 dark:text-gray-400">
-              {sessions.length} phiên
-            </span>
-          </div>
+    <>
+      {/* Confirm Modal */}
+      <ConfirmModal
+        isOpen={modalConfig.isOpen}
+        onClose={closeModal}
+        onConfirm={modalConfig.onConfirm || (() => {})}
+        title={modalConfig.title}
+        message={modalConfig.message}
+        confirmText={modalConfig.confirmText}
+        cancelText={modalConfig.cancelText}
+        type={modalConfig.type}
+        isLoading={isLoading}
+      />
 
-          {/* Create New Session Button */}
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={createNewSession}
-            disabled={isCreatingSession}
-            className="w-full px-4 py-2.5 bg-gradient-brand text-white rounded-lg font-medium hover:shadow-glow transition-all duration-200 flex items-center justify-center gap-2 mb-4 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
-          >
-            {isCreatingSession ? (
-              <FaSpinner className="animate-spin" size={14} />
-            ) : (
-              <FaPlus size={14} />
-            )}
-            Phiên mới
-          </motion.button>
-
-          {/* Sessions List */}
-          <div className="flex-1 overflow-y-auto space-y-3 pr-1">
-            {/* Active Sessions */}
-            {activeSessions.length > 0 && (
-              <div>
-                <p className="text-xs font-medium text-brand-text/60 dark:text-gray-400 mb-2 flex items-center gap-1">
-                  <FaClock size={12} />
-                  Đang diễn ra ({activeSessions.length})
-                </p>
-                {activeSessions.map((session) => (
-                  <SessionItem
-                    key={session.id}
-                    session={session}
-                    isActive={currentSession?.id === session.id}
-                    onSelect={selectSession}
-                    onDelete={deleteSession}
-                  />
-                ))}
-              </div>
-            )}
-
-            {/* Completed Sessions */}
-            {completedSessions.length > 0 && (
-              <div>
-                <p className="text-xs font-medium text-brand-text/60 dark:text-gray-400 mb-2 mt-3 flex items-center gap-1">
-                  <FaCheckCircle size={12} />
-                  Đã hoàn thành ({completedSessions.length})
-                </p>
-                {completedSessions.map((session) => (
-                  <SessionItem
-                    key={session.id}
-                    session={session}
-                    isActive={currentSession?.id === session.id}
-                    onSelect={selectSession}
-                    onDelete={deleteSession}
-                  />
-                ))}
-              </div>
-            )}
-
-            {sessions.length === 0 && !isLoading && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="text-center text-brand-text/60 dark:text-gray-400 text-sm py-8"
-              >
-                <FaCommentDots size={32} className="mx-auto mb-2 text-brand-light/60 dark:text-gray-700" />
-                Chưa có phiên phỏng vấn nào
-                <br />
-                <span className="text-xs">Nhấn "Phiên mới" để bắt đầu</span>
-              </motion.div>
-            )}
-
-            {isLoading && (
-              <div className="flex justify-center py-8">
-                <FaSpinner className="animate-spin text-brand-primary" size={24} />
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Main Chat Area */}
-        <motion.div
-          variants={fadeInUp}
-          className="flex-1 bg-white dark:bg-gray-800 rounded-xl shadow-custom flex flex-col overflow-hidden"
-        >
-          {/* Header */}
-          <div className="px-6 py-4 border-b border-brand-light dark:border-gray-700 flex items-center justify-between flex-shrink-0">
-            <div className="flex items-center gap-3">
-              <motion.div
-                whileHover={{ scale: 1.05, rotate: -5 }}
-                transition={{ duration: 0.2 }}
-                className="p-2 rounded-xl bg-brand-light/30 dark:bg-gray-700/30"
-              >
-                <FaRobot size={20} className="text-brand-primary" />
-              </motion.div>
-              <div>
-                <h2 className="font-bold text-brand-secondary dark:text-white">
-                  {currentSession?.title || 'Phỏng vấn thử với AI'}
-                </h2>
-                <div className="flex items-center gap-2 text-xs text-brand-text/60 dark:text-gray-400 flex-wrap">
-                  <span>{messages.length} tin nhắn</span>
-                  {currentSession?.status === 'completed' && (
-                    <span className="px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-full text-[10px] flex items-center gap-1">
-                      <FaCheckCircle size={10} />
-                      Đã hoàn thành
-                    </span>
-                  )}
-                  {currentSession?.status === 'in_progress' && (
-                    <span className="px-2 py-0.5 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400 rounded-full text-[10px] flex items-center gap-1">
-                      <FaClock size={10} />
-                      Đang diễn ra
-                    </span>
-                  )}
-                </div>
-              </div>
+      <motion.div
+        initial="hidden"
+        animate="visible"
+        variants={containerVariants}
+        className="app-container py-6 h-[calc(100vh-120px)]"
+      >
+        <div className="max-w-6xl mx-auto h-full flex gap-4">
+          {/* Sidebar */}
+          <div className="w-80 flex-shrink-0 h-full bg-white dark:bg-gray-800 rounded-xl shadow-custom p-4 flex flex-col overflow-hidden">
+            <div className="flex items-center justify-between mb-4 flex-shrink-0">
+              <h3 className="font-semibold text-brand-secondary dark:text-white flex items-center gap-2">
+                <FaHistory size={16} className="text-brand-primary" />
+                {t('mockInterview.history')}
+              </h3>
+              <span className="text-xs text-brand-text/60 dark:text-gray-400">
+                {sessions.length} {t('mockInterview.sessions')}
+              </span>
             </div>
 
-            <div className="flex items-center gap-2">
-              {/* End Interview Button - chỉ hiện khi đang diễn ra */}
-              {currentSession?.status === 'in_progress' && (
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={endInterview}
-                  disabled={isLoading}
-                  className="px-3 py-1.5 text-sm font-medium text-red-500 border border-red-500 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 transition-all duration-200 cursor-pointer hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={createNewSession}
+              disabled={isCreatingSession}
+              className="w-full px-4 py-2.5 bg-gradient-brand text-white rounded-lg font-medium hover:shadow-glow transition-all duration-200 flex items-center justify-center gap-2 mb-4 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+            >
+              {isCreatingSession ? (
+                <FaSpinner className="animate-spin" size={14} />
+              ) : (
+                <FaPlus size={14} />
+              )}
+              {t('mockInterview.newSession')}
+            </motion.button>
+
+            <div className="flex-1 overflow-y-auto space-y-3 pr-1">
+              {activeSessions.length > 0 && (
+                <div>
+                  <p className="text-xs font-medium text-brand-text/60 dark:text-gray-400 mb-2 flex items-center gap-1">
+                    <FaClock size={12} />
+                    {t('mockInterview.activeSessions')} ({activeSessions.length})
+                  </p>
+                  {activeSessions.map((session) => (
+                    <SessionItem
+                      key={session.id}
+                      session={session}
+                      isActive={currentSession?.id === session.id}
+                      onSelect={selectSession}
+                      onDelete={handleDeleteSession}
+                      t={t}
+                    />
+                  ))}
+                </div>
+              )}
+
+              {completedSessions.length > 0 && (
+                <div>
+                  <p className="text-xs font-medium text-brand-text/60 dark:text-gray-400 mb-2 mt-3 flex items-center gap-1">
+                    <FaCheckCircle size={12} />
+                    {t('mockInterview.completedSessions')} ({completedSessions.length})
+                  </p>
+                  {completedSessions.map((session) => (
+                    <SessionItem
+                      key={session.id}
+                      session={session}
+                      isActive={currentSession?.id === session.id}
+                      onSelect={selectSession}
+                      onDelete={handleDeleteSession}
+                      t={t}
+                    />
+                  ))}
+                </div>
+              )}
+
+              {sessions.length === 0 && !isLoading && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="text-center text-brand-text/60 dark:text-gray-400 text-sm py-8"
                 >
-                  {isLoading ? <FaSpinner className="animate-spin" size={14} /> : 'Kết thúc'}
-                </motion.button>
+                  <FaCommentDots size={32} className="mx-auto mb-2 text-brand-light/60 dark:text-gray-700" />
+                  {t('mockInterview.noHistory')}
+                  <br />
+                  <span className="text-xs">{t('mockInterview.noHistoryDesc')}</span>
+                </motion.div>
+              )}
+
+              {isLoading && (
+                <div className="flex justify-center py-8">
+                  <FaSpinner className="animate-spin text-brand-primary" size={24} />
+                </div>
               )}
             </div>
           </div>
 
-          {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-brand-bg/30 dark:bg-gray-900/30">
-            {messages.length === 0 && currentSession && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="flex flex-col items-center justify-center h-full text-center text-brand-text/60 dark:text-gray-400"
-              >
-                <FaCommentDots size={48} className="mb-3 text-brand-light/60 dark:text-gray-700" />
-                <p>Chưa có tin nhắn nào</p>
-                <p className="text-sm">Hãy bắt đầu cuộc trò chuyện với AI</p>
-              </motion.div>
-            )}
-
-            <AnimatePresence>
-              {messages.map((msg, index) => (
+          {/* Main Chat Area */}
+          <motion.div
+            variants={fadeInUp}
+            className="flex-1 bg-white dark:bg-gray-800 rounded-xl shadow-custom flex flex-col overflow-hidden"
+          >
+            {/* Header */}
+            <div className="px-6 py-4 border-b border-brand-light dark:border-gray-700 flex items-center justify-between flex-shrink-0">
+              <div className="flex items-center gap-3">
                 <motion.div
-                  key={msg.id || index}
-                  variants={messageVariants}
-                  initial="hidden"
-                  animate="visible"
-                  exit="exit"
-                  className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+                  whileHover={{ scale: 1.05, rotate: -5 }}
+                  transition={{ duration: 0.2 }}
+                  className="p-2 rounded-xl bg-brand-light/30 dark:bg-gray-700/30"
                 >
-                  <div className={`flex items-start gap-3 max-w-[80%] ${msg.sender === 'user' ? 'flex-row-reverse' : ''}`}>
-                    <motion.div
-                      whileHover={{ scale: 1.05 }}
-                      className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-                        msg.sender === 'user'
-                          ? 'bg-gradient-brand'
-                          : 'bg-brand-light dark:bg-gray-700'
-                      }`}
-                    >
-                      {msg.sender === 'user'
-                        ? <FaUser size={14} className="text-white" />
-                        : <FaRobot size={14} className="text-brand-primary" />
-                      }
-                    </motion.div>
-                    <motion.div
-                      whileHover={{ scale: 1.01 }}
-                      className={`px-4 py-3 rounded-2xl ${
-                        msg.sender === 'user'
-                          ? 'bg-gradient-brand text-white'
-                          : 'bg-brand-light/50 dark:bg-gray-700/50 text-brand-secondary dark:text-white'
-                      } transition-all duration-200`}
-                    >
-                      <p className="whitespace-pre-wrap text-sm leading-relaxed">{msg.message}</p>
-                      <p className={`text-[10px] mt-1 ${
-                        msg.sender === 'user' ? 'text-white/60' : 'text-brand-text/40 dark:text-gray-500'
-                      }`}>
-                        {msg.created_at ? new Date(msg.created_at).toLocaleTimeString('vi-VN') : ''}
-                      </p>
-                    </motion.div>
-                  </div>
+                  <FaRobot size={20} className="text-brand-primary" />
                 </motion.div>
-              ))}
-            </AnimatePresence>
-
-            {/* Loading indicator */}
-            {isSending && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="flex justify-start"
-              >
-                <div className="flex items-center gap-3 max-w-[80%]">
-                  <div className="w-8 h-8 rounded-full bg-brand-light dark:bg-gray-700 flex items-center justify-center">
-                    <FaRobot size={14} className="text-brand-primary" />
-                  </div>
-                  <div className="px-4 py-3 rounded-2xl bg-brand-light/50 dark:bg-gray-700/50">
-                    <div className="flex gap-1">
-                      <motion.span
-                        animate={{ y: [0, -6, 0] }}
-                        transition={{ repeat: Infinity, duration: 0.6, delay: 0 }}
-                        className="w-2 h-2 bg-brand-primary rounded-full"
-                      />
-                      <motion.span
-                        animate={{ y: [0, -6, 0] }}
-                        transition={{ repeat: Infinity, duration: 0.6, delay: 0.2 }}
-                        className="w-2 h-2 bg-brand-primary rounded-full"
-                      />
-                      <motion.span
-                        animate={{ y: [0, -6, 0] }}
-                        transition={{ repeat: Infinity, duration: 0.6, delay: 0.4 }}
-                        className="w-2 h-2 bg-brand-primary rounded-full"
-                      />
-                    </div>
+                <div>
+                  <h2 className="font-bold text-brand-secondary dark:text-white">
+                    {currentSession?.title || t('mockInterview.title')}
+                  </h2>
+                  <div className="flex items-center gap-2 text-xs text-brand-text/60 dark:text-gray-400 flex-wrap">
+                    <span>{messages.length} {t('mockInterview.messages')}</span>
+                    {currentSession?.status === 'completed' && (
+                      <span className="px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-full text-[10px] flex items-center gap-1">
+                        <FaCheckCircle size={10} />
+                        {t('mockInterview.completed')}
+                      </span>
+                    )}
+                    {currentSession?.status === 'in_progress' && (
+                      <span className="px-2 py-0.5 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400 rounded-full text-[10px] flex items-center gap-1">
+                        <FaClock size={10} />
+                        {t('mockInterview.inProgress')}
+                      </span>
+                    )}
                   </div>
                 </div>
-              </motion.div>
-            )}
+              </div>
 
-            <div ref={messagesEndRef} />
-          </div>
-
-          {/* Input */}
-          <div className="p-4 border-t border-brand-light dark:border-gray-700 flex-shrink-0 bg-white dark:bg-gray-800">
-            <div className="flex gap-3">
-              <textarea
-                ref={inputRef}
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder={
-                  !currentSession
-                    ? 'Chọn hoặc tạo phiên phỏng vấn'
-                    : currentSession.status === 'completed'
-                      ? 'Phiên đã kết thúc. Tạo phiên mới để tiếp tục.'
-                      : 'Nhập tin nhắn của bạn...'
-                }
-                rows={1}
-                disabled={!currentSession || currentSession?.status === 'completed' || isSending}
-                className="flex-1 px-4 py-3 bg-brand-bg dark:bg-gray-900 border border-brand-light dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-primary/50 resize-none transition-all duration-200 text-brand-secondary dark:text-white placeholder:text-brand-text/40 disabled:opacity-50 disabled:cursor-not-allowed"
-                style={{ minHeight: '48px', maxHeight: '120px' }}
-              />
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={sendMessage}
-                disabled={!input.trim() || !currentSession || currentSession?.status === 'completed' || isSending}
-                className="px-4 py-3 bg-gradient-brand text-white rounded-xl font-medium hover:shadow-glow transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 cursor-pointer"
-              >
-                {isSending ? (
-                  <FaSpinner className="animate-spin" size={18} />
-                ) : (
-                  <FaPaperPlane size={18} />
+              <div className="flex items-center gap-2">
+                {currentSession?.status === 'in_progress' && (
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={handleEndInterview}
+                    disabled={isLoading}
+                    className="px-3 py-1.5 text-sm font-medium text-red-500 border border-red-500 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 transition-all duration-200 cursor-pointer hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isLoading ? <FaSpinner className="animate-spin" size={14} /> : t('mockInterview.end')}
+                  </motion.button>
                 )}
-              </motion.button>
+              </div>
             </div>
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="text-xs text-brand-text/40 dark:text-gray-500 mt-2 text-center"
+
+            {/* Messages Container */}
+            <div
+              ref={messagesContainerRef}
+              className="flex-1 overflow-y-auto p-4 space-y-4 bg-brand-bg/30 dark:bg-gray-900/30"
+              onScroll={handleScroll}
             >
-              {!currentSession
-                ? 'Chọn hoặc tạo phiên phỏng vấn để bắt đầu'
-                : currentSession.status === 'completed'
-                  ? 'Phiên phỏng vấn đã kết thúc. Tạo phiên mới để tiếp tục.'
-                  : 'Nhấn Enter để gửi, Shift+Enter để xuống dòng'
-              }
-            </motion.p>
-          </div>
-        </motion.div>
-      </div>
-    </motion.div>
+              {messages.length === 0 && currentSession && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="flex flex-col items-center justify-center h-full text-center text-brand-text/60 dark:text-gray-400"
+                >
+                  <FaCommentDots size={48} className="mb-3 text-brand-light/60 dark:text-gray-700" />
+                  <p>{t('mockInterview.noMessages')}</p>
+                  <p className="text-sm">{t('mockInterview.noMessagesDesc')}</p>
+                </motion.div>
+              )}
+
+              <AnimatePresence>
+                {messages.map((msg, index) => (
+                  <motion.div
+                    key={msg.id || index}
+                    variants={messageVariants}
+                    initial="hidden"
+                    animate="visible"
+                    exit="exit"
+                    className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+                  >
+                    <div className={`flex items-start gap-3 max-w-[80%] ${msg.sender === 'user' ? 'flex-row-reverse' : ''}`}>
+                      <motion.div
+                        whileHover={{ scale: 1.05 }}
+                        className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                          msg.sender === 'user'
+                            ? 'bg-gradient-brand'
+                            : 'bg-brand-light dark:bg-gray-700'
+                        }`}
+                      >
+                        {msg.sender === 'user'
+                          ? <FaUser size={14} className="text-white" />
+                          : <FaRobot size={14} className="text-brand-primary" />
+                        }
+                      </motion.div>
+                      <motion.div
+                        whileHover={{ scale: 1.01 }}
+                        className={`px-4 py-3 rounded-2xl ${
+                          msg.sender === 'user'
+                            ? 'bg-gradient-brand text-white'
+                            : 'bg-brand-light/50 dark:bg-gray-700/50 text-brand-secondary dark:text-white'
+                        } transition-all duration-200`}
+                      >
+                        <p className="whitespace-pre-wrap text-sm leading-relaxed">{msg.message}</p>
+                        <p className={`text-[10px] mt-1 ${
+                          msg.sender === 'user' ? 'text-white/60' : 'text-brand-text/40 dark:text-gray-500'
+                        }`}>
+                          {msg.created_at ? new Date(msg.created_at).toLocaleTimeString('vi-VN') : ''}
+                        </p>
+                      </motion.div>
+                    </div>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+
+              {isSending && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="flex justify-start"
+                >
+                  <div className="flex items-center gap-3 max-w-[80%]">
+                    <div className="w-8 h-8 rounded-full bg-brand-light dark:bg-gray-700 flex items-center justify-center">
+                      <FaRobot size={14} className="text-brand-primary" />
+                    </div>
+                    <div className="px-4 py-3 rounded-2xl bg-brand-light/50 dark:bg-gray-700/50">
+                      <div className="flex gap-1">
+                        <motion.span
+                          animate={{ y: [0, -6, 0] }}
+                          transition={{ repeat: Infinity, duration: 0.6, delay: 0 }}
+                          className="w-2 h-2 bg-brand-primary rounded-full"
+                        />
+                        <motion.span
+                          animate={{ y: [0, -6, 0] }}
+                          transition={{ repeat: Infinity, duration: 0.6, delay: 0.2 }}
+                          className="w-2 h-2 bg-brand-primary rounded-full"
+                        />
+                        <motion.span
+                          animate={{ y: [0, -6, 0] }}
+                          transition={{ repeat: Infinity, duration: 0.6, delay: 0.4 }}
+                          className="w-2 h-2 bg-brand-primary rounded-full"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
+              <div ref={messagesEndRef} />
+            </div>
+
+            {/* Input */}
+            <div className="p-4 border-t border-brand-light dark:border-gray-700 flex-shrink-0 bg-white dark:bg-gray-800">
+              <div className="flex gap-3">
+                <textarea
+                  ref={inputRef}
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder={
+                    !currentSession
+                      ? t('mockInterview.placeholderNoSession')
+                      : currentSession.status === 'completed'
+                        ? t('mockInterview.placeholderEnded')
+                        : t('mockInterview.placeholder')
+                  }
+                  rows={1}
+                  disabled={!currentSession || currentSession?.status === 'completed' || isSending}
+                  className="flex-1 px-4 py-3 bg-brand-bg dark:bg-gray-900 border border-brand-light dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-primary/50 resize-none transition-all duration-200 text-brand-secondary dark:text-white placeholder:text-brand-text/40 disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{ minHeight: '48px', maxHeight: '120px' }}
+                />
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={sendMessage}
+                  disabled={!input.trim() || !currentSession || currentSession?.status === 'completed' || isSending}
+                  className="px-4 py-3 bg-gradient-brand text-white rounded-xl font-medium hover:shadow-glow transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 cursor-pointer"
+                >
+                  {isSending ? (
+                    <FaSpinner className="animate-spin" size={18} />
+                  ) : (
+                    <FaPaperPlane size={18} />
+                  )}
+                </motion.button>
+              </div>
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="text-xs text-brand-text/40 dark:text-gray-500 mt-2 text-center"
+              >
+                {!currentSession
+                  ? t('mockInterview.hintNoSession')
+                  : currentSession.status === 'completed'
+                    ? t('mockInterview.hintEnded')
+                    : t('mockInterview.hint')
+                }
+              </motion.p>
+            </div>
+          </motion.div>
+        </div>
+      </motion.div>
+    </>
   )
 }
 
 // Component Session Item
-const SessionItem = ({ session, isActive, onSelect, onDelete }) => {
+const SessionItem = ({ session, isActive, onSelect, onDelete, t }) => {
   const isCompleted = session.status === 'completed'
 
   return (
@@ -704,7 +797,7 @@ const SessionItem = ({ session, isActive, onSelect, onDelete }) => {
       <div className="flex items-center justify-between">
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium text-brand-secondary dark:text-white truncate">
-            {session.title || `Phiên ${new Date(session.created_at).toLocaleDateString('vi-VN')}`}
+            {session.title || `${t('mockInterview.session')} ${new Date(session.created_at).toLocaleDateString('vi-VN')}`}
           </p>
           <div className="flex items-center gap-2 mt-0.5 flex-wrap">
             <p className="text-xs text-brand-text/60 dark:text-gray-400">
@@ -713,12 +806,12 @@ const SessionItem = ({ session, isActive, onSelect, onDelete }) => {
             {isCompleted ? (
               <span className="text-[10px] px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-full flex items-center gap-1">
                 <FaCheckCircle size={10} />
-                Đã hoàn thành
+                {t('mockInterview.completed')}
               </span>
             ) : (
               <span className="text-[10px] px-2 py-0.5 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400 rounded-full flex items-center gap-1">
                 <FaClock size={10} />
-                Đang diễn ra
+                {t('mockInterview.inProgress')}
               </span>
             )}
           </div>
