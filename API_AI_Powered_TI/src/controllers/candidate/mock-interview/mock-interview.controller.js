@@ -1,13 +1,11 @@
 import mockInterviewService from '~/services/candidate/mock-interview/mock-interview.service'
 
 const mockInterviewController = {
-  // BẮT ĐẦU PHỎNG VẤN
-  startSession: async (req, res) => {
+  // Tạo phiên phỏng vấn mới
+  createSession: async (req, res) => {
     try {
-      const { candidateId, jobId, numberOfQuestions = 5 } = req.body
       const userId = req.user.id
 
-      // Kiểm tra quyền: chỉ candidate mới được bắt đầu
       if (req.user.roleName !== 'candidate') {
         return res.status(403).json({
           success: false,
@@ -15,11 +13,11 @@ const mockInterviewController = {
         })
       }
 
-      const result = await mockInterviewService.startSession(userId, jobId, numberOfQuestions)
+      const result = await mockInterviewService.createSession(userId)
 
       return res.status(201).json({
         success: true,
-        message: 'Bắt đầu phiên phỏng vấn thành công',
+        message: 'Tạo phiên phỏng vấn thành công',
         data: result
       })
     } catch (error) {
@@ -30,13 +28,13 @@ const mockInterviewController = {
     }
   },
 
-  // TRẢ LỜI CÂU HỎI
-  answerQuestion: async (req, res) => {
+  // Gửi tin nhắn (chat)
+  sendMessage: async (req, res) => {
     try {
-      const { sessionId, questionId, answer } = req.body
+      const { sessionId, message } = req.body
       const userId = req.user.id
 
-      const result = await mockInterviewService.answerQuestion(sessionId, questionId, answer, userId)
+      const result = await mockInterviewService.sendMessage(sessionId, userId, message)
 
       return res.status(200).json({
         success: true,
@@ -50,46 +48,36 @@ const mockInterviewController = {
     }
   },
 
-  // KẾT THÚC PHỎNG VẤN
-  endSession: async (req, res) => {
+  // Lấy lịch sử chat
+  getChatHistory: async (req, res) => {
     try {
       const { id } = req.params
       const userId = req.user.id
 
-      const session = await mockInterviewService.getSessionDetail(id, userId)
-      if (!session) {
-        return res.status(404).json({
-          success: false,
-          message: 'Không tìm thấy phiên phỏng vấn'
-        })
-      }
-
-      const result = await mockInterviewService.endSession(id)
+      const history = await mockInterviewService.getChatHistory(id, userId)
 
       return res.status(200).json({
         success: true,
-        message: 'Kết thúc phiên phỏng vấn thành công',
-        data: result
+        data: history
       })
     } catch (error) {
-      return res.status(400).json({
+      return res.status(404).json({
         success: false,
         message: error.message
       })
     }
   },
 
-  // LẤY LỊCH SỬ PHỎNG VẤN
-  getHistory: async (req, res) => {
+  // Lấy danh sách phiên
+  getSessions: async (req, res) => {
     try {
       const userId = req.user.id
-      const { limit = 10 } = req.query
 
-      const result = await mockInterviewService.getHistory(userId, parseInt(limit))
+      const sessions = await mockInterviewService.getSessions(userId)
 
       return res.status(200).json({
         success: true,
-        data: result
+        data: sessions
       })
     } catch (error) {
       return res.status(500).json({
@@ -99,20 +87,20 @@ const mockInterviewController = {
     }
   },
 
-  // LẤY CHI TIẾT PHIÊN PHỎNG VẤN
-  getSessionDetail: async (req, res) => {
+  // Xóa phiên
+  deleteSession: async (req, res) => {
     try {
       const { id } = req.params
       const userId = req.user.id
 
-      const result = await mockInterviewService.getSessionDetail(id, userId)
+      await mockInterviewService.deleteSession(id, userId)
 
       return res.status(200).json({
         success: true,
-        data: result
+        message: 'Xóa phiên phỏng vấn thành công'
       })
     } catch (error) {
-      return res.status(404).json({
+      return res.status(400).json({
         success: false,
         message: error.message
       })
