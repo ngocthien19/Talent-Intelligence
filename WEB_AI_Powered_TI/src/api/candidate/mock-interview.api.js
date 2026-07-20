@@ -35,6 +35,22 @@ export const mockInterviewApi = {
     return response.data
   },
 
+  // Lấy chi tiết phiên (bao gồm tin nhắn)
+  getSessionDetail: async (sessionId) => {
+    const response = await authorizedAxiosInstance.get(
+      `${DEV_API_URL}/api/mock-interview/${sessionId}`
+    )
+    return response.data
+  },
+
+  // Kết thúc phiên phỏng vấn
+  endSession: async (sessionId) => {
+    const response = await authorizedAxiosInstance.post(
+      `${DEV_API_URL}/api/mock-interview/${sessionId}/end`
+    )
+    return response.data
+  },
+
   // Xóa phiên phỏng vấn
   deleteSession: async (sessionId) => {
     const response = await authorizedAxiosInstance.delete(
