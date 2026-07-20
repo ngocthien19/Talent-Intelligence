@@ -1,728 +1,350 @@
 import { useState, useEffect, useRef } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useLanguage } from '~/hooks/useLanguage'
 import { useAuth } from '~/hooks/useAuth'
-import { useScrollToTop } from '~/hooks/useScrollToTop'
-import { motion, AnimatePresence } from 'framer-motion'
-import { Link } from 'react-router-dom'
+import { mockInterviewApi } from '~/api/candidate/mock-interview.api'
 import {
-  FaMicrophone,
-  FaStop,
-  FaSpinner,
-  FaCheckCircle,
-  FaTimesCircle,
-  FaClock,
-  FaStar,
-  FaArrowLeft,
   FaRobot,
-  FaBrain,
-  FaChartBar,
-  FaLightbulb,
-  FaExclamationTriangle
+  FaUser,
+  FaPaperPlane,
+  FaSpinner,
+  FaHistory,
+  FaPlus,
+  FaTrash,
+  FaChevronLeft,
+  FaChevronRight
 } from 'react-icons/fa'
 import { toast } from 'react-toastify'
-import { mockInterviewApi } from '~/api/candidate/mock-interview.api'
 
-const containerVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.5,
-      ease: [0.25, 0.46, 0.45, 0.94]
-    }
-  }
-}
-
-const questionVariants = {
-  hidden: { opacity: 0, x: 30 },
-  visible: {
-    opacity: 1,
-    x: 0,
-    transition: {
-      duration: 0.4,
-      ease: [0.25, 0.46, 0.45, 0.94]
-    }
-  },
-  exit: {
-    opacity: 0,
-    x: -30,
-    transition: {
-      duration: 0.3
-    }
-  }
-}
-
-const getCategoryColor = (category) => {
-  const colors = {
-    technical: 'text-blue-500 bg-blue-50 dark:bg-blue-950/30',
-    behavioral: 'text-purple-500 bg-purple-50 dark:bg-purple-950/30',
-    situational: 'text-emerald-500 bg-emerald-50 dark:bg-emerald-950/30',
-    cultural: 'text-orange-500 bg-orange-50 dark:bg-orange-950/30',
-    general: 'text-gray-500 bg-gray-50 dark:bg-gray-800'
-  }
-  return colors[category?.toLowerCase()] || colors.general
-}
-
-const getDifficultyColor = (difficulty) => {
-  const colors = {
-    easy: 'text-green-500 bg-green-50 dark:bg-green-950/30',
-    medium: 'text-yellow-500 bg-yellow-50 dark:bg-yellow-950/30',
-    hard: 'text-red-500 bg-red-50 dark:bg-red-950/30'
-  }
-  return colors[difficulty?.toLowerCase()] || colors.medium
-}
-
-const MockInterview = () => {
-  useScrollToTop()
+const MockInterviewChat = () => {
   const { t } = useLanguage()
-  const { isAuthenticated, user } = useAuth()
-
+  const { user, isAuthenticated } = useAuth()
+  const [sessions, setSessions] = useState([])
+  const [currentSession, setCurrentSession] = useState(null)
+  const [messages, setMessages] = useState([])
+  const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const [session, setSession] = useState(null)
-  const [questions, setQuestions] = useState([])
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
-  const [answers, setAnswers] = useState([])
-  const [isAnswering, setIsAnswering] = useState(false)
-  const [isEnded, setIsEnded] = useState(false)
-  const [result, setResult] = useState(null)
   const [showHistory, setShowHistory] = useState(false)
-  const [history, setHistory] = useState([])
-  const [isLoadingHistory, setIsLoadingHistory] = useState(false)
+  const messagesEndRef = useRef(null)
+  const inputRef = useRef(null)
 
-  const textareaRef = useRef(null)
-
-  // Kiểm tra đăng nhập
+  // Tự động scroll xuống cuối khi có tin nhắn mới
   useEffect(() => {
-    if (!isAuthenticated) {
-      toast.warning('Vui lòng đăng nhập để sử dụng tính năng này')
-    }
-  }, [isAuthenticated])
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages])
 
-  // Tải lịch sử
-  const loadHistory = async () => {
-    setIsLoadingHistory(true)
+  // Load danh sách phiên
+  const loadSessions = async () => {
     try {
-      const response = await mockInterviewApi.getHistory({ limit: 10 })
+      const response = await mockInterviewApi.getSessions()
       if (response.success) {
-        setHistory(response.data || [])
+        setSessions(response.data || [])
       }
     } catch (error) {
-      console.error('Load history error:', error)
-    } finally {
-      setIsLoadingHistory(false)
+      console.error('Load sessions error:', error)
     }
   }
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      loadHistory()
-    }
-  }, [isAuthenticated])
-
-  // Bắt đầu phỏng vấn
-  const startInterview = async () => {
+  // Tạo phiên mới
+  const createNewSession = async () => {
     setIsLoading(true)
     try {
-      const response = await mockInterviewApi.startSession({
-        candidateId: user?.id,
-        jobId: null,
-        numberOfQuestions: 5
-      })
-
+      const response = await mockInterviewApi.createSession()
       if (response.success) {
-        setSession(response.data.session)
-        setQuestions(response.data.questions || [])
-        setCurrentQuestionIndex(0)
-        setAnswers([])
-        setIsEnded(false)
-        setResult(null)
-        toast.success('Bắt đầu phỏng vấn thành công!')
+        setCurrentSession(response.data.session)
+        setMessages([{
+          id: 'welcome',
+          sender: 'ai',
+          message: response.data.welcomeMessage,
+          created_at: new Date()
+        }])
+        setShowHistory(false)
+        await loadSessions()
       }
     } catch (error) {
-      toast.error(error?.message || 'Không thể bắt đầu phỏng vấn')
+      toast.error(error?.message || 'Không thể tạo phiên phỏng vấn')
     } finally {
       setIsLoading(false)
     }
   }
 
-  // Gửi câu trả lời
-  const submitAnswer = async () => {
-    const answerText = textareaRef.current?.value?.trim()
-    if (!answerText) {
-      toast.warning('Vui lòng nhập câu trả lời')
-      return
-    }
-
-    const currentQuestion = questions[currentQuestionIndex]
-    if (!currentQuestion) return
-
-    setIsAnswering(true)
+  // Load lịch sử chat của phiên
+  const loadChatHistory = async (sessionId) => {
+    setIsLoading(true)
     try {
-      const response = await mockInterviewApi.answerQuestion({
-        sessionId: session.id,
-        questionId: currentQuestion.id,
-        answer: answerText
+      const response = await mockInterviewApi.getChatHistory(sessionId)
+      if (response.success) {
+        setMessages(response.data || [])
+      }
+    } catch (error) {
+      toast.error('Không thể tải lịch sử chat')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // Chọn phiên cũ
+  const selectSession = async (session) => {
+    setCurrentSession(session)
+    setShowHistory(false)
+    await loadChatHistory(session.id)
+  }
+
+  // Gửi tin nhắn
+  const sendMessage = async () => {
+    const message = input.trim()
+    if (!message || !currentSession) return
+
+    setInput('')
+
+    // Thêm tin nhắn user vào UI ngay
+    setMessages(prev => [...prev, {
+      id: Date.now(),
+      sender: 'user',
+      message: message,
+      created_at: new Date()
+    }])
+
+    setIsLoading(true)
+    try {
+      const response = await mockInterviewApi.sendMessage({
+        sessionId: currentSession.id,
+        message: message
       })
 
       if (response.success) {
-        // Lưu câu trả lời
-        setAnswers([...answers, {
-          question: currentQuestion,
-          answer: answerText,
-          feedback: response.data.answer?.feedback,
-          score: response.data.answer?.score
-        }])
-
-        // Reset textarea
-        if (textareaRef.current) {
-          textareaRef.current.value = ''
-        }
-
-        // Kiểm tra hoàn thành
-        if (response.data.isComplete) {
-          setIsEnded(true)
-          // Lấy kết quả
-          const resultResponse = await mockInterviewApi.getSessionDetail(session.id)
-          if (resultResponse.success) {
-            setResult(resultResponse.data)
-          }
-          toast.success('🎉 Hoàn thành phỏng vấn!')
-        } else {
-          // Chuyển sang câu hỏi tiếp theo
-          setCurrentQuestionIndex(currentQuestionIndex + 1)
-          toast.success('Đã lưu câu trả lời!')
-        }
+        setMessages(prev => [...prev, response.data.message])
+        // Cập nhật session info
+        setCurrentSession(response.data.session)
       }
     } catch (error) {
-      toast.error(error?.message || 'Không thể gửi câu trả lời')
+      toast.error(error?.message || 'Không thể gửi tin nhắn')
+      // Remove user message if failed
+      setMessages(prev => prev.filter(m => m.id !== 'pending'))
     } finally {
-      setIsAnswering(false)
+      setIsLoading(false)
     }
   }
 
-  // Xem chi tiết session cũ
-  const viewSessionDetail = async (sessionId) => {
-    try {
-      const response = await mockInterviewApi.getSessionDetail(sessionId)
-      if (response.success) {
-        setResult(response.data)
-        setShowHistory(false)
-      }
-    } catch (error) {
-      toast.error('Không thể tải chi tiết phiên phỏng vấn')
-    }
-  }
-
-  // Kết thúc phỏng vấn sớm
-  const endInterviewEarly = async () => {
-    if (!confirm('Bạn có chắc muốn kết thúc phỏng vấn sớm?')) return
+  // Xóa phiên
+  const deleteSession = async (sessionId) => {
+    if (!confirm('Bạn có chắc muốn xóa phiên phỏng vấn này?')) return
 
     try {
-      const response = await mockInterviewApi.endSession(session.id)
-      if (response.success) {
-        setIsEnded(true)
-        setResult(response.data)
-        toast.success('Đã kết thúc phỏng vấn')
+      await mockInterviewApi.deleteSession(sessionId)
+      await loadSessions()
+      if (currentSession?.id === sessionId) {
+        setCurrentSession(null)
+        setMessages([])
       }
+      toast.success('Đã xóa phiên phỏng vấn')
     } catch (error) {
-      toast.error(error?.message || 'Không thể kết thúc phỏng vấn')
+      toast.error('Không thể xóa phiên phỏng vấn')
     }
   }
 
-  // Reset để bắt đầu lại
-  const resetInterview = () => {
-    setSession(null)
-    setQuestions([])
-    setCurrentQuestionIndex(0)
-    setAnswers([])
-    setIsEnded(false)
-    setResult(null)
-    if (textareaRef.current) {
-      textareaRef.current.value = ''
+  // Khởi tạo
+  useEffect(() => {
+    if (isAuthenticated) {
+      loadSessions()
+      // Tạo phiên mới nếu chưa có
+      if (!currentSession) {
+        createNewSession()
+      }
+    }
+  }, [isAuthenticated])
+
+  // Xử lý phím Enter
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      sendMessage()
     }
   }
 
   if (!isAuthenticated) {
-    return (
-      <div className="app-container py-6 animate-fade-in">
-        <div className="max-w-4xl mx-auto bg-white dark:bg-gray-800 rounded-xl shadow-custom p-12 text-center">
-          <FaRobot size={48} className="text-brand-light/60 dark:text-gray-700 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-brand-secondary dark:text-white mb-2">
-            Vui lòng đăng nhập
-          </h2>
-          <p className="text-brand-text dark:text-gray-400 mb-6">
-            Đăng nhập để sử dụng tính năng Mock Interview
-          </p>
-          <Link
-            to="/login"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-brand text-white rounded-xl font-medium hover:shadow-glow transition-all duration-300 cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
-          >
-            {t('auth.login') || 'Đăng nhập'}
-          </Link>
-        </div>
-      </div>
-    )
+    return <div className="app-container py-6">Vui lòng đăng nhập</div>
   }
 
-  // Hiển thị lịch sử
-  if (showHistory) {
-    return (
-      <motion.div
-        initial="hidden"
-        animate="visible"
-        variants={containerVariants}
-        className="app-container py-6"
-      >
-        <div className="max-w-4xl mx-auto">
+  return (
+    <div className="app-container py-6 h-[calc(100vh-120px)]">
+      <div className="max-w-6xl mx-auto h-full flex gap-4">
+        {/* Sidebar - Danh sách phiên */}
+        <div className={`${showHistory ? 'w-80' : 'w-0'} transition-all duration-300 overflow-hidden flex-shrink-0`}>
+          <div className="h-full bg-white dark:bg-gray-800 rounded-xl shadow-custom p-4 flex flex-col">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold text-brand-secondary dark:text-white flex items-center gap-2">
+                <FaHistory size={16} />
+                Lịch sử
+              </h3>
+              <button
+                onClick={() => setShowHistory(false)}
+                className="p-1 hover:bg-brand-light dark:hover:bg-gray-700 rounded-lg transition-colors"
+              >
+                <FaChevronLeft size={16} />
+              </button>
+            </div>
+
+            <button
+              onClick={createNewSession}
+              className="w-full px-4 py-2 bg-gradient-brand text-white rounded-lg font-medium hover:shadow-glow transition-all duration-200 flex items-center justify-center gap-2 mb-4"
+            >
+              <FaPlus size={14} />
+              Phiên mới
+            </button>
+
+            <div className="flex-1 overflow-y-auto space-y-2">
+              {sessions.map((session) => (
+                <div
+                  key={session.id}
+                  className={`p-3 rounded-lg cursor-pointer transition-all duration-200 group ${
+                    currentSession?.id === session.id
+                      ? 'bg-brand-primary/10 dark:bg-brand-primary/20 border-2 border-brand-primary'
+                      : 'hover:bg-brand-light dark:hover:bg-gray-700/50'
+                  }`}
+                  onClick={() => selectSession(session)}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-brand-secondary dark:text-white truncate">
+                        {session.title || `Phiên ${new Date(session.created_at).toLocaleDateString('vi-VN')}`}
+                      </p>
+                      <p className="text-xs text-brand-text/60 dark:text-gray-400">
+                        {new Date(session.created_at).toLocaleString('vi-VN')}
+                      </p>
+                    </div>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        deleteSession(session.id)
+                      }}
+                      className="p-1 text-brand-text/40 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <FaTrash size={12} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+              {sessions.length === 0 && (
+                <p className="text-center text-brand-text/60 dark:text-gray-400 text-sm py-8">
+                  Chưa có phiên phỏng vấn nào
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Main Chat Area */}
+        <div className="flex-1 bg-white dark:bg-gray-800 rounded-xl shadow-custom flex flex-col overflow-hidden">
           {/* Header */}
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h1 className="text-2xl font-extrabold text-brand-secondary dark:text-white flex items-center gap-3 after:content-[''] after:hidden sm:after:inline-block after:w-16 md:after:w-24 after:h-[6px] after:bg-brand-primary/60 after:rounded-full">
-                <FaRobot size={24} className="text-brand-primary" />
-                Lịch sử phỏng vấn
-              </h1>
+          <div className="px-6 py-4 border-b border-brand-light dark:border-gray-700 flex items-center justify-between flex-shrink-0">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-brand-light/30 dark:bg-gray-700/30">
+                <FaRobot size={20} className="text-brand-primary" />
+              </div>
+              <div>
+                <h2 className="font-bold text-brand-secondary dark:text-white">
+                  {currentSession?.title || 'Phỏng vấn thử với AI'}
+                </h2>
+                <p className="text-xs text-brand-text/60 dark:text-gray-400">
+                  {currentSession?.message_count || 0} tin nhắn
+                </p>
+              </div>
             </div>
             <button
-              onClick={() => setShowHistory(false)}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-brand-primary border border-brand-primary rounded-lg hover:bg-brand-primary hover:!text-white transition-all duration-200 cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
+              onClick={() => setShowHistory(!showHistory)}
+              className="p-2 rounded-lg hover:bg-brand-light dark:hover:bg-gray-700 transition-colors lg:hidden"
             >
-              <FaArrowLeft size={14} />
-              Quay lại
+              <FaHistory size={18} className="text-brand-text/60" />
             </button>
           </div>
 
-          {/* History List */}
-          {isLoadingHistory ? (
-            <div className="space-y-4">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="bg-white dark:bg-gray-800 rounded-xl shadow-custom p-6 skeleton-pulse">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
-                    <div className="flex-1">
-                      <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-1/3 mb-2"></div>
-                      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : history.length > 0 ? (
-            <div className="space-y-4">
-              {history.map((item) => (
-                <motion.div
-                  key={item.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  whileHover={{ scale: 1.01 }}
-                  className="bg-white dark:bg-gray-800 rounded-xl shadow-custom p-6 border-l-4 border-brand-primary hover:shadow-glow transition-all duration-300 cursor-pointer"
-                  onClick={() => viewSessionDetail(item.id)}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <div className="p-3 rounded-xl bg-brand-light/30 dark:bg-gray-700/30">
-                        <FaBrain size={20} className="text-brand-primary" />
-                      </div>
-                      <div>
-                        <p className="font-medium text-brand-secondary dark:text-white">
-                          Phỏng vấn {new Date(item.created_at).toLocaleDateString('vi-VN')}
-                        </p>
-                        <div className="flex items-center gap-3 text-sm text-brand-text/60 dark:text-gray-400">
-                          <span className="flex items-center gap-1">
-                            <FaClock size={12} />
-                            {new Date(item.created_at).toLocaleTimeString('vi-VN')}
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <FaChartBar size={12} />
-                            {item.answered_count || 0}/{item.total_questions} câu
-                          </span>
-                          <span className={`px-2 py-0.5 text-xs rounded-full ${
-                            item.status === 'completed'
-                              ? 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400'
-                              : 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400'
-                          }`}>
-                            {item.status === 'completed' ? 'Đã hoàn thành' : 'Đang thực hiện'}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium text-brand-primary">
-                        Xem chi tiết →
-                      </span>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          ) : (
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-custom p-12 text-center">
-              <FaRobot size={48} className="text-brand-light/60 dark:text-gray-700 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-brand-secondary dark:text-white mb-2">
-                Chưa có lịch sử phỏng vấn
-              </h3>
-              <p className="text-brand-text dark:text-gray-400 mb-6">
-                Hãy bắt đầu một phiên phỏng vấn để luyện tập
-              </p>
-              <button
-                onClick={() => setShowHistory(false)}
-                className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-brand text-white rounded-xl font-medium hover:shadow-glow transition-all duration-300 cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
+          {/* Messages */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-brand-bg/30 dark:bg-gray-900/30">
+            {messages.map((msg, index) => (
+              <motion.div
+                key={msg.id || index}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
               >
-                Bắt đầu ngay
-              </button>
-            </div>
-          )}
-        </div>
-      </motion.div>
-    )
-  }
-
-  // Hiển thị kết quả
-  if (result && isEnded) {
-    const summary = result.summary || {}
-    const avgScore = summary.avgScore || 0
-
-    return (
-      <motion.div
-        initial="hidden"
-        animate="visible"
-        variants={containerVariants}
-        className="app-container py-6"
-      >
-        <div className="max-w-4xl mx-auto">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-custom overflow-hidden">
-            <div className={`h-1 w-full ${avgScore >= 7 ? 'bg-green-500' : avgScore >= 5 ? 'bg-yellow-500' : 'bg-red-500'}`} />
-
-            <div className="p-6 md:p-8">
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-3">
-                  <div className="p-3 rounded-xl bg-brand-light/30 dark:bg-gray-700/30">
-                    <FaCheckCircle size={24} className="text-green-500" />
+                <div className={`flex items-start gap-3 max-w-[80%] ${msg.sender === 'user' ? 'flex-row-reverse' : ''}`}>
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                    msg.sender === 'user'
+                      ? 'bg-gradient-brand'
+                      : 'bg-brand-light dark:bg-gray-700'
+                  }`}>
+                    {msg.sender === 'user'
+                      ? <FaUser size={14} className="text-white" />
+                      : <FaRobot size={14} className="text-brand-primary" />
+                    }
                   </div>
-                  <div>
-                    <h2 className="text-2xl font-bold text-brand-secondary dark:text-white">
-                      Kết quả phỏng vấn
-                    </h2>
-                    <p className="text-sm text-brand-text/60 dark:text-gray-400">
-                      Hoàn thành {summary.answeredCount || 0}/{summary.totalQuestions || 0} câu hỏi
+                  <div className={`px-4 py-3 rounded-2xl ${
+                    msg.sender === 'user'
+                      ? 'bg-gradient-brand text-white'
+                      : 'bg-brand-light/50 dark:bg-gray-700/50 text-brand-secondary dark:text-white'
+                  }`}>
+                    <p className="whitespace-pre-wrap text-sm leading-relaxed">{msg.message}</p>
+                    <p className={`text-[10px] mt-1 ${
+                      msg.sender === 'user' ? 'text-white/60' : 'text-brand-text/40 dark:text-gray-500'
+                    }`}>
+                      {msg.created_at ? new Date(msg.created_at).toLocaleTimeString('vi-VN') : ''}
                     </p>
                   </div>
                 </div>
-                <button
-                  onClick={resetInterview}
-                  className="px-4 py-2 text-sm font-medium text-brand-primary border border-brand-primary rounded-lg hover:bg-brand-primary hover:!text-white transition-all duration-200 cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
-                >
-                  Phỏng vấn lại
-                </button>
-              </div>
-
-              {/* Score */}
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                <div className="p-4 bg-brand-bg/50 dark:bg-gray-800/50 rounded-xl text-center">
-                  <p className="text-3xl font-bold text-brand-primary">{avgScore}</p>
-                  <p className="text-xs text-brand-text/60 dark:text-gray-400">Điểm trung bình</p>
-                </div>
-                <div className="p-4 bg-brand-bg/50 dark:bg-gray-800/50 rounded-xl text-center">
-                  <p className="text-3xl font-bold text-brand-secondary dark:text-white">
-                    {summary.answeredCount || 0}/{summary.totalQuestions || 0}
-                  </p>
-                  <p className="text-xs text-brand-text/60 dark:text-gray-400">Số câu đã trả lời</p>
-                </div>
-                <div className="p-4 bg-brand-bg/50 dark:bg-gray-800/50 rounded-xl text-center">
-                  <p className="text-3xl font-bold text-emerald-500">{summary.strengths?.length || 0}</p>
-                  <p className="text-xs text-brand-text/60 dark:text-gray-400">Điểm mạnh</p>
-                </div>
-                <div className="p-4 bg-brand-bg/50 dark:bg-gray-800/50 rounded-xl text-center">
-                  <p className="text-3xl font-bold text-red-500">{summary.weaknesses?.length || 0}</p>
-                  <p className="text-xs text-brand-text/60 dark:text-gray-400">Điểm cần cải thiện</p>
-                </div>
-              </div>
-
-              {/* Feedback */}
-              <div className="space-y-4">
-                {summary.strengths?.length > 0 && (
-                  <div className="p-4 bg-green-50/50 dark:bg-green-950/20 rounded-xl border border-green-200 dark:border-green-800/30">
-                    <h3 className="font-medium text-green-700 dark:text-green-400 flex items-center gap-2 mb-2">
-                      <FaLightbulb size={16} />
-                      Điểm mạnh
-                    </h3>
-                    <ul className="list-disc list-inside space-y-1 text-sm text-brand-text dark:text-gray-300">
-                      {summary.strengths.map((item, i) => (
-                        <li key={i}>{item}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {summary.weaknesses?.length > 0 && (
-                  <div className="p-4 bg-red-50/50 dark:bg-red-950/20 rounded-xl border border-red-200 dark:border-red-800/30">
-                    <h3 className="font-medium text-red-700 dark:text-red-400 flex items-center gap-2 mb-2">
-                      <FaExclamationTriangle size={16} />
-                      Điểm cần cải thiện
-                    </h3>
-                    <ul className="list-disc list-inside space-y-1 text-sm text-brand-text dark:text-gray-300">
-                      {summary.weaknesses.map((item, i) => (
-                        <li key={i}>{item}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {summary.suggestions?.length > 0 && (
-                  <div className="p-4 bg-blue-50/50 dark:bg-blue-950/20 rounded-xl border border-blue-200 dark:border-blue-800/30">
-                    <h3 className="font-medium text-blue-700 dark:text-blue-400 flex items-center gap-2 mb-2">
-                      <FaChartBar size={16} />
-                      Gợi ý cải thiện
-                    </h3>
-                    <ul className="list-disc list-inside space-y-1 text-sm text-brand-text dark:text-gray-300">
-                      {summary.suggestions.map((item, i) => (
-                        <li key={i}>{item}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
-
-              {/* Answers Review */}
-              {result.questions && result.questions.length > 0 && (
-                <div className="mt-6">
-                  <button
-                    onClick={() => setShowHistory(true)}
-                    className="text-brand-primary hover:text-brand-secondary dark:hover:text-white font-medium transition-colors duration-200 cursor-pointer"
-                  >
-                    Xem lịch sử phỏng vấn →
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </motion.div>
-    )
-  }
-
-  // Hiển thị phỏng vấn đang diễn ra
-  if (session && questions.length > 0) {
-    const currentQuestion = questions[currentQuestionIndex]
-    const totalQuestions = questions.length
-    const progress = Math.round((currentQuestionIndex / totalQuestions) * 100)
-
-    return (
-      <motion.div
-        initial="hidden"
-        animate="visible"
-        variants={containerVariants}
-        className="app-container py-6"
-      >
-        <div className="max-w-4xl mx-auto">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h1 className="text-2xl font-extrabold text-brand-secondary dark:text-white flex items-center gap-3">
-                <FaRobot size={24} className="text-brand-primary" />
-                Phỏng vấn thử
-              </h1>
-              <p className="text-sm text-brand-text/60 dark:text-gray-400">
-                Câu {currentQuestionIndex + 1}/{totalQuestions}
-              </p>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="w-32 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: `${progress}%` }}
-                  transition={{ duration: 0.5 }}
-                  className="h-full bg-gradient-to-r from-brand-primary to-brand-accent rounded-full"
-                />
-              </div>
-              <span className="text-sm font-medium text-brand-primary">{progress}%</span>
-            </div>
-          </div>
-
-          {/* Progress */}
-          <div className="flex items-center gap-2 mb-6">
-            {questions.map((_, index) => (
-              <div
-                key={index}
-                className={`flex-1 h-1 rounded-full transition-all duration-300 ${
-                  index < currentQuestionIndex
-                    ? 'bg-green-500'
-                    : index === currentQuestionIndex
-                      ? 'bg-brand-primary'
-                      : 'bg-gray-200 dark:bg-gray-700'
-                }`}
-              />
+              </motion.div>
             ))}
-          </div>
 
-          {/* Question */}
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currentQuestionIndex}
-              variants={questionVariants}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-              className="bg-white dark:bg-gray-800 rounded-xl shadow-custom p-6 md:p-8 mb-6"
-            >
-              <div className="flex items-start gap-4 mb-4">
-                <div className="p-2 rounded-lg bg-brand-light/30 dark:bg-gray-700/30">
-                  <FaBrain size={20} className="text-brand-primary" />
-                </div>
-                <div className="flex-1">
-                  <div className="flex flex-wrap items-center gap-2 mb-3">
-                    <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${getCategoryColor(currentQuestion.category)}`}>
-                      {currentQuestion.category || 'General'}
-                    </span>
-                    <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${getDifficultyColor(currentQuestion.difficulty)}`}>
-                      {currentQuestion.difficulty || 'Medium'}
-                    </span>
+            {isLoading && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="flex justify-start"
+              >
+                <div className="flex items-center gap-3 max-w-[80%]">
+                  <div className="w-8 h-8 rounded-full bg-brand-light dark:bg-gray-700 flex items-center justify-center">
+                    <FaRobot size={14} className="text-brand-primary" />
                   </div>
-                  <p className="text-lg font-medium text-brand-secondary dark:text-white">
-                    {currentQuestion.question}
-                  </p>
+                  <div className="px-4 py-3 rounded-2xl bg-brand-light/50 dark:bg-gray-700/50">
+                    <FaSpinner className="animate-spin text-brand-primary" size={20} />
+                  </div>
                 </div>
-              </div>
+              </motion.div>
+            )}
 
-              {/* Textarea */}
-              <div className="mt-4">
-                <textarea
-                  ref={textareaRef}
-                  placeholder="Nhập câu trả lời của bạn tại đây..."
-                  rows={5}
-                  disabled={isAnswering}
-                  className="w-full px-4 py-3 bg-brand-bg dark:bg-gray-900 border border-brand-light dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-primary/50 focus:border-transparent transition-all duration-200 text-brand-secondary dark:text-white placeholder:text-brand-text/40 resize-none disabled:opacity-50 disabled:cursor-not-allowed"
-                />
-                <div className="flex justify-end mt-2">
-                  <span className="text-xs text-brand-text/40 dark:text-gray-500">
-                    Nhấn Ctrl+Enter để gửi
-                  </span>
-                </div>
-              </div>
-            </motion.div>
-          </AnimatePresence>
-
-          {/* Actions */}
-          <div className="flex flex-wrap gap-3">
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={submitAnswer}
-              disabled={isAnswering}
-              className="flex-1 px-6 py-3 bg-gradient-brand text-white rounded-xl font-medium hover:shadow-glow transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
-            >
-              {isAnswering ? (
-                <>
-                  <FaSpinner className="animate-spin" size={18} />
-                  Đang xử lý...
-                </>
-              ) : (
-                <>
-                  <FaMicrophone size={18} />
-                  Gửi câu trả lời
-                </>
-              )}
-            </motion.button>
-
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={endInterviewEarly}
-              className="px-6 py-3 border border-red-500 text-red-500 rounded-xl font-medium hover:bg-red-50 dark:hover:bg-red-950/30 transition-all duration-200 cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
-            >
-              <FaStop size={18} className="inline mr-2" />
-              Kết thúc
-            </motion.button>
+            <div ref={messagesEndRef} />
           </div>
-        </div>
-      </motion.div>
-    )
-  }
 
-  // Landing page - Bắt đầu phỏng vấn
-  return (
-    <motion.div
-      initial="hidden"
-      animate="visible"
-      variants={containerVariants}
-      className="app-container py-6"
-    >
-      <div className="max-w-4xl mx-auto">
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-custom overflow-hidden">
-          <div className="h-1 w-full bg-gradient-to-r from-brand-primary to-brand-accent" />
-
-          <div className="p-6 md:p-8 text-center">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5 }}
-              className="w-24 h-24 mx-auto rounded-full bg-brand-light/30 dark:bg-gray-700/30 flex items-center justify-center mb-6"
-            >
-              <FaRobot size={40} className="text-brand-primary" />
-            </motion.div>
-
-            <h1 className="text-3xl font-extrabold text-brand-secondary dark:text-white mb-3">
-              Phỏng vấn thử với AI
-            </h1>
-            <p className="text-brand-text dark:text-gray-400 max-w-2xl mx-auto mb-8">
-              Luyện tập phỏng vấn với AI, nhận phản hồi chi tiết và cải thiện kỹ năng của bạn.
-              Bạn sẽ được hỏi 5 câu hỏi phỏng vấn và nhận đánh giá ngay lập tức.
+          {/* Input */}
+          <div className="p-4 border-t border-brand-light dark:border-gray-700 flex-shrink-0">
+            <div className="flex gap-3">
+              <textarea
+                ref={inputRef}
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="Nhập tin nhắn của bạn..."
+                rows={1}
+                className="flex-1 px-4 py-3 bg-brand-bg dark:bg-gray-900 border border-brand-light dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-primary/50 resize-none transition-all duration-200 text-brand-secondary dark:text-white placeholder:text-brand-text/40"
+                style={{ minHeight: '48px', maxHeight: '120px' }}
+              />
+              <button
+                onClick={sendMessage}
+                disabled={!input.trim() || isLoading}
+                className="px-4 py-3 bg-gradient-brand text-white rounded-xl font-medium hover:shadow-glow transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                <FaPaperPlane size={18} />
+              </button>
+            </div>
+            <p className="text-xs text-brand-text/40 dark:text-gray-500 mt-2 text-center">
+              Nhấn Enter để gửi, Shift+Enter để xuống dòng
             </p>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-              <div className="p-4 bg-brand-bg/50 dark:bg-gray-800/50 rounded-xl">
-                <FaBrain size={24} className="text-brand-primary mx-auto mb-2" />
-                <h3 className="font-medium text-brand-secondary dark:text-white">5 câu hỏi</h3>
-                <p className="text-xs text-brand-text/60 dark:text-gray-400">Đa dạng chủ đề</p>
-              </div>
-              <div className="p-4 bg-brand-bg/50 dark:bg-gray-800/50 rounded-xl">
-                <FaStar size={24} className="text-yellow-500 mx-auto mb-2" />
-                <h3 className="font-medium text-brand-secondary dark:text-white">Đánh giá ngay</h3>
-                <p className="text-xs text-brand-text/60 dark:text-gray-400">Phản hồi chi tiết</p>
-              </div>
-              <div className="p-4 bg-brand-bg/50 dark:bg-gray-800/50 rounded-xl">
-                <FaChartBar size={24} className="text-emerald-500 mx-auto mb-2" />
-                <h3 className="font-medium text-brand-secondary dark:text-white">Theo dõi tiến bộ</h3>
-                <p className="text-xs text-brand-text/60 dark:text-gray-400">Lịch sử phỏng vấn</p>
-              </div>
-            </div>
-
-            <div className="flex flex-wrap items-center justify-center gap-4">
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={startInterview}
-                disabled={isLoading}
-                className="px-8 py-3 bg-gradient-brand text-white rounded-xl font-medium hover:shadow-glow transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 cursor-pointer"
-              >
-                {isLoading ? (
-                  <>
-                    <FaSpinner className="animate-spin" size={18} />
-                    Đang bắt đầu...
-                  </>
-                ) : (
-                  <>
-                    <FaMicrophone size={18} />
-                    Bắt đầu phỏng vấn
-                  </>
-                )}
-              </motion.button>
-
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => setShowHistory(true)}
-                className="px-8 py-3 border border-brand-primary text-brand-primary rounded-xl font-medium hover:bg-brand-primary hover:!text-white transition-all duration-200 cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
-              >
-                <FaClock size={18} className="inline mr-2" />
-                Lịch sử phỏng vấn
-              </motion.button>
-            </div>
           </div>
         </div>
       </div>
-    </motion.div>
+    </div>
   )
 }
 
-export default MockInterview
+export default MockInterviewChat
