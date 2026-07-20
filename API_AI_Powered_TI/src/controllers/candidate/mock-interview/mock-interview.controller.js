@@ -1,10 +1,10 @@
 import mockInterviewService from '~/services/candidate/mock-interview/mock-interview.service'
 
 const mockInterviewController = {
-  // Tạo phiên phỏng vấn mới
   createSession: async (req, res) => {
     try {
       const userId = req.user.id
+      const language = req.headers['accept-language']?.split(',')[0]?.substring(0, 2) || 'vi'
 
       if (req.user.roleName !== 'candidate') {
         return res.status(403).json({
@@ -13,7 +13,7 @@ const mockInterviewController = {
         })
       }
 
-      const result = await mockInterviewService.createSession(userId)
+      const result = await mockInterviewService.createSession(userId, language)
 
       return res.status(201).json({
         success: true,
@@ -28,13 +28,13 @@ const mockInterviewController = {
     }
   },
 
-  // Gửi tin nhắn (chat)
   sendMessage: async (req, res) => {
     try {
       const { sessionId, message } = req.body
       const userId = req.user.id
+      const language = req.headers['accept-language']?.split(',')[0]?.substring(0, 2) || 'vi'
 
-      const result = await mockInterviewService.sendMessage(sessionId, userId, message)
+      const result = await mockInterviewService.sendMessage(sessionId, userId, message, language)
 
       return res.status(200).json({
         success: true,
@@ -48,7 +48,6 @@ const mockInterviewController = {
     }
   },
 
-  // Lấy lịch sử chat
   getChatHistory: async (req, res) => {
     try {
       const { id } = req.params
@@ -68,7 +67,6 @@ const mockInterviewController = {
     }
   },
 
-  // Lấy danh sách phiên
   getSessions: async (req, res) => {
     try {
       const userId = req.user.id
@@ -81,26 +79,6 @@ const mockInterviewController = {
       })
     } catch (error) {
       return res.status(500).json({
-        success: false,
-        message: error.message
-      })
-    }
-  },
-
-  // Xóa phiên
-  deleteSession: async (req, res) => {
-    try {
-      const { id } = req.params
-      const userId = req.user.id
-
-      await mockInterviewService.deleteSession(id, userId)
-
-      return res.status(200).json({
-        success: true,
-        message: 'Xóa phiên phỏng vấn thành công'
-      })
-    } catch (error) {
-      return res.status(400).json({
         success: false,
         message: error.message
       })
@@ -126,13 +104,13 @@ const mockInterviewController = {
     }
   },
 
-  // KẾT THÚC PHỎNG VẤN
   endSession: async (req, res) => {
     try {
       const { id } = req.params
       const userId = req.user.id
+      const language = req.headers['accept-language']?.split(',')[0]?.substring(0, 2) || 'vi'
 
-      const result = await mockInterviewService.endSession(id, userId)
+      const result = await mockInterviewService.endSession(id, userId, language)
 
       return res.status(200).json({
         success: true,
@@ -145,8 +123,26 @@ const mockInterviewController = {
         message: error.message
       })
     }
-  }
+  },
 
+  deleteSession: async (req, res) => {
+    try {
+      const { id } = req.params
+      const userId = req.user.id
+
+      await mockInterviewService.deleteSession(id, userId)
+
+      return res.status(200).json({
+        success: true,
+        message: 'Xóa phiên phỏng vấn thành công'
+      })
+    } catch (error) {
+      return res.status(400).json({
+        success: false,
+        message: error.message
+      })
+    }
+  }
 }
 
 export default mockInterviewController
