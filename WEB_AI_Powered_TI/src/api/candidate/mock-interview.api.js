@@ -2,45 +2,42 @@ import authorizedAxiosInstance from '~/utils/authorizedAxios'
 import { DEV_API_URL } from '~/utils/constant'
 
 export const mockInterviewApi = {
-  // Bắt đầu phiên phỏng vấn
-  startSession: async (data) => {
+  // Gửi tin nhắn trong phiên phỏng vấn (chat)
+  sendMessage: async (sessionId, message) => {
     const response = await authorizedAxiosInstance.post(
-      `${DEV_API_URL}/api/mock-interview/start`,
-      data
+      `${DEV_API_URL}/api/mock-interview/chat`,
+      { sessionId, message }
     )
     return response.data
   },
 
-  // Trả lời câu hỏi
-  answerQuestion: async (data) => {
+  // Tạo phiên phỏng vấn mới
+  createSession: async () => {
     const response = await authorizedAxiosInstance.post(
-      `${DEV_API_URL}/api/mock-interview/answer`,
-      data
+      `${DEV_API_URL}/api/mock-interview/session`
     )
     return response.data
   },
 
-  // Kết thúc phiên phỏng vấn
-  endSession: async (sessionId) => {
-    const response = await authorizedAxiosInstance.post(
-      `${DEV_API_URL}/api/mock-interview/${sessionId}/end`
-    )
-    return response.data
-  },
-
-  // Lấy lịch sử phỏng vấn
-  getHistory: async (params = {}) => {
-    const { limit = 10 } = params
+  // Lấy lịch sử chat của phiên
+  getChatHistory: async (sessionId) => {
     const response = await authorizedAxiosInstance.get(
-      `${DEV_API_URL}/api/mock-interview/history`,
-      { params: { limit } }
+      `${DEV_API_URL}/api/mock-interview/${sessionId}/history`
     )
     return response.data
   },
 
-  // Lấy chi tiết phiên phỏng vấn
-  getSessionDetail: async (sessionId) => {
+  // Lấy danh sách phiên phỏng vấn
+  getSessions: async () => {
     const response = await authorizedAxiosInstance.get(
+      `${DEV_API_URL}/api/mock-interview/sessions`
+    )
+    return response.data
+  },
+
+  // Xóa phiên phỏng vấn
+  deleteSession: async (sessionId) => {
+    const response = await authorizedAxiosInstance.delete(
       `${DEV_API_URL}/api/mock-interview/${sessionId}`
     )
     return response.data
