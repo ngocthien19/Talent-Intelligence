@@ -9,21 +9,6 @@ const mockInterviewService = {
       throw new Error('Không tìm thấy hồ sơ ứng viên')
     }
 
-    // Kiểm tra xem đã có session chat nào chưa
-    const existingSessions = await mockInterviewModel.getChatSessionsByUserId(userId)
-
-    // Nếu đã có session chat, trả về session đầu tiên
-    if (existingSessions && existingSessions.length > 0) {
-      const session = existingSessions[0]
-      const history = await mockInterviewModel.getChatHistory(session.id)
-
-      return {
-        session,
-        welcomeMessage: history.length > 0 ? history[0].message : null
-      }
-    }
-
-    // Nếu chưa có, tạo mới
     const sessionToken = uuidv4()
     const session = await mockInterviewModel.createChatSession({
       candidateId: candidate.id,

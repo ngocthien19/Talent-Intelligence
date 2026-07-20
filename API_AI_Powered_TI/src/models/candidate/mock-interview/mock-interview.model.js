@@ -27,11 +27,11 @@ const mockInterviewModel = {
     const { candidateId, sessionToken } = data
 
     const query = `
-      INSERT INTO mock_interview_sessions (
-        candidate_id, session_token, status
-      ) VALUES ($1, $2, 'in_progress')
-      RETURNING *
-    `
+    INSERT INTO mock_interview_sessions (
+      candidate_id, session_token, status
+    ) VALUES ($1, $2, 'in_progress')
+    RETURNING *
+  `
 
     const result = await pool.query(query, [candidateId, sessionToken])
     return result.rows[0]
@@ -87,7 +87,6 @@ const mockInterviewModel = {
      LEFT JOIN mock_interview_messages m ON s.id = m.session_id
      WHERE cp.user_id = $1 
        AND (s.total_questions IS NULL OR s.total_questions = 0)
-       AND s.status != 'abandoned'  -- CHỈ ẨN NHỮNG PHIÊN BỊ BỎ DỞ
      GROUP BY s.id
      ORDER BY s.updated_at DESC`,
       [userId]
