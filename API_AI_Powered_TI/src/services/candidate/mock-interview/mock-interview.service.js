@@ -3,7 +3,7 @@ import { generateStructuredContent } from '~/providers/gemini.provider'
 import { v4 as uuidv4 } from 'uuid'
 
 const mockInterviewService = {
-  createSession: async (userId) => {
+  createSession: async (userId, language = 'vi') => {
     const candidate = await mockInterviewModel.getCandidateByUserId(userId)
     if (!candidate) {
       throw new Error('Không tìm thấy hồ sơ ứng viên')
@@ -15,21 +15,13 @@ const mockInterviewService = {
       sessionToken
     })
 
-    const welcomeMessage = `Chào bạn! Tôi là trợ lý phỏng vấn AI.
-
-Tôi sẽ giúp bạn luyện tập phỏng vấn như một buổi phỏng vấn thực tế. Bạn có thể:
-
-- Trò chuyện tự nhiên: Trả lời các câu hỏi của tôi như trong phỏng vấn thật
-- Hỏi đáp: Hỏi tôi bất kỳ câu hỏi nào về phỏng vấn
-- Nhận phản hồi: Tôi sẽ đánh giá và góp ý cho câu trả lời của bạn
-
-Hãy bắt đầu bằng cách giới thiệu về bản thân bạn nhé!`
+    const welcomeMessage = getWelcomeMessage(language)
 
     await mockInterviewModel.saveChatMessage({
       sessionId: session.id,
       sender: 'ai',
       message: welcomeMessage,
-      metadata: { type: 'system', isWelcome: true }
+      metadata: { type: 'system', isWelcome: true, language }
     })
 
     return {
@@ -38,41 +30,33 @@ Hãy bắt đầu bằng cách giới thiệu về bản thân bạn nhé!`
     }
   },
 
-  sendMessage: async (sessionId, userId, message) => {
-    // 1. Kiểm tra quyền
+  sendMessage: async (sessionId, userId, message, language = 'vi') => {
     const isOwner = await mockInterviewModel.isSessionOwner(sessionId, userId)
     if (!isOwner) {
       throw new Error('Bạn không có quyền truy cập phiên này')
     }
 
-    // 2. Lấy session
     const session = await mockInterviewModel.getChatSession(sessionId)
     if (!session) {
       throw new Error('Không tìm thấy phiên phỏng vấn')
     }
 
-    // 3. Lưu tin nhắn của user
     await mockInterviewModel.saveChatMessage({
       sessionId,
       sender: 'user',
       message: message
     })
 
-    // 4. Lấy lịch sử chat để có ngữ cảnh
     const history = await mockInterviewModel.getChatHistory(sessionId)
+    const aiResponse = await generateAIResponse(history, session, language)
 
-    // 5. Tạo phản hồi từ AI (dựa trên ngữ cảnh)
-    const aiResponse = await generateAIResponse(history, session)
-
-    // 6. Lưu tin nhắn của AI
     const savedAIResponse = await mockInterviewModel.saveChatMessage({
       sessionId,
       sender: 'ai',
       message: aiResponse.message,
-      metadata: aiResponse.metadata
+      metadata: { ...aiResponse.metadata, language }
     })
 
-    // 7. Cập nhật số lượng tin nhắn
     await mockInterviewModel.updateChatSession(sessionId, {
       messageCount: (session.message_count || 0) + 2
     })
@@ -103,7 +87,7 @@ Hãy bắt đầu bằng cách giới thiệu về bản thân bạn nhé!`
     return await mockInterviewModel.getChatSessionDetail(sessionId)
   },
 
-  endSession: async (sessionId, userId) => {
+  endSession: async (sessionId, userId, language = 'vi') => {
     const isOwner = await mockInterviewModel.isSessionOwner(sessionId, userId)
     if (!isOwner) {
       throw new Error('Bạn không có quyền thực hiện hành động này')
@@ -114,25 +98,18 @@ Hãy bắt đầu bằng cách giới thiệu về bản thân bạn nhé!`
       throw new Error('Không tìm thấy phiên phỏng vấn')
     }
 
-    // Lấy lịch sử chat để tạo tổng kết
     const history = await mockInterviewModel.getChatHistory(sessionId)
-
-    // Đếm số câu hỏi và câu trả lời
     const userMessages = history.filter(h => h.sender === 'user')
-    const aiMessages = history.filter(h => h.sender === 'ai' && h.metadata?.type !== 'system')
 
-    // Tạo tin nhắn tổng kết từ AI
-    const summaryMessage = await generateSummaryMessage(history, session)
+    const summaryMessage = await generateSummaryMessage(history, session, language)
 
-    // Lưu tin nhắn tổng kết
     await mockInterviewModel.saveChatMessage({
       sessionId,
       sender: 'ai',
       message: summaryMessage,
-      metadata: { type: 'summary', isEnd: true }
+      metadata: { type: 'summary', isEnd: true, language }
     })
 
-    // Cập nhật status thành 'completed'
     const updatedSession = await mockInterviewModel.updateChatSession(sessionId, {
       status: 'completed',
       messageCount: (session.message_count || 0) + 1
@@ -157,7 +134,43 @@ Hãy bắt đầu bằng cách giới thiệu về bản thân bạn nhé!`
   }
 }
 
-async function generateAIResponse(history, session) {
+function getWelcomeMessage(language) {
+  const messages = {
+    vi: `Chào bạn! Tôi là trợ lý phỏng vấn AI.
+
+Tôi sẽ giúp bạn luyện tập phỏng vấn như một buổi phỏng vấn thực tế. Bạn có thể:
+
+- Trò chuyện tự nhiên: Trả lời các câu hỏi của tôi như trong phỏng vấn thật
+- Hỏi đáp: Hỏi tôi bất kỳ câu hỏi nào về phỏng vấn
+- Nhận phản hồi: Tôi sẽ đánh giá và góp ý cho câu trả lời của bạn
+
+Hãy bắt đầu bằng cách giới thiệu về bản thân bạn nhé!`,
+
+    en: `Hello! I am your AI interview assistant.
+
+I will help you practice interviews like a real interview session. You can:
+
+- Natural conversation: Answer my questions like in a real interview
+- Q&A: Ask me any questions about interviews
+- Get feedback: I will evaluate and give feedback on your answers
+
+Let's start by introducing yourself!`,
+
+    ja: `こんにちは！私はAI面接アシスタントです。
+
+実際の面接のように面接練習をお手伝いします。以下のことができます：
+
+- 自然な会話：実際の面接のように私の質問に答える
+- Q&A：面接に関する質問は何でも聞いてください
+- フィードバック：回答を評価し、改善点をフィードバックします
+
+まずは自己紹介から始めましょう！`
+  }
+
+  return messages[language] || messages.vi
+}
+
+async function generateAIResponse(history, session, language = 'vi') {
   const messages = history.map(h => ({
     role: h.sender === 'user' ? 'user' : 'assistant',
     content: h.message
@@ -165,7 +178,89 @@ async function generateAIResponse(history, session) {
 
   const userMessageCount = history.filter(h => h.sender === 'user').length
 
-  let systemPrompt = `Bạn là một trợ lý phỏng vấn AI chuyên nghiệp.
+  const systemPrompt = getSystemPrompt(language)
+  const endingInstruction = userMessageCount >= 10 ? getEndingInstruction(language) : ''
+  const jsonInstruction = getJsonInstruction(language)
+
+  const prompt = `${systemPrompt}
+${endingInstruction}
+
+=== CHAT HISTORY ===
+${messages.map(m => `${m.role === 'user' ? getLabel('user', language) : getLabel('ai', language)}: ${m.content}`).join('\n')}
+
+=== REQUIREMENT ===
+${jsonInstruction}`
+
+  const result = await generateStructuredContent(prompt)
+
+  let response = result
+  if (typeof result === 'string') {
+    try {
+      const jsonMatch = result.match(/\{[\s\S]*\}/)
+      if (jsonMatch) {
+        response = JSON.parse(jsonMatch[0])
+      } else {
+        response = JSON.parse(result)
+      }
+    } catch {
+      response = {
+        message: result.substring(0, 500),
+        metadata: { type: 'general', category: 'general' }
+      }
+    }
+  }
+
+  if (response.message) {
+    response.message = response.message
+      .replace(/[\u{1F300}-\u{1FAFF}]/gu, '')
+      .replace(/[\u{2600}-\u{27BF}]/gu, '')
+      .trim()
+  }
+
+  return response
+}
+
+async function generateSummaryMessage(history, session, language = 'vi') {
+  const userMessages = history.filter(h => h.sender === 'user')
+
+  if (userMessages.length === 0) {
+    return getNoAnswerMessage(language)
+  }
+
+  const prompt = getSummaryPrompt(language, history, userMessages.length)
+
+  const result = await generateStructuredContent(prompt)
+
+  let response = result
+  if (typeof result === 'string') {
+    try {
+      const jsonMatch = result.match(/\{[\s\S]*\}/)
+      if (jsonMatch) {
+        response = JSON.parse(jsonMatch[0])
+      } else {
+        response = JSON.parse(result)
+      }
+    } catch {
+      response = {
+        message: getDefaultSummaryMessage(language, userMessages.length),
+        metadata: { type: 'summary' }
+      }
+    }
+  }
+
+  if (response.message) {
+    response.message = response.message
+      .replace(/[\u{1F300}-\u{1FAFF}]/gu, '')
+      .replace(/[\u{2600}-\u{27BF}]/gu, '')
+      .trim()
+  }
+
+  return response.message || response
+}
+
+function getSystemPrompt(language) {
+  const prompts = {
+    vi: `Bạn là một trợ lý phỏng vấn AI chuyên nghiệp.
 
 ### VAI TRÒ
 - Bạn là một nhà tuyển dụng hoặc chuyên gia HR đang phỏng vấn ứng viên
@@ -189,25 +284,97 @@ async function generateAIResponse(history, session) {
 Phản hồi của bạn nên có cấu trúc:
 1. Đánh giá ngắn về câu trả lời (điểm tốt, điểm cần cải thiện)
 2. Câu hỏi tiếp theo (nếu còn)
-3. Nếu ứng viên đã trả lời tốt -> Khen ngợi và hỏi sâu hơn`
+3. Nếu ứng viên đã trả lời tốt -> Khen ngợi và hỏi sâu hơn`,
 
-  if (userMessageCount >= 10) {
-    systemPrompt += `
+    en: `You are a professional AI interview assistant.
+
+### ROLE
+- You are a recruiter or HR specialist conducting an interview with a candidate
+- Goal: Evaluate the candidate professionally and friendly
+
+### STYLE
+- Professional, friendly, encouraging
+- Provide constructive feedback after each answer
+- Ask follow-up questions based on the candidate's answers
+- DO NOT use emoji in messages
+- Use English with professional tone
+
+### RULES
+1. If candidate hasn't introduced themselves -> Ask about background, work experience, education
+2. After each answer -> Give brief feedback (1-2 sentences) and ask next question
+3. Diverse questions: technical, behavioral, situational, company culture
+4. Do not repeat questions already asked
+5. If answer is too short -> Encourage candidate to elaborate
+
+### FEEDBACK FORMAT
+Your response should have structure:
+1. Brief evaluation of the answer (strengths, areas for improvement)
+2. Next question (if any)
+3. If candidate answered well -> Praise and ask deeper questions`,
+
+    ja: `あなたはプロフェッショナルなAI面接アシスタントです。
+
+### 役割
+- あなたは採用担当者またはHRスペシャリストとして候補者と面接を行います
+- 目標: 候補者を専門的かつ親しみやすく評価する
+
+### スタイル
+- 専門的、親しみやすく、候補者を励ます
+- 各回答の後に建設的なフィードバックを提供する
+- 候補者の回答に基づいてフォローアップの質問をする
+- メッセージに絵文字を使用しない
+- 日本語を使用し、丁寧な文体を保つ
+
+### ルール
+1. 候補者が自己紹介をしていない場合 -> 経歴、職務経験、学歴について質問する
+2. 各回答の後 -> 簡潔なフィードバック（1-2文）と次の質問をする
+3. 多様な質問: 技術的、行動的、状況的、企業文化
+4. 既に質問した質問を繰り返さない
+5. 回答が短すぎる場合 -> より詳しく話すよう促す
+
+### フィードバック形式
+回答は以下の構造を持つべき:
+1. 回答の簡潔な評価（強み、改善点）
+2. 次の質問（もしあれば）
+3. 候補者がよく回答した場合 -> 褒めてより深い質問をする`
+  }
+
+  return prompts[language] || prompts.vi
+}
+
+function getEndingInstruction(language) {
+  const instructions = {
+    vi: `
 ### KẾT THÚC PHỎNG VẤN
 Sau khoảng 10 câu trả lời, bạn nên tổng kết:
 - Điểm mạnh của ứng viên
 - Lĩnh vực cần cải thiện
 - Lời khuyên để phát triển
-- Hỏi ứng viên có câu hỏi gì không`
+- Hỏi ứng viên có câu hỏi gì không`,
+
+    en: `
+### ENDING INTERVIEW
+After about 10 answers, you should summarize:
+- Candidate's strengths
+- Areas for improvement
+- Advice for development
+- Ask if candidate has any questions`,
+
+    ja: `
+### 面接の終了
+約10回の回答後、以下のようにまとめるべき:
+- 候補者の強み
+- 改善点
+- 成長のためのアドバイス
+- 候補者に質問があるか尋ねる`
   }
 
-  const prompt = `${systemPrompt}
+  return instructions[language] || instructions.vi
+}
 
-=== LỊCH SỬ CHAT ===
-${messages.map(m => `${m.role === 'user' ? 'Ứng viên' : 'AI'}: ${m.content}`).join('\n')}
-
-=== YÊU CẦU ===
-Hãy phản hồi tin nhắn vừa rồi của ứng viên.
+function getJsonInstruction(language) {
+  const instructions = {
+    vi: `Hãy phản hồi tin nhắn vừa rồi của ứng viên.
 Trả về JSON:
 {
   "message": "Phản hồi của bạn (không có emoji, có dấu tiếng Việt)",
@@ -216,47 +383,64 @@ Trả về JSON:
     "category": "technical" hoặc "behavioral" hoặc "situational" hoặc "general",
     "score": null hoặc số điểm từ 1-10
   }
+}`,
+
+    en: `Respond to the candidate's latest message.
+Return JSON:
+{
+  "message": "Your response (no emoji, in English)",
+  "metadata": {
+    "type": "question" or "feedback" or "summary",
+    "category": "technical" or "behavioral" or "situational" or "general",
+    "score": null or score from 1-10
+  }
+}`,
+
+    ja: `候補者の最新のメッセージに応答してください。
+JSONを返してください：
+{
+  "message": "あなたの応答（絵文字なし、日本語）",
+  "metadata": {
+    "type": "question" または "feedback" または "summary",
+    "category": "technical" または "behavioral" または "situational" または "general",
+    "score": null または 1-10のスコア
+  }
 }`
-
-  const result = await generateStructuredContent(prompt)
-
-  let response = result
-  if (typeof result === 'string') {
-    try {
-      const jsonMatch = result.match(/\{[\s\S]*\}/)
-      if (jsonMatch) {
-        response = JSON.parse(jsonMatch[0])
-      } else {
-        response = JSON.parse(result)
-      }
-    } catch {
-      response = {
-        message: result.substring(0, 500),
-        metadata: { type: 'general', category: 'general' }
-      }
-    }
   }
 
-  // Đảm bảo message không có emoji
-  if (response.message) {
-    response.message = response.message
-      .replace(/[\u{1F300}-\u{1FAFF}]/gu, '')
-      .replace(/[\u{2600}-\u{27BF}]/gu, '')
-      .trim()
-  }
-
-  return response
+  return instructions[language] || instructions.vi
 }
 
-async function generateSummaryMessage(history, session) {
-  const userMessages = history.filter(h => h.sender === 'user')
-  const aiMessages = history.filter(h => h.sender === 'ai' && h.metadata?.type !== 'system')
-
-  if (userMessages.length === 0) {
-    return 'Bạn chưa trả lời câu hỏi nào. Hãy thử lại lần sau nhé!'
+function getLabel(type, language) {
+  const labels = {
+    vi: { user: 'Ứng viên', ai: 'AI' },
+    en: { user: 'Candidate', ai: 'AI' },
+    ja: { user: '候補者', ai: 'AI' }
   }
+  return labels[language]?.[type] || labels.vi[type]
+}
 
-  const prompt = `
+function getNoAnswerMessage(language) {
+  const messages = {
+    vi: 'Bạn chưa trả lời câu hỏi nào. Hãy thử lại lần sau nhé!',
+    en: 'You haven\'t answered any questions yet. Please try again!',
+    ja: 'まだ質問に回答していません。もう一度お試しください！'
+  }
+  return messages[language] || messages.vi
+}
+
+function getDefaultSummaryMessage(language, count) {
+  const messages = {
+    vi: `Cảm ơn bạn đã tham gia phỏng vấn! Bạn đã trả lời ${count} câu hỏi. Hãy tiếp tục luyện tập để cải thiện kỹ năng nhé!`,
+    en: `Thank you for participating in the interview! You answered ${count} questions. Keep practicing to improve your skills!`,
+    ja: `面接に参加していただきありがとうございます！${count}件の質問に回答しました。スキル向上のために練習を続けてください！`
+  }
+  return messages[language] || messages.vi
+}
+
+function getSummaryPrompt(language, history, count) {
+  const prompts = {
+    vi: `
 Bạn là một trợ lý phỏng vấn AI. Hãy tổng kết buổi phỏng vấn của ứng viên.
 
 === LỊCH SỬ CHAT ===
@@ -277,36 +461,56 @@ Trả về JSON:
     "weaknesses": ["điểm yếu 1", "điểm yếu 2"],
     "suggestions": ["gợi ý 1", "gợi ý 2"]
   }
+}`,
+
+    en: `
+You are an AI interview assistant. Please summarize the candidate's interview session.
+
+=== CHAT HISTORY ===
+${history.map(h => `${h.sender === 'user' ? 'Candidate' : 'AI'}: ${h.message}`).join('\n')}
+
+=== REQUIREMENT ===
+Please summarize the interview session with:
+1. Candidate's strengths (based on answers)
+2. Areas for improvement
+3. Advice for the candidate
+
+Return JSON:
+{
+  "message": "Summary content (no emoji, in English)",
+  "metadata": {
+    "type": "summary",
+    "strengths": ["strength 1", "strength 2"],
+    "weaknesses": ["weakness 1", "weakness 2"],
+    "suggestions": ["suggestion 1", "suggestion 2"]
+  }
+}`,
+
+    ja: `
+あなたはAI面接アシスタントです。候補者の面接セッションを要約してください。
+
+=== チャット履歴 ===
+${history.map(h => `${h.sender === 'user' ? '候補者' : 'AI'}: ${h.message}`).join('\n')}
+
+=== 要件 ===
+以下の内容で面接セッションを要約してください：
+1. 候補者の強み（回答に基づく）
+2. 改善点
+3. 候補者へのアドバイス
+
+JSONを返してください：
+{
+  "message": "要約内容（絵文字なし、日本語）",
+  "metadata": {
+    "type": "summary",
+    "strengths": ["強み1", "強み2"],
+    "weaknesses": ["改善点1", "改善点2"],
+    "suggestions": ["アドバイス1", "アドバイス2"]
+  }
 }`
-
-  const result = await generateStructuredContent(prompt)
-
-  let response = result
-  if (typeof result === 'string') {
-    try {
-      const jsonMatch = result.match(/\{[\s\S]*\}/)
-      if (jsonMatch) {
-        response = JSON.parse(jsonMatch[0])
-      } else {
-        response = JSON.parse(result)
-      }
-    } catch {
-      response = {
-        message: `Cảm ơn bạn đã tham gia phỏng vấn! Bạn đã trả lời ${userMessages.length} câu hỏi. Hãy tiếp tục luyện tập để cải thiện kỹ năng nhé!`,
-        metadata: { type: 'summary' }
-      }
-    }
   }
 
-  // Đảm bảo message không có emoji
-  if (response.message) {
-    response.message = response.message
-      .replace(/[\u{1F300}-\u{1FAFF}]/gu, '')
-      .replace(/[\u{2600}-\u{27BF}]/gu, '')
-      .trim()
-  }
-
-  return response.message || response
+  return prompts[language] || prompts.vi
 }
 
 export default mockInterviewService
