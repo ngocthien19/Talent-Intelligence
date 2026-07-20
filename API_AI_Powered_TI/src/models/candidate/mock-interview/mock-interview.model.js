@@ -81,17 +81,45 @@ const mockInterviewModel = {
   getChatSessionsByUserId: async (userId) => {
     const result = await pool.query(
       `SELECT s.*, 
-              COUNT(m.id) as message_count
-       FROM mock_interview_sessions s
-       JOIN candidate_profiles cp ON s.candidate_id = cp.id
-       LEFT JOIN mock_interview_messages m ON s.id = m.session_id
-       WHERE cp.user_id = $1 
-         AND (s.total_questions IS NULL OR s.total_questions = 0)
-       GROUP BY s.id
-       ORDER BY s.updated_at DESC`,
+            COUNT(m.id) as message_count
+     FROM mock_interview_sessions s
+     JOIN candidate_profiles cp ON s.candidate_id = cp.id
+     LEFT JOIN mock_interview_messages m ON s.id = m.session_id
+     WHERE cp.user_id = $1 
+       AND (s.total_questions IS NULL OR s.total_questions = 0)
+       AND s.status != 'abandoned'  -- CHỈ ẨN NHỮNG PHIÊN BỊ BỎ DỞ
+     GROUP BY s.id
+     ORDER BY s.updated_at DESC`,
       [userId]
     )
     return result.rows
+  },
+
+  // Lấy chi tiết session chat
+  getChatSessionDetail: async (sessionId) => {
+    const result = await pool.query(
+      `SELECT s.*, 
+            cp.name as candidate_name, 
+            cp.email as candidate_email, 
+            cp.user_id,
+            json_agg(
+              json_build_object(
+                'id', m.id,
+                'sender', m.sender,
+                'message', m.message,
+                'metadata', m.metadata,
+                'created_at', m.created_at
+              ) ORDER BY m.created_at ASC
+            ) as messages
+     FROM mock_interview_sessions s
+     LEFT JOIN candidate_profiles cp ON s.candidate_id = cp.id
+     LEFT JOIN mock_interview_messages m ON s.id = m.session_id
+     WHERE s.id = $1 
+       AND (s.total_questions IS NULL OR s.total_questions = 0)
+     GROUP BY s.id, cp.id`,
+      [sessionId]
+    )
+    return result.rows[0]
   },
 
   deleteChatSession: async (sessionId) => {
