@@ -1,7 +1,6 @@
 import pool from '~/config/db'
 
 const mockInterviewModel = {
-  // Lấy candidate theo user_id
   getCandidateByUserId: async (userId) => {
     const result = await pool.query(
       `SELECT cp.*, u.fullname, u.email, u.phone
@@ -13,7 +12,6 @@ const mockInterviewModel = {
     return result.rows[0]
   },
 
-  // Lấy thông tin candidate theo candidate_id
   getCandidateById: async (candidateId) => {
     const result = await pool.query(
       `SELECT cp.*, u.fullname, u.email, u.phone
@@ -25,44 +23,23 @@ const mockInterviewModel = {
     return result.rows[0]
   },
 
-  // Lấy thông tin job (JD)
-  getJob: async (jobId) => {
-    const result = await pool.query(
-      `SELECT j.*, comp.name as company_name
-       FROM job_descriptions j
-       LEFT JOIN companies comp ON j.company_id = comp.id
-       WHERE j.id = $1`,
-      [jobId]
-    )
-    return result.rows[0]
-  },
-
-  // Tạo session mới
-  createSession: async (data) => {
-    const {
-      candidateId,
-      sessionToken,
-      totalQuestions
-    } = data
+  createChatSession: async (data) => {
+    const { candidateId, sessionToken } = data
 
     const query = `
       INSERT INTO mock_interview_sessions (
-        candidate_id, session_token, total_questions, status
-      ) VALUES ($1, $2, $3, 'in_progress')
+        candidate_id, session_token, status
+      ) VALUES ($1, $2, 'in_progress')
       RETURNING *
     `
 
-    const result = await pool.query(query, [
-      candidateId, sessionToken, totalQuestions
-    ])
+    const result = await pool.query(query, [candidateId, sessionToken])
     return result.rows[0]
   },
 
-  // Lấy session
-  getSession: async (sessionId) => {
+  getChatSession: async (sessionId) => {
     const result = await pool.query(
-      `SELECT s.*, cp.name as candidate_name, cp.email as candidate_email,
-              cp.user_id
+      `SELECT s.*, cp.name as candidate_name, cp.email as candidate_email, cp.user_id
        FROM mock_interview_sessions s
        LEFT JOIN candidate_profiles cp ON s.candidate_id = cp.id
        WHERE s.id = $1`,
@@ -71,193 +48,62 @@ const mockInterviewModel = {
     return result.rows[0]
   },
 
-  // Lấy session theo token
-  getSessionByToken: async (token) => {
-    const result = await pool.query(
-      'SELECT * FROM mock_interview_sessions WHERE session_token = $1',
-      [token]
-    )
-    return result.rows[0]
-  },
-
-  // Lưu câu hỏi
-  saveQuestions: async (questions) => {
-    const savedQuestions = []
-    for (const q of questions) {
-      const query = `
-        INSERT INTO interview_questions (
-          candidate_id, question, reason, trap, suggestion,
-          category, difficulty, "order"
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-        RETURNING *
-      `
-      const result = await pool.query(query, [
-        q.candidateId,
-        q.question,
-        q.reason || null,
-        q.trap || null,
-        q.suggestion || null,
-        q.category || 'general',
-        q.difficulty || 'medium',
-        q.order || 0
-      ])
-      savedQuestions.push(result.rows[0])
-    }
-    return savedQuestions
-  },
-
-  // Lấy câu hỏi theo session
-  getQuestionsBySession: async (sessionId) => {
-    const result = await pool.query(
-      `SELECT q.*
-       FROM interview_questions q
-       JOIN mock_interview_sessions s ON q.candidate_id = s.candidate_id
-       WHERE s.id = $1
-       ORDER BY q.order ASC`,
-      [sessionId]
-    )
-    return result.rows
-  },
-
-  // Lấy câu hỏi theo ID
-  getQuestionById: async (questionId) => {
-    const result = await pool.query(
-      'SELECT * FROM interview_questions WHERE id = $1',
-      [questionId]
-    )
-    return result.rows[0]
-  },
-
-  // Lưu câu trả lời
-  saveAnswer: async (data) => {
-    const {
-      sessionId,
-      questionId,
-      answerText,
-      feedback,
-      score,
-      strengths,
-      weaknesses,
-      suggestion,
-      responseTime
-    } = data
-
-    const query = `
-      INSERT INTO interview_answers (
-        session_id, question_id, answer_text, feedback, score,
-        strengths, weaknesses, suggestion, response_time
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-      RETURNING *
-    `
-
-    const result = await pool.query(query, [
-      sessionId, questionId, answerText, feedback, score,
-      strengths ? JSON.stringify(strengths) : null,
-      weaknesses ? JSON.stringify(weaknesses) : null,
-      suggestion || null,
-      responseTime || null
-    ])
-    return result.rows[0]
-  },
-
-  // Cập nhật session
-  updateSession: async (sessionId, data) => {
-    const fields = []
+  updateChatSession: async (sessionId, data) => {
+    const { messageCount, status } = data
+    const updates = []
     const params = []
-    let paramIndex = 1
+    let idx = 1
 
-    const fieldMap = {
-      answeredQuestions: 'answered_questions',
-      currentQuestionIndex: 'current_question_index',
-      status: 'status',
-      endedAt: 'ended_at',
-      overallFeedback: 'overall_feedback',
-      strengths: 'strengths',
-      weaknesses: 'weaknesses',
-      suggestions: 'suggestions'
+    if (messageCount !== undefined) {
+      updates.push(`message_count = $${idx}`)
+      params.push(messageCount)
+      idx++
     }
-
-    for (const [key, dbField] of Object.entries(fieldMap)) {
-      if (data[key] !== undefined) {
-        let value = data[key]
-        if (key === 'strengths' || key === 'weaknesses' || key === 'suggestions') {
-          value = JSON.stringify(value)
-        }
-        fields.push(`${dbField} = $${paramIndex}`)
-        params.push(value)
-        paramIndex++
-      }
+    if (status) {
+      updates.push(`status = $${idx}`)
+      params.push(status)
+      idx++
     }
+    updates.push('updated_at = CURRENT_TIMESTAMP')
 
-    if (fields.length === 0) {
-      const result = await pool.query(
-        'SELECT * FROM mock_interview_sessions WHERE id = $1',
-        [sessionId]
-      )
-      return result.rows[0]
-    }
-
-    params.push(sessionId)
     const query = `
       UPDATE mock_interview_sessions
-      SET ${fields.join(', ')}, updated_at = CURRENT_TIMESTAMP
-      WHERE id = $${paramIndex}
+      SET ${updates.join(', ')}
+      WHERE id = $${idx}
       RETURNING *
     `
+    params.push(sessionId)
 
     const result = await pool.query(query, params)
     return result.rows[0]
   },
 
-  // Lấy lịch sử session của candidate
-  getSessionsByUserId: async (userId, limit = 10) => {
+  getChatSessionsByUserId: async (userId) => {
     const result = await pool.query(
       `SELECT s.*, 
-              COUNT(a.id) as answered_count
+              COUNT(m.id) as message_count
        FROM mock_interview_sessions s
-       LEFT JOIN interview_answers a ON s.id = a.session_id
        JOIN candidate_profiles cp ON s.candidate_id = cp.id
-       WHERE cp.user_id = $1
+       LEFT JOIN mock_interview_messages m ON s.id = m.session_id
+       WHERE cp.user_id = $1 
+         AND (s.total_questions IS NULL OR s.total_questions = 0)
        GROUP BY s.id
-       ORDER BY s.created_at DESC
-       LIMIT $2`,
-      [userId, limit]
+       ORDER BY s.updated_at DESC`,
+      [userId]
     )
     return result.rows
   },
 
-  // Lấy chi tiết session
-  getSessionDetail: async (sessionId) => {
+  deleteChatSession: async (sessionId) => {
     const result = await pool.query(
-      `SELECT 
-        s.*,
-        cp.name as candidate_name,
-        cp.email as candidate_email,
-        cp.user_id,
-        json_agg(
-          json_build_object(
-            'id', q.id,
-            'question', q.question,
-            'category', q.category,
-            'difficulty', q.difficulty,
-            'answer', a.answer_text,
-            'feedback', a.feedback,
-            'score', a.score,
-            'suggestion', a.suggestion
-          ) ORDER BY q.order ASC
-        ) as questions
-       FROM mock_interview_sessions s
-       LEFT JOIN candidate_profiles cp ON s.candidate_id = cp.id
-       LEFT JOIN interview_questions q ON q.candidate_id = cp.id
-       LEFT JOIN interview_answers a ON a.question_id = q.id AND a.session_id = s.id
-       WHERE s.id = $1
-       GROUP BY s.id, cp.id`,
+      `DELETE FROM mock_interview_sessions 
+       WHERE id = $1 AND (total_questions IS NULL OR total_questions = 0)
+       RETURNING *`,
       [sessionId]
     )
     return result.rows[0]
   },
 
-  // Kiểm tra session có thuộc về user không
   isSessionOwner: async (sessionId, userId) => {
     const result = await pool.query(
       `SELECT s.id
@@ -269,43 +115,30 @@ const mockInterviewModel = {
     return result.rows.length > 0
   },
 
-  // Lấy câu trả lời theo question_id và session_id
-  getAnswerByQuestionAndSession: async (questionId, sessionId) => {
-    const result = await pool.query(
-      `SELECT score, strengths, weaknesses, suggestion 
-       FROM interview_answers 
-       WHERE question_id = $1 AND session_id = $2`,
-      [questionId, sessionId]
-    )
+  saveChatMessage: async (data) => {
+    const { sessionId, sender, message, metadata } = data
+
+    const query = `
+      INSERT INTO mock_interview_messages (
+        session_id, sender, message, metadata
+      ) VALUES ($1, $2, $3, $4)
+      RETURNING *
+    `
+
+    const result = await pool.query(query, [
+      sessionId, sender, message, metadata || null
+    ])
     return result.rows[0]
   },
 
-  // Lấy tất cả câu trả lời của session
-  getAnswersBySession: async (sessionId) => {
+  getChatHistory: async (sessionId) => {
     const result = await pool.query(
-      `SELECT a.*, q.question, q.category, q.difficulty
-       FROM interview_answers a
-       JOIN interview_questions q ON a.question_id = q.id
-       WHERE a.session_id = $1
-       ORDER BY q.order ASC`,
+      `SELECT * FROM mock_interview_messages 
+       WHERE session_id = $1 
+       ORDER BY created_at ASC`,
       [sessionId]
     )
     return result.rows
-  },
-
-  // Lấy tổng điểm của session
-  getSessionScoreSummary: async (sessionId) => {
-    const result = await pool.query(
-      `SELECT 
-        COUNT(*) as total_answers,
-        AVG(score) as avg_score,
-        SUM(score) as total_score
-       FROM interview_answers
-       WHERE session_id = $1
-       AND score IS NOT NULL`,
-      [sessionId]
-    )
-    return result.rows[0]
   }
 }
 

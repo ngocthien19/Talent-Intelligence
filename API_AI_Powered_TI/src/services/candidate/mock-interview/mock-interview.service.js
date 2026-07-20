@@ -3,292 +3,204 @@ import { generateStructuredContent } from '~/providers/gemini.provider'
 import { v4 as uuidv4 } from 'uuid'
 
 const mockInterviewService = {
-  // BẮT ĐẦU PHỎNG VẤN
-  startSession: async (userId, jobId = null, numberOfQuestions = 5) => {
-  // 1. Lấy candidate profile theo userId
+  // Tạo phiên phỏng vấn mới
+  createSession: async (userId) => {
     const candidate = await mockInterviewModel.getCandidateByUserId(userId)
     if (!candidate) {
-      throw new Error('Không tìm thấy hồ sơ ứng viên. Vui lòng tạo hồ sơ trước.')
+      throw new Error('Không tìm thấy hồ sơ ứng viên')
     }
 
-    // 2. Lấy thông tin job (nếu có)
-    let job = null
-    if (jobId) {
-      job = await mockInterviewModel.getJob(jobId)
-    }
-
-    // 3. Tạo session token
     const sessionToken = uuidv4()
-
-    // 4. Tạo câu hỏi từ AI
-    const questions = await generateQuestions(candidate, job, numberOfQuestions)
-
-    // 5. Lưu session
-    const session = await mockInterviewModel.createSession({
+    const session = await mockInterviewModel.createChatSession({
       candidateId: candidate.id,
       sessionToken,
-      totalQuestions: questions.length
+      status: 'active'
     })
 
-    // 6. Lưu câu hỏi
-    const savedQuestions = await mockInterviewModel.saveQuestions(
-      questions.map((q, index) => ({
-        ...q,
-        candidateId: candidate.id,
-        order: index + 1
-      }))
-    )
+    // Tin nhắn chào mừng từ AI (không emoji)
+    const welcomeMessage = `Chào bạn! Tôi là trợ lý phỏng vấn AI.
+
+Tôi sẽ giúp bạn luyện tập phỏng vấn như một buổi phỏng vấn thực tế. Bạn có thể:
+
+- Trò chuyện tự nhiên: Trả lời các câu hỏi của tôi như trong phỏng vấn thật
+- Hỏi đáp: Hỏi tôi bất kỳ câu hỏi nào về phỏng vấn
+- Nhận phản hồi: Tôi sẽ đánh giá và góp ý cho câu trả lời của bạn
+
+Hãy bắt đầu bằng cách giới thiệu về bản thân bạn nhé!`
+
+    await mockInterviewModel.saveChatMessage({
+      sessionId: session.id,
+      sender: 'ai',
+      message: welcomeMessage,
+      metadata: { type: 'system', isWelcome: true }
+    })
 
     return {
       session,
-      questions: savedQuestions.map(q => ({
-        id: q.id,
-        question: q.question,
-        category: q.category,
-        difficulty: q.difficulty,
-        order: q.order
-      }))
+      welcomeMessage
     }
   },
 
-  // TRẢ LỜI CÂU HỎI
-  answerQuestion: async (sessionId, questionId, answer, userId) => {
-    // 1. Kiểm tra session có thuộc về user không
+  // Gửi tin nhắn và nhận phản hồi từ AI
+  sendMessage: async (sessionId, userId, message) => {
+    // 1. Kiểm tra quyền
     const isOwner = await mockInterviewModel.isSessionOwner(sessionId, userId)
     if (!isOwner) {
-      throw new Error('Bạn không có quyền thực hiện hành động này')
+      throw new Error('Bạn không có quyền truy cập phiên này')
     }
 
     // 2. Lấy session
-    const session = await mockInterviewModel.getSession(sessionId)
+    const session = await mockInterviewModel.getChatSession(sessionId)
     if (!session) {
       throw new Error('Không tìm thấy phiên phỏng vấn')
     }
 
-    // 3. Lấy câu hỏi
-    const question = await mockInterviewModel.getQuestionById(questionId)
-    if (!question) {
-      throw new Error('Không tìm thấy câu hỏi')
-    }
-
-    // 4. Đánh giá câu trả lời bằng AI
-    const evaluation = await evaluateAnswer(question.question, answer, question.suggestion)
-
-    // 5. Lưu câu trả lời
-    const answerRecord = await mockInterviewModel.saveAnswer({
+    // 3. Lưu tin nhắn của user
+    await mockInterviewModel.saveChatMessage({
       sessionId,
-      questionId,
-      answerText: answer,
-      feedback: evaluation.feedback,
-      score: evaluation.score,
-      strengths: evaluation.strengths,
-      weaknesses: evaluation.weaknesses,
-      suggestion: evaluation.suggestion,
-      responseTime: evaluation.responseTime || 30
+      sender: 'user',
+      message: message
     })
 
-    // 6. Cập nhật session
-    const updatedSession = await mockInterviewModel.updateSession(sessionId, {
-      answeredQuestions: (session.answered_questions || 0) + 1,
-      currentQuestionIndex: (session.current_question_index || 0) + 1
+    // 4. Lấy lịch sử chat để có ngữ cảnh
+    const history = await mockInterviewModel.getChatHistory(sessionId)
+
+    // 5. Tạo phản hồi từ AI (dựa trên ngữ cảnh)
+    const aiResponse = await generateAIResponse(history, session)
+
+    // 6. Lưu tin nhắn của AI
+    const savedAIResponse = await mockInterviewModel.saveChatMessage({
+      sessionId,
+      sender: 'ai',
+      message: aiResponse.message,
+      metadata: aiResponse.metadata
     })
 
-    // 7. Kiểm tra nếu đã trả lời hết câu hỏi
-    let isComplete = false
-    if (updatedSession.answered_questions >= updatedSession.total_questions) {
-      await mockInterviewService.endSession(sessionId)
-      isComplete = true
-    }
-
-    return {
-      answer: answerRecord,
-      session: updatedSession,
-      isComplete
-    }
-  },
-
-  // KẾT THÚC PHỎNG VẤN
-  endSession: async (sessionId) => {
-    // 1. Lấy session
-    const session = await mockInterviewModel.getSession(sessionId)
-    if (!session) {
-      throw new Error('Không tìm thấy phiên phỏng vấn')
-    }
-
-    // 2. Lấy tất cả câu trả lời của session
-    const answers = await mockInterviewModel.getAnswersBySession(sessionId)
-
-    // 3. Lấy tổng điểm
-    const scoreSummary = await mockInterviewModel.getSessionScoreSummary(sessionId)
-
-    // 4. Tổng hợp feedback
-    const strengths = []
-    const weaknesses = []
-    const suggestions = []
-
-    for (const answer of answers) {
-      if (answer.strengths) {
-        const strengthsList = Array.isArray(answer.strengths)
-          ? answer.strengths
-          : JSON.parse(answer.strengths)
-        strengths.push(...strengthsList)
-      }
-      if (answer.weaknesses) {
-        const weaknessesList = Array.isArray(answer.weaknesses)
-          ? answer.weaknesses
-          : JSON.parse(answer.weaknesses)
-        weaknesses.push(...weaknessesList)
-      }
-      if (answer.suggestion) {
-        suggestions.push(answer.suggestion)
-      }
-    }
-
-    const avgScore = scoreSummary?.avg_score
-      ? Math.round(parseFloat(scoreSummary.avg_score) * 10) / 10
-      : 0
-
-    const totalAnswers = parseInt(scoreSummary?.total_answers || 0)
-
-    // 5. Cập nhật session
-    const updatedSession = await mockInterviewModel.updateSession(sessionId, {
-      status: 'completed',
-      endedAt: new Date(),
-      overallFeedback: `Điểm trung bình: ${avgScore}/10. Đã hoàn thành ${totalAnswers}/${session.total_questions} câu hỏi.`,
-      strengths: [...new Set(strengths)],
-      weaknesses: [...new Set(weaknesses)],
-      suggestions: [...new Set(suggestions)]
+    // 7. Cập nhật số lượng tin nhắn
+    await mockInterviewModel.updateChatSession(sessionId, {
+      messageCount: (session.message_count || 0) + 2
     })
 
     return {
-      session: updatedSession,
-      summary: {
-        totalQuestions: session.total_questions,
-        answeredCount: totalAnswers,
-        avgScore,
-        strengths: [...new Set(strengths)],
-        weaknesses: [...new Set(weaknesses)],
-        suggestions: [...new Set(suggestions)]
-      }
+      message: savedAIResponse,
+      session: await mockInterviewModel.getChatSession(sessionId)
     }
   },
 
-  // LẤY LỊCH SỬ
-  getHistory: async (userId, limit = 10) => {
-    return await mockInterviewModel.getSessionsByUserId(userId, limit)
-  },
-
-  // LẤY CHI TIẾT SESSION
-  getSessionDetail: async (sessionId, userId) => {
-    // Kiểm tra quyền
+  // Lấy lịch sử chat
+  getChatHistory: async (sessionId, userId) => {
     const isOwner = await mockInterviewModel.isSessionOwner(sessionId, userId)
     if (!isOwner) {
-      throw new Error('Bạn không có quyền xem phiên phỏng vấn này')
+      throw new Error('Bạn không có quyền truy cập phiên này')
     }
+    return await mockInterviewModel.getChatHistory(sessionId)
+  },
 
-    return await mockInterviewModel.getSessionDetail(sessionId)
+  // Lấy danh sách phiên của user
+  getSessions: async (userId) => {
+    return await mockInterviewModel.getChatSessionsByUserId(userId)
+  },
+
+  // Xóa phiên
+  deleteSession: async (sessionId, userId) => {
+    const isOwner = await mockInterviewModel.isSessionOwner(sessionId, userId)
+    if (!isOwner) {
+      throw new Error('Bạn không có quyền xóa phiên này')
+    }
+    return await mockInterviewModel.deleteChatSession(sessionId)
   }
 }
 
-// HÀM TẠO CÂU HỎI TỪ AI
-async function generateQuestions(candidate, job, numberOfQuestions) {
-  const prompt = `
-Bạn là một chuyên gia phỏng vấn AI. Hãy tạo ${numberOfQuestions} câu hỏi phỏng vấn cho ứng viên.
+// Hàm generate AI response dựa trên ngữ cảnh
+async function generateAIResponse(history, session) {
+  const messages = history.map(h => ({
+    role: h.sender === 'user' ? 'user' : 'assistant',
+    content: h.message
+  }))
 
-=== THÔNG TIN ỨNG VIÊN ===
-Tên: ${candidate.name}
-Vị trí ứng tuyển: ${candidate.position_applied || 'Không có'}
-Kỹ năng: ${candidate.parsed_data?.skills?.join(', ') || 'Không có'}
+  const userMessageCount = history.filter(h => h.sender === 'user').length
 
-=== THÔNG TIN CÔNG VIỆC ===
-${job ? `
-Tiêu đề: ${job.title}
-Mô tả: ${job.description}
-Yêu cầu: ${job.requirements || 'Không có'}
-Kỹ năng yêu cầu: ${job.required_skills?.join(', ') || 'Không có'}
-` : 'Không có thông tin công việc cụ thể'}
+  let systemPrompt = `Bạn là một trợ lý phỏng vấn AI chuyên nghiệp.
 
-Vui lòng tạo ${numberOfQuestions} câu hỏi phỏng vấn với cấu trúc JSON sau:
-[
-  {
-    "question": "Câu hỏi phỏng vấn",
-    "category": "technical hoặc behavioral hoặc situational hoặc general",
-    "difficulty": "easy hoặc medium hoặc hard",
-    "reason": "Lý do hỏi câu hỏi này",
-    "trap": "Điểm bẫy hoặc cần lưu ý trong câu hỏi",
-    "suggestion": "Gợi ý cách trả lời tốt"
-  }
-]
-`
+### VAI TRÒ
+- Bạn là một nhà tuyển dụng hoặc chuyên gia HR đang phỏng vấn ứng viên
+- Mục tiêu: Đánh giá ứng viên một cách chuyên nghiệp và thân thiện
 
-  const result = await generateStructuredContent(prompt)
+### PHONG CÁCH
+- Chuyên nghiệp, thân thiện, khuyến khích ứng viên
+- Đưa ra phản hồi xây dựng sau mỗi câu trả lời
+- Đặt câu hỏi tiếp nối dựa trên câu trả lời của ứng viên
+- KHÔNG sử dụng emoji trong tin nhắn
+- Sử dụng tiếng Việt có dấu, văn phong lịch sự
 
-  // Nếu result là string, thử parse JSON
-  let questions = result
-  if (typeof result === 'string') {
-    try {
-      const jsonMatch = result.match(/\[[\s\S]*\]/)
-      if (jsonMatch) {
-        questions = JSON.parse(jsonMatch[0])
-      } else {
-        questions = JSON.parse(result)
-      }
-    } catch {
-      questions = []
-    }
+### QUY TẮC
+1. Nếu ứng viên chưa giới thiệu bản thân -> Hỏi về bản thân, kinh nghiệm làm việc, học vấn
+2. Sau mỗi câu trả lời -> Đưa phản hồi ngắn gọn (1-2 câu) và hỏi câu tiếp theo
+3. Đa dạng câu hỏi: kỹ thuật, hành vi, tình huống, văn hóa công ty
+4. Không lặp lại câu hỏi đã hỏi
+5. Nếu câu trả lời quá ngắn -> Khuyến khích ứng viên nói thêm
+
+### ĐỊNH DẠNG PHẢN HỒI
+Phản hồi của bạn nên có cấu trúc:
+1. Đánh giá ngắn về câu trả lời (điểm tốt, điểm cần cải thiện)
+2. Câu hỏi tiếp theo (nếu còn)
+3. Nếu ứng viên đã trả lời tốt -> Khen ngợi và hỏi sâu hơn`
+
+  if (userMessageCount >= 10) {
+    systemPrompt += `
+### KẾT THÚC PHỎNG VẤN
+Sau khoảng 10 câu trả lời, bạn nên tổng kết:
+- Điểm mạnh của ứng viên
+- Lĩnh vực cần cải thiện
+- Lời khuyên để phát triển
+- Hỏi ứng viên có câu hỏi gì không`
   }
 
-  return questions.slice(0, numberOfQuestions)
-}
+  const prompt = `${systemPrompt}
 
-// HÀM ĐÁNH GIÁ CÂU TRẢ LỜI TỪ AI
-async function evaluateAnswer(question, answer, suggestion) {
-  const prompt = `
-Bạn là một chuyên gia phỏng vấn AI. Hãy đánh giá câu trả lời của ứng viên.
+=== LỊCH SỬ CHAT ===
+${messages.map(m => `${m.role === 'user' ? 'Ứng viên' : 'AI'}: ${m.content}`).join('\n')}
 
-=== CÂU HỎI ===
-${question}
-
-=== CÂU TRẢ LỜI CỦA ỨNG VIÊN ===
-${answer}
-
-=== GỢI Ý CÁCH TRẢ LỜI ===
-${suggestion || 'Không có'}
-
-Vui lòng đánh giá và trả về JSON:
+=== YÊU CẦU ===
+Hãy phản hồi tin nhắn vừa rồi của ứng viên.
+Trả về JSON:
 {
-  "feedback": "Đánh giá chi tiết về câu trả lời (2-3 câu)",
-  "score": 0-10,
-  "strengths": ["Điểm mạnh của câu trả lời"],
-  "weaknesses": ["Điểm yếu của câu trả lời"],
-  "suggestion": "Gợi ý cải thiện câu trả lời",
-  "responseTime": 30
-}
-`
+  "message": "Phản hồi của bạn (không có emoji, có dấu tiếng Việt)",
+  "metadata": {
+    "type": "question" hoặc "feedback" hoặc "summary",
+    "category": "technical" hoặc "behavioral" hoặc "situational" hoặc "general",
+    "score": null hoặc số điểm từ 1-10
+  }
+}`
 
   const result = await generateStructuredContent(prompt)
 
-  let evaluation = result
+  let response = result
   if (typeof result === 'string') {
     try {
       const jsonMatch = result.match(/\{[\s\S]*\}/)
       if (jsonMatch) {
-        evaluation = JSON.parse(jsonMatch[0])
+        response = JSON.parse(jsonMatch[0])
       } else {
-        evaluation = JSON.parse(result)
+        response = JSON.parse(result)
       }
     } catch {
-      evaluation = {
-        feedback: 'Không thể đánh giá câu trả lời',
-        score: 5,
-        strengths: [],
-        weaknesses: [],
-        suggestion: 'Hãy thử trả lời chi tiết hơn'
+      response = {
+        message: result.substring(0, 500),
+        metadata: { type: 'general', category: 'general' }
       }
     }
   }
 
-  return evaluation
+  // Đảm bảo message không có emoji
+  if (response.message) {
+    response.message = response.message
+      .replace(/[\u{1F300}-\u{1FAFF}]/gu, '')
+      .replace(/[\u{2600}-\u{27BF}]/gu, '')
+      .trim()
+  }
+
+  return response
 }
 
 export default mockInterviewService

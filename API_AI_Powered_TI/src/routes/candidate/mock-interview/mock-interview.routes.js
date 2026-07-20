@@ -4,49 +4,48 @@ import { authGuard } from '~/middlewares/auth.guard'
 import { ROLES } from '~/utils/constants'
 import validate from '~/middlewares/validate.middleware'
 import {
-  startSessionValidation,
-  answerQuestionValidation,
+  createSessionValidation,
+  sendMessageValidation,
   idValidation
 } from '~/validations/candidate/mock-interview/mock-interview.validation'
 
 const router = express.Router()
 
-// Tất cả routes cần đăng nhập và là candidate
 router.use(authGuard.isAuthorized)
 router.use(authGuard.authorize(ROLES.CANDIDATE))
 
-// Bắt đầu phỏng vấn
+// Tạo phiên mới
 router.post(
-  '/start',
-  validate(startSessionValidation, 'body'),
-  mockInterviewController.startSession
+  '/session',
+  validate(createSessionValidation, 'body'),
+  mockInterviewController.createSession
 )
 
-// Trả lời câu hỏi
+// Gửi tin nhắn (chat)
 router.post(
-  '/answer',
-  validate(answerQuestionValidation, 'body'),
-  mockInterviewController.answerQuestion
+  '/chat',
+  validate(sendMessageValidation, 'body'),
+  mockInterviewController.sendMessage
 )
 
-// Kết thúc phỏng vấn
-router.post(
-  '/:id/end',
+// Lấy lịch sử chat
+router.get(
+  '/:id/history',
   validate(idValidation, 'params'),
-  mockInterviewController.endSession
+  mockInterviewController.getChatHistory
 )
 
-// Lấy lịch sử phỏng vấn
+// Lấy danh sách phiên
 router.get(
-  '/history',
-  mockInterviewController.getHistory
+  '/sessions',
+  mockInterviewController.getSessions
 )
 
-// Lấy chi tiết phiên phỏng vấn
-router.get(
+// Xóa phiên
+router.delete(
   '/:id',
   validate(idValidation, 'params'),
-  mockInterviewController.getSessionDetail
+  mockInterviewController.deleteSession
 )
 
 export default router
