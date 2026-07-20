@@ -105,7 +105,48 @@ const mockInterviewController = {
         message: error.message
       })
     }
+  },
+
+  getSessionDetail: async (req, res) => {
+    try {
+      const { id } = req.params
+      const userId = req.user.id
+
+      const session = await mockInterviewService.getSessionDetail(id, userId)
+
+      return res.status(200).json({
+        success: true,
+        data: session
+      })
+    } catch (error) {
+      return res.status(404).json({
+        success: false,
+        message: error.message
+      })
+    }
+  },
+
+  // KẾT THÚC PHỎNG VẤN
+  endSession: async (req, res) => {
+    try {
+      const { id } = req.params
+      const userId = req.user.id
+
+      const result = await mockInterviewService.endSession(id, userId)
+
+      return res.status(200).json({
+        success: true,
+        message: 'Kết thúc phỏng vấn thành công',
+        data: result
+      })
+    } catch (error) {
+      return res.status(400).json({
+        success: false,
+        message: error.message
+      })
+    }
   }
+
 }
 
 export default mockInterviewController

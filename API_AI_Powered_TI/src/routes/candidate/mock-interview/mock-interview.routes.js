@@ -48,4 +48,18 @@ router.delete(
   mockInterviewController.deleteSession
 )
 
+// Lấy chi tiết phiên
+router.get(
+  '/:id',
+  validate(idValidation, 'params'),
+  mockInterviewController.getSessionDetail
+)
+
+// Kết thúc phỏng vấn
+router.post(
+  '/:id/end',
+  validate(idValidation, 'params'),
+  mockInterviewController.endSession
+)
+
 export default router

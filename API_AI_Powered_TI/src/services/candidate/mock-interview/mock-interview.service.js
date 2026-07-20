@@ -3,21 +3,33 @@ import { generateStructuredContent } from '~/providers/gemini.provider'
 import { v4 as uuidv4 } from 'uuid'
 
 const mockInterviewService = {
-  // Tạo phiên phỏng vấn mới
   createSession: async (userId) => {
     const candidate = await mockInterviewModel.getCandidateByUserId(userId)
     if (!candidate) {
       throw new Error('Không tìm thấy hồ sơ ứng viên')
     }
 
+    // Kiểm tra xem đã có session chat nào chưa
+    const existingSessions = await mockInterviewModel.getChatSessionsByUserId(userId)
+
+    // Nếu đã có session chat, trả về session đầu tiên
+    if (existingSessions && existingSessions.length > 0) {
+      const session = existingSessions[0]
+      const history = await mockInterviewModel.getChatHistory(session.id)
+
+      return {
+        session,
+        welcomeMessage: history.length > 0 ? history[0].message : null
+      }
+    }
+
+    // Nếu chưa có, tạo mới
     const sessionToken = uuidv4()
     const session = await mockInterviewModel.createChatSession({
       candidateId: candidate.id,
-      sessionToken,
-      status: 'active'
+      sessionToken
     })
 
-    // Tin nhắn chào mừng từ AI (không emoji)
     const welcomeMessage = `Chào bạn! Tôi là trợ lý phỏng vấn AI.
 
 Tôi sẽ giúp bạn luyện tập phỏng vấn như một buổi phỏng vấn thực tế. Bạn có thể:
@@ -41,7 +53,6 @@ Hãy bắt đầu bằng cách giới thiệu về bản thân bạn nhé!`
     }
   },
 
-  // Gửi tin nhắn và nhận phản hồi từ AI
   sendMessage: async (sessionId, userId, message) => {
     // 1. Kiểm tra quyền
     const isOwner = await mockInterviewModel.isSessionOwner(sessionId, userId)
@@ -87,7 +98,6 @@ Hãy bắt đầu bằng cách giới thiệu về bản thân bạn nhé!`
     }
   },
 
-  // Lấy lịch sử chat
   getChatHistory: async (sessionId, userId) => {
     const isOwner = await mockInterviewModel.isSessionOwner(sessionId, userId)
     if (!isOwner) {
@@ -96,12 +106,63 @@ Hãy bắt đầu bằng cách giới thiệu về bản thân bạn nhé!`
     return await mockInterviewModel.getChatHistory(sessionId)
   },
 
-  // Lấy danh sách phiên của user
   getSessions: async (userId) => {
     return await mockInterviewModel.getChatSessionsByUserId(userId)
   },
 
-  // Xóa phiên
+  getSessionDetail: async (sessionId, userId) => {
+    const isOwner = await mockInterviewModel.isSessionOwner(sessionId, userId)
+    if (!isOwner) {
+      throw new Error('Bạn không có quyền xem phiên này')
+    }
+    return await mockInterviewModel.getChatSessionDetail(sessionId)
+  },
+
+  endSession: async (sessionId, userId) => {
+    const isOwner = await mockInterviewModel.isSessionOwner(sessionId, userId)
+    if (!isOwner) {
+      throw new Error('Bạn không có quyền thực hiện hành động này')
+    }
+
+    const session = await mockInterviewModel.getChatSession(sessionId)
+    if (!session) {
+      throw new Error('Không tìm thấy phiên phỏng vấn')
+    }
+
+    // Lấy lịch sử chat để tạo tổng kết
+    const history = await mockInterviewModel.getChatHistory(sessionId)
+
+    // Đếm số câu hỏi và câu trả lời
+    const userMessages = history.filter(h => h.sender === 'user')
+    const aiMessages = history.filter(h => h.sender === 'ai' && h.metadata?.type !== 'system')
+
+    // Tạo tin nhắn tổng kết từ AI
+    const summaryMessage = await generateSummaryMessage(history, session)
+
+    // Lưu tin nhắn tổng kết
+    await mockInterviewModel.saveChatMessage({
+      sessionId,
+      sender: 'ai',
+      message: summaryMessage,
+      metadata: { type: 'summary', isEnd: true }
+    })
+
+    // Cập nhật status thành 'completed'
+    const updatedSession = await mockInterviewModel.updateChatSession(sessionId, {
+      status: 'completed',
+      messageCount: (session.message_count || 0) + 1
+    })
+
+    return {
+      session: updatedSession,
+      summary: {
+        totalQuestions: userMessages.length,
+        totalMessages: history.length,
+        message: summaryMessage
+      }
+    }
+  },
+
   deleteSession: async (sessionId, userId) => {
     const isOwner = await mockInterviewModel.isSessionOwner(sessionId, userId)
     if (!isOwner) {
@@ -111,7 +172,6 @@ Hãy bắt đầu bằng cách giới thiệu về bản thân bạn nhé!`
   }
 }
 
-// Hàm generate AI response dựa trên ngữ cảnh
 async function generateAIResponse(history, session) {
   const messages = history.map(h => ({
     role: h.sender === 'user' ? 'user' : 'assistant',
@@ -201,6 +261,67 @@ Trả về JSON:
   }
 
   return response
+}
+
+async function generateSummaryMessage(history, session) {
+  const userMessages = history.filter(h => h.sender === 'user')
+  const aiMessages = history.filter(h => h.sender === 'ai' && h.metadata?.type !== 'system')
+
+  if (userMessages.length === 0) {
+    return 'Bạn chưa trả lời câu hỏi nào. Hãy thử lại lần sau nhé!'
+  }
+
+  const prompt = `
+Bạn là một trợ lý phỏng vấn AI. Hãy tổng kết buổi phỏng vấn của ứng viên.
+
+=== LỊCH SỬ CHAT ===
+${history.map(h => `${h.sender === 'user' ? 'Ứng viên' : 'AI'}: ${h.message}`).join('\n')}
+
+=== YÊU CẦU ===
+Hãy tổng kết buổi phỏng vấn với các nội dung:
+1. Điểm mạnh của ứng viên (dựa trên câu trả lời)
+2. Điểm cần cải thiện
+3. Lời khuyên cho ứng viên
+
+Trả về JSON:
+{
+  "message": "Nội dung tổng kết (không có emoji, có dấu tiếng Việt)",
+  "metadata": {
+    "type": "summary",
+    "strengths": ["điểm mạnh 1", "điểm mạnh 2"],
+    "weaknesses": ["điểm yếu 1", "điểm yếu 2"],
+    "suggestions": ["gợi ý 1", "gợi ý 2"]
+  }
+}`
+
+  const result = await generateStructuredContent(prompt)
+
+  let response = result
+  if (typeof result === 'string') {
+    try {
+      const jsonMatch = result.match(/\{[\s\S]*\}/)
+      if (jsonMatch) {
+        response = JSON.parse(jsonMatch[0])
+      } else {
+        response = JSON.parse(result)
+      }
+    } catch {
+      response = {
+        message: `Cảm ơn bạn đã tham gia phỏng vấn! Bạn đã trả lời ${userMessages.length} câu hỏi. Hãy tiếp tục luyện tập để cải thiện kỹ năng nhé!`,
+        metadata: { type: 'summary' }
+      }
+    }
+  }
+
+  // Đảm bảo message không có emoji
+  if (response.message) {
+    response.message = response.message
+      .replace(/[\u{1F300}-\u{1FAFF}]/gu, '')
+      .replace(/[\u{2600}-\u{27BF}]/gu, '')
+      .trim()
+  }
+
+  return response.message || response
 }
 
 export default mockInterviewService
