@@ -1,3 +1,4 @@
+// src/components/layout/Header.jsx
 import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import {
@@ -14,7 +15,8 @@ import {
   FaSun,
   FaGlobe,
   FaChevronDown,
-  FaChevronUp
+  FaChevronUp,
+  FaRobot
 } from 'react-icons/fa'
 import { useAuth } from '~/hooks/useAuth'
 import { useUI } from '~/hooks/useUI'
@@ -82,7 +84,7 @@ const Header = () => {
   const navLinks = [
     { to: '/', label: t('header.home') || 'Trang chủ', icon: FaHome },
     { to: '/jobs', label: t('header.jobs') || 'Việc làm', icon: FaBriefcase },
-    { to: '/applications', label: t('header.applications') || 'Hồ sơ đã ứng tuyển', icon: FaFileAlt }
+    { to: '/mock-interview', label: 'Phỏng vấn với AI', icon: FaRobot }
   ]
 
   const avatarUrl = getAvatarUrl(user?.avatar)
@@ -217,7 +219,7 @@ const Header = () => {
               </div>
             )}
 
-            {/* Auth buttons */}
+            {/* Auth buttons - KHÔNG RETURN SỚM */}
             {isAuthenticated ? (
               <div className="relative">
                 <button
@@ -274,6 +276,14 @@ const Header = () => {
                     >
                       <FaUser size={16} className="text-brand-text/60 dark:text-gray-500 group-hover:text-brand-primary transition-colors" />
                       {t('header.profile') || 'Hồ sơ của tôi'}
+                    </Link>
+                    <Link
+                      to="/applications"
+                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-brand-text dark:text-gray-300 hover:bg-brand-light dark:hover:bg-gray-800 hover:text-brand-primary dark:hover:text-white transition-all duration-200 group cursor-pointer"
+                      onClick={() => setIsDropdownOpen(false)}
+                    >
+                      <FaFileAlt size={16} className="text-brand-text/60 dark:text-gray-500 group-hover:text-brand-primary transition-colors" />
+                      {t('header.applications') || 'Hồ sơ đã ứng tuyển'}
                     </Link>
                     <Link
                       to="/favorites"

@@ -2,9 +2,24 @@ import { Link } from 'react-router-dom'
 import { useLanguage } from '~/hooks/useLanguage'
 import { motion } from 'framer-motion'
 import { FaRobot, FaRocket, FaUpload, FaComments, FaArrowRight } from 'react-icons/fa'
+import { toast } from 'react-toastify'
 
 const CTASection = () => {
   const { t } = useLanguage()
+
+  const handleUploadCV = (e) => {
+    e.preventDefault()
+    toast.info(
+      t('home.uploadCVComingSoon') || 'Tính năng Upload CV đang được phát triển! Hãy quay lại sau nhé!',
+      {
+        autoClose: 4000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true
+      }
+    )
+  }
 
   return (
     <motion.section
@@ -85,8 +100,8 @@ const CTASection = () => {
               className="flex flex-col sm:flex-row items-center justify-center gap-5 w-full sm:w-auto"
             >
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Link
-                  to="/upload-cv"
+                <button
+                  onClick={handleUploadCV}
                   className="group flex items-center justify-center gap-2 px-8 py-4 bg-white text-brand-primary rounded-xl font-bold hover:shadow-glow hover:-translate-y-1 transition-all duration-300 cursor-pointer w-full sm:w-auto"
                 >
                   <FaUpload size={18} />
@@ -97,7 +112,7 @@ const CTASection = () => {
                   >
                     <FaArrowRight size={16} />
                   </motion.span>
-                </Link>
+                </button>
               </motion.div>
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                 <Link

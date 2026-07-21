@@ -7,6 +7,9 @@ export const ROLES = {
   HR: 'hr'
 }
 
+export const isHR = (user) => user?.roleName === ROLES.HR
+export const isCandidate = (user) => user?.roleName === ROLES.CANDIDATE
+
 export const CANDIDATE_STATUS = {
   PENDING: 'pending',
   ANALYZING: 'analyzing',
