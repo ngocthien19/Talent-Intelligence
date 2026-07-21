@@ -214,6 +214,13 @@ const authSlice = createSlice({
         state.user = action.payload.user
         state.accessToken = action.payload.accessToken
 
+        if (action.payload.user?.roleName) {
+          state.user.roleName = action.payload.user.roleName
+        }
+        if (action.payload.user?.companyId) {
+          state.user.companyId = action.payload.user.companyId
+        }
+
         if (action.payload.user?.favoriteIds) {
           state.favoriteIds = action.payload.user.favoriteIds
         } else {

@@ -15,6 +15,9 @@ import ApplicationDetail from '~/pages/candidate/ApplicationDetail'
 import Profile from '~/pages/candidate/Profile'
 import MockInterview from '~/pages/candidate/MockInterview'
 
+import HRLayout from '~/layouts/hr/HRLayout'
+import HRDashboard from '~/pages/hr/Dashboard'
+
 
 import Login from '~/pages/auth/Login'
 import Register from '~/pages/auth/Register'
@@ -23,18 +26,20 @@ import ForgotPassword from '~/pages/auth/ForgotPassword'
 import ResetPassword from '~/pages/auth/ResetPassword'
 import ThemeInitializer from '~/components/common/ThemeInitializer'
 import LanguageInitializer from '~/components/common/LanguageInitializer'
+import { ROLES } from './utils/constant'
 
 function App() {
   const dispatch = useDispatch()
 
-  const { isAuthenticated } = useSelector((state) => state.auth)
+  const { isAuthenticated, user } = useSelector((state) => state.auth)
+  const isCandidate = user?.roleName === ROLES.CANDIDATE
 
   useEffect(() => {
     dispatch(getProfile())
   }, [dispatch])
 
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && isCandidate) {
       dispatch(getFavorites()).unwrap().then((result) => {
         if (result?.data) {
           const ids = result.data.map(fav => fav.job_id)
@@ -42,7 +47,7 @@ function App() {
         }
       })
     }
-  }, [isAuthenticated, dispatch])
+  }, [isAuthenticated, isCandidate, dispatch])
 
   return (
     <>
@@ -66,6 +71,13 @@ function App() {
           <Route path="applications/:id" element={<ApplicationDetail />} />
           <Route path="profile" element={<Profile />} />
           <Route path="mock-interview" element={<MockInterview />} />
+
+        </Route>
+
+        {/* HR routes */}
+        <Route path="/hr" element={<HRLayout />}>
+          <Route index element={<HRDashboard />} />
+          <Route path="dashboard" element={<HRDashboard />} />
 
         </Route>
       </Routes>

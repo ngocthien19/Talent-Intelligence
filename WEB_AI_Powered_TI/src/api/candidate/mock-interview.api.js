@@ -1,25 +1,37 @@
 import authorizedAxiosInstance from '~/utils/authorizedAxios'
 import { DEV_API_URL } from '~/utils/constant'
 
+const getLanguageHeader = () => {
+  return localStorage.getItem('i18nextLng') || 'vi'
+}
+
 export const mockInterviewApi = {
-  // Gửi tin nhắn trong phiên phỏng vấn (chat)
   sendMessage: async (sessionId, message) => {
     const response = await authorizedAxiosInstance.post(
       `${DEV_API_URL}/api/mock-interview/chat`,
-      { sessionId, message }
+      { sessionId, message },
+      {
+        headers: {
+          'Accept-Language': getLanguageHeader()
+        }
+      }
     )
     return response.data
   },
 
-  // Tạo phiên phỏng vấn mới
   createSession: async () => {
     const response = await authorizedAxiosInstance.post(
-      `${DEV_API_URL}/api/mock-interview/session`
+      `${DEV_API_URL}/api/mock-interview/session`,
+      {},
+      {
+        headers: {
+          'Accept-Language': getLanguageHeader()
+        }
+      }
     )
     return response.data
   },
 
-  // Lấy lịch sử chat của phiên
   getChatHistory: async (sessionId) => {
     const response = await authorizedAxiosInstance.get(
       `${DEV_API_URL}/api/mock-interview/${sessionId}/history`
@@ -27,7 +39,6 @@ export const mockInterviewApi = {
     return response.data
   },
 
-  // Lấy danh sách phiên phỏng vấn
   getSessions: async () => {
     const response = await authorizedAxiosInstance.get(
       `${DEV_API_URL}/api/mock-interview/sessions`
@@ -35,7 +46,6 @@ export const mockInterviewApi = {
     return response.data
   },
 
-  // Lấy chi tiết phiên (bao gồm tin nhắn)
   getSessionDetail: async (sessionId) => {
     const response = await authorizedAxiosInstance.get(
       `${DEV_API_URL}/api/mock-interview/${sessionId}`
@@ -43,15 +53,19 @@ export const mockInterviewApi = {
     return response.data
   },
 
-  // Kết thúc phiên phỏng vấn
   endSession: async (sessionId) => {
     const response = await authorizedAxiosInstance.post(
-      `${DEV_API_URL}/api/mock-interview/${sessionId}/end`
+      `${DEV_API_URL}/api/mock-interview/${sessionId}/end`,
+      {},
+      {
+        headers: {
+          'Accept-Language': getLanguageHeader()
+        }
+      }
     )
     return response.data
   },
 
-  // Xóa phiên phỏng vấn
   deleteSession: async (sessionId) => {
     const response = await authorizedAxiosInstance.delete(
       `${DEV_API_URL}/api/mock-interview/${sessionId}`

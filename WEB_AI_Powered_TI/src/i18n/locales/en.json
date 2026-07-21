@@ -64,7 +64,8 @@
     "noJobs": "No jobs have been posted yet",
     "ctaTitle": "Let AI help you find the most suitable job",
     "ctaDesc": "Upload your CV, AI will analyze and suggest the most suitable jobs based on your skills and experience.",
-    "tryMockInterview": "Try Mock Interview"
+    "tryMockInterview": "Try Mock Interview",
+    "uploadCVComingSoon": "Upload CV feature is under development! Please check back later!"
   },
   "jobs": {
     "title": "Jobs",
@@ -316,5 +317,53 @@
     "noMessages": "No messages yet",
     "noMessagesDesc": "Start a conversation with AI",
     "welcomeMessage": "Hello! I am your AI interview assistant.\n\nI will help you practice interviews like a real interview session. You can:\n\n- Natural conversation: Answer my questions like in a real interview\n- Q&A: Ask me any questions about interviews\n- Get feedback: I will evaluate and give feedback on your answers\n\nLet's start by introducing yourself!"
+  },
+  "hr": {
+    "dashboard": "Dashboard",
+    "candidates": "Candidates",
+    "jobs": "Jobs",
+    "applications": "Applications",
+    "analytics": "Analytics",
+    "interviews": "Interviews",
+    "mockInterview": "Mock Interview",
+    "search": "Search Candidates",
+    "reports": "Reports",
+    "profile": "My Profile",
+    "settings": "Settings",
+    "logout": "Logout",
+    "notifications": "Notifications",
+    "noNotifications": "No new notifications",
+    "markAllRead": "Mark all as read",
+    "darkMode": "Dark mode",
+    "lightMode": "Light mode",
+    "selectLanguage": "Select language",
+    "appearance": "Appearance",
+    "today": "Today",
+    "totalCandidates": "Total Candidates",
+    "totalJobs": "Active Jobs",
+    "totalApplications": "Applications",
+    "todayInterviews": "Today's Interviews",
+    "statusDistribution": "Candidate Status Distribution",
+    "quickActions": "Quick Actions",
+    "postNewJob": "Post New Job",
+    "postNewJobDesc": "Create now to attract candidates",
+    "searchCandidates": "Search Candidates",
+    "searchCandidatesDesc": "Find potential candidates",
+    "manageInterviews": "Manage Interviews",
+    "manageInterviewsDesc": "View and schedule interviews",
+    "recentActivities": "Recent Activities",
+    "viewAll": "View all",
+    "exportReport": "Export Report",
+    "newCandidate": "New Candidate",
+    "interviewUpcoming": "Upcoming Interview",
+    "hired": "Candidate Hired",
+    "rejected": "Candidate Rejected",
+    "status": {
+      "pending": "Pending",
+      "reviewing": "Reviewing",
+      "shortlisted": "Shortlisted",
+      "rejected": "Rejected",
+      "hired": "Hired"
+    }
   }
 }

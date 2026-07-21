@@ -9,6 +9,7 @@ import AuthLayout from '~/layouts/auth/AuthLayout'
 import SocialLogin from '~/layouts/auth/SocialLogin'
 import { useDispatch } from 'react-redux'
 import { setUser } from '~/redux/slices/auth.slice'
+import { ROLES } from '~/utils/constant'
 
 const Login = () => {
   const navigate = useNavigate()
@@ -36,7 +37,13 @@ const Login = () => {
         dispatch(setUser(user))
 
         toast.success('Đăng nhập với Google thành công!')
-        navigate('/', { replace: true })
+
+        // Chuyển hướng dựa trên role
+        if (user.roleName === ROLES.HR) {
+          navigate('/hr/dashboard', { replace: true })
+        } else {
+          navigate('/', { replace: true })
+        }
 
       } catch (err) {
         toast.error('Có lỗi xảy ra khi đăng nhập với Google')
@@ -67,7 +74,13 @@ const Login = () => {
       const result = await login(data)
       if (result) {
         toast.success(t('auth.loginSuccess') || 'Đăng nhập thành công!')
-        navigate(result.redirectUrl || '/')
+
+        // Chuyển hướng dựa trên role từ result
+        if (result.user?.roleName === ROLES.HR) {
+          navigate('/hr/dashboard')
+        } else {
+          navigate(result.redirectUrl || '/')
+        }
       }
     } catch (error) {
       toast.error(error || t('auth.loginFailed') || 'Đăng nhập thất bại')

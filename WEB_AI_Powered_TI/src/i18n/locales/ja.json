@@ -64,7 +64,8 @@
     "noJobs": "まだ求人は投稿されていません",
     "ctaTitle": "AIがあなたに最適な仕事を見つけるお手伝いをします",
     "ctaDesc": "CVをアップロードすると、AIが分析し、あなたのスキルと経験に基づいて最適な仕事を提案します。",
-    "tryMockInterview": "模擬面接を試す"
+    "tryMockInterview": "模擬面接を試す",
+    "uploadCVComingSoon": "CVアップロード機能は開発中です！後でもう一度お試しください！"
   },
   "jobs": {
     "title": "求人",
@@ -309,5 +310,53 @@
     "noMessages": "メッセージはまだありません",
     "noMessagesDesc": "AIとの会話を開始しましょう",
     "welcomeMessage": "こんにちは！私はAI面接アシスタントです。\n\n実際の面接のように面接練習をお手伝いします。以下のことができます：\n\n- 自然な会話：実際の面接のように私の質問に答える\n- Q&A：面接に関する質問は何でも聞いてください\n- フィードバック：回答を評価し、改善点をフィードバックします\n\nまずは自己紹介から始めましょう！"
+  },
+  "hr": {
+    "dashboard": "ダッシュボード",
+    "candidates": "候補者",
+    "jobs": "求人",
+    "applications": "応募",
+    "analytics": "分析",
+    "interviews": "面接",
+    "mockInterview": "模擬面接",
+    "search": "候補者検索",
+    "reports": "レポート",
+    "profile": "プロフィール",
+    "settings": "設定",
+    "logout": "ログアウト",
+    "notifications": "通知",
+    "noNotifications": "新しい通知はありません",
+    "markAllRead": "すべて既読にする",
+    "darkMode": "ダークモード",
+    "lightMode": "ライトモード",
+    "selectLanguage": "言語を選択",
+    "appearance": "外観",
+    "today": "今日",
+    "totalCandidates": "総候補者数",
+    "totalJobs": "募集中の求人",
+    "totalApplications": "応募数",
+    "todayInterviews": "本日の面接",
+    "statusDistribution": "候補者ステータス分布",
+    "quickActions": "クイックアクション",
+    "postNewJob": "新規求人を投稿",
+    "postNewJobDesc": "今すぐ作成して候補者を集める",
+    "searchCandidates": "候補者を検索",
+    "searchCandidatesDesc": "潜在的な候補者を見つける",
+    "manageInterviews": "面接を管理",
+    "manageInterviewsDesc": "面接の表示とスケジュール",
+    "recentActivities": "最近のアクティビティ",
+    "viewAll": "すべて表示",
+    "exportReport": "レポートをエクスポート",
+    "newCandidate": "新規候補者",
+    "interviewUpcoming": "間近の面接",
+    "hired": "採用された候補者",
+    "rejected": "不合格の候補者",
+    "status": {
+      "pending": "保留中",
+      "reviewing": "審査中",
+      "shortlisted": "選考通過",
+      "rejected": "不合格",
+      "hired": "採用"
+    }
   }
 }

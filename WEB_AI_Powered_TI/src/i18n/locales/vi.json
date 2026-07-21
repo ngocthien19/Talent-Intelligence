@@ -64,7 +64,8 @@
     "noJobs": "Chưa có công việc nào được đăng tải",
     "ctaTitle": "Để AI giúp bạn tìm việc phù hợp nhất",
     "ctaDesc": "Upload CV của bạn, AI sẽ phân tích và gợi ý những công việc phù hợp nhất với kỹ năng và kinh nghiệm của bạn.",
-    "tryMockInterview": "Thử Mock Interview"
+    "tryMockInterview": "Thử Mock Interview",
+    "uploadCVComingSoon": "Tính năng Upload CV đang được phát triển! Hãy quay lại sau nhé!"
   },
   "jobs": {
     "title": "Việc làm",
@@ -316,5 +317,53 @@
     "noMessages": "Chưa có tin nhắn nào",
     "noMessagesDesc": "Hãy bắt đầu cuộc trò chuyện với AI",
     "welcomeMessage": "Chào bạn! Tôi là trợ lý phỏng vấn AI.\n\nTôi sẽ giúp bạn luyện tập phỏng vấn như một buổi phỏng vấn thực tế. Bạn có thể:\n\n- Trò chuyện tự nhiên: Trả lời các câu hỏi của tôi như trong phỏng vấn thật\n- Hỏi đáp: Hỏi tôi bất kỳ câu hỏi nào về phỏng vấn\n- Nhận phản hồi: Tôi sẽ đánh giá và góp ý cho câu trả lời của bạn\n\nHãy bắt đầu bằng cách giới thiệu về bản thân bạn nhé!"
+  },
+  "hr": {
+    "dashboard": "Dashboard",
+    "candidates": "Ứng viên",
+    "jobs": "Việc làm",
+    "applications": "Đơn ứng tuyển",
+    "analytics": "Phân tích",
+    "interviews": "Lịch phỏng vấn",
+    "mockInterview": "Mock Interview",
+    "search": "Tìm kiếm ứng viên",
+    "reports": "Báo cáo",
+    "profile": "Hồ sơ của tôi",
+    "settings": "Cài đặt",
+    "logout": "Đăng xuất",
+    "notifications": "Thông báo",
+    "noNotifications": "Chưa có thông báo mới",
+    "markAllRead": "Đánh dấu đã đọc",
+    "darkMode": "Chế độ tối",
+    "lightMode": "Chế độ sáng",
+    "selectLanguage": "Chọn ngôn ngữ",
+    "appearance": "Giao diện",
+    "today": "Hôm nay",
+    "totalCandidates": "Tổng ứng viên",
+    "totalJobs": "Việc làm đang tuyển",
+    "totalApplications": "Đơn ứng tuyển",
+    "todayInterviews": "Phỏng vấn hôm nay",
+    "statusDistribution": "Phân bố trạng thái ứng viên",
+    "quickActions": "Hành động nhanh",
+    "postNewJob": "Đăng tin tuyển dụng mới",
+    "postNewJobDesc": "Tạo ngay để thu hút ứng viên",
+    "searchCandidates": "Tìm kiếm ứng viên",
+    "searchCandidatesDesc": "Tìm ứng viên tiềm năng",
+    "manageInterviews": "Quản lý lịch phỏng vấn",
+    "manageInterviewsDesc": "Xem và sắp xếp lịch",
+    "recentActivities": "Hoạt động gần đây",
+    "viewAll": "Xem tất cả",
+    "exportReport": "Xuất báo cáo",
+    "newCandidate": "Ứng viên mới",
+    "interviewUpcoming": "Phỏng vấn sắp diễn ra",
+    "hired": "Đã nhận ứng viên",
+    "rejected": "Từ chối ứng viên",
+    "status": {
+      "pending": "Đang chờ",
+      "reviewing": "Đang xem xét",
+      "shortlisted": "Đã lọc",
+      "rejected": "Từ chối",
+      "hired": "Đã nhận"
+    }
   }
 }
