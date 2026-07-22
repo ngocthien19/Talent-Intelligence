@@ -162,7 +162,13 @@
     "save": "Lưu thay đổi",
     "saving": "Đang lưu...",
     "reset": "Đặt lại",
-    "changing": "Đang đổi..."
+    "changing": "Đang đổi...",
+    "apply": "Áp dụng",
+    "clear": "Xóa",
+    "retry": "Thử lại",
+    "noData": "Không có dữ liệu",
+    "noDataDesc": "Chưa có dữ liệu để hiển thị",
+    "error": "Có lỗi xảy ra"
   },
    "profile": {
     "title": "Hồ sơ của tôi",
@@ -320,6 +326,7 @@
   },
   "hr": {
     "dashboard": "Dashboard",
+    "dashboardDesc": "Tổng quan tình hình tuyển dụng của công ty bạn",
     "candidates": "Ứng viên",
     "jobs": "Việc làm",
     "applications": "Đơn ứng tuyển",
@@ -340,6 +347,7 @@
     "appearance": "Giao diện",
     "today": "Hôm nay",
     "totalCandidates": "Tổng ứng viên",
+    "newCandidates": "Ứng viên mới",
     "totalJobs": "Việc làm đang tuyển",
     "totalApplications": "Đơn ứng tuyển",
     "todayInterviews": "Phỏng vấn hôm nay",
@@ -352,18 +360,37 @@
     "manageInterviews": "Quản lý lịch phỏng vấn",
     "manageInterviewsDesc": "Xem và sắp xếp lịch",
     "recentActivities": "Hoạt động gần đây",
+    "recentCandidates": "Ứng viên gần đây",
     "viewAll": "Xem tất cả",
     "exportReport": "Xuất báo cáo",
     "newCandidate": "Ứng viên mới",
     "interviewUpcoming": "Phỏng vấn sắp diễn ra",
     "hired": "Đã nhận ứng viên",
     "rejected": "Từ chối ứng viên",
+    "overallScore": "Điểm tổng quan",
+    "skillsScore": "Kỹ năng",
+    "cultureScore": "Văn hóa",
+    "retentionScore": "Gắn bó",
+    "analyzed": "Đã lọc / phỏng vấn",
+    "topSkills": "Kỹ năng nổi bật",
+    "fromDate": "Từ",
+    "toDate": "Đến",
+    "dateRequired": "Vui lòng chọn đầy đủ từ ngày và đến ngày",
+    "dateStartInvalid": "Ngày bắt đầu không được vượt quá ngày hiện tại",
+    "dateEndInvalid": "Ngày kết thúc không được vượt quá ngày hiện tại",
+    "dateStartEnd": "Ngày bắt đầu không được lớn hơn ngày kết thúc",
     "status": {
       "pending": "Đang chờ",
       "reviewing": "Đang xem xét",
       "shortlisted": "Đã lọc",
+      "interviewed": "Đã phỏng vấn",
+      "offered": "Đã offer",
+      "hired": "Đã nhận",
       "rejected": "Từ chối",
-      "hired": "Đã nhận"
-    }
+      "analyzed": "Đã phân tích"
+    },
+    "last7Days": "7 ngày qua",
+    "last30Days": "30 ngày qua",
+    "custom": "Tùy chọn"
   }
 }
