@@ -49,3 +49,31 @@ export const getInitials = (name) => {
   if (!name) return 'U'
   return name.charAt(0).toUpperCase()
 }
+
+export const formatCompactNumber = (num) => {
+  if (!num && num !== 0) return '0'
+  if (num >= 1000) return (num / 1000).toFixed(1) + 'k'
+  return num.toString()
+}
+
+export const formatDate = (date) => {
+  if (!date) return ''
+  const day = String(date.getDate()).padStart(2, '0')
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const year = date.getFullYear()
+  return `${day}/${month}/${year}`
+}
+
+export const dateToInputString = (date) => {
+  if (!date) return ''
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+export const inputStringToDate = (str) => {
+  if (!str) return null
+  const parts = str.split('-')
+  return new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]))
+}

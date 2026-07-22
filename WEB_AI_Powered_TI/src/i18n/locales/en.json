@@ -162,7 +162,13 @@
     "save": "Save Changes",
     "saving": "Saving...",
     "reset": "Reset",
-    "changing": "Changing..."
+    "changing": "Changing...",
+    "apply": "Apply",
+    "clear": "Clear",
+    "retry": "Retry",
+    "noData": "No data",
+    "noDataDesc": "No data available to display",
+    "error": "An error occurred"
   },
   "profile": {
     "title": "My Profile",
@@ -320,6 +326,7 @@
   },
   "hr": {
     "dashboard": "Dashboard",
+    "dashboardDesc": "Overview of your company's recruitment situation",
     "candidates": "Candidates",
     "jobs": "Jobs",
     "applications": "Applications",
@@ -340,6 +347,7 @@
     "appearance": "Appearance",
     "today": "Today",
     "totalCandidates": "Total Candidates",
+    "newCandidates": "New Candidates",
     "totalJobs": "Active Jobs",
     "totalApplications": "Applications",
     "todayInterviews": "Today's Interviews",
@@ -352,18 +360,37 @@
     "manageInterviews": "Manage Interviews",
     "manageInterviewsDesc": "View and schedule interviews",
     "recentActivities": "Recent Activities",
+    "recentCandidates": "Recent Candidates",
     "viewAll": "View all",
     "exportReport": "Export Report",
     "newCandidate": "New Candidate",
     "interviewUpcoming": "Upcoming Interview",
     "hired": "Candidate Hired",
     "rejected": "Candidate Rejected",
+    "overallScore": "Overall Score",
+    "skillsScore": "Skills",
+    "cultureScore": "Culture",
+    "retentionScore": "Retention",
+    "analyzed": "Filtered / Interviewed",
+    "topSkills": "Top Skills",
+    "fromDate": "From",
+    "toDate": "To",
+    "dateRequired": "Please select both from and to dates",
+    "dateStartInvalid": "Start date cannot exceed today",
+    "dateEndInvalid": "End date cannot exceed today",
+    "dateStartEnd": "Start date cannot be greater than end date",
     "status": {
       "pending": "Pending",
       "reviewing": "Reviewing",
       "shortlisted": "Shortlisted",
+      "interviewed": "Interviewed",
+      "offered": "Offered",
+      "hired": "Hired",
       "rejected": "Rejected",
-      "hired": "Hired"
-    }
+      "analyzed": "Analyzed"
+    },
+    "last7Days": "Last 7 days",
+    "last30Days": "Last 30 days",
+    "custom": "Custom"
   }
 }

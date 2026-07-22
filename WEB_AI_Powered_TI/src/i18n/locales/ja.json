@@ -162,7 +162,13 @@
     "save": "保存",
     "saving": "保存中...",
     "reset": "リセット",
-    "changing": "変更中..."
+    "changing": "変更中...",
+    "apply": "適用",
+    "clear": "クリア",
+    "retry": "再試行",
+    "noData": "データなし",
+    "noDataDesc": "表示するデータがありません",
+    "error": "エラーが発生しました" 
   },
   "profile": {
     "title": "プロフィール",
@@ -313,6 +319,7 @@
   },
   "hr": {
     "dashboard": "ダッシュボード",
+    "dashboardDesc": "会社の採用状況の概要",
     "candidates": "候補者",
     "jobs": "求人",
     "applications": "応募",
@@ -333,6 +340,7 @@
     "appearance": "外観",
     "today": "今日",
     "totalCandidates": "総候補者数",
+    "newCandidates": "新規候補者",
     "totalJobs": "募集中の求人",
     "totalApplications": "応募数",
     "todayInterviews": "本日の面接",
@@ -345,18 +353,37 @@
     "manageInterviews": "面接を管理",
     "manageInterviewsDesc": "面接の表示とスケジュール",
     "recentActivities": "最近のアクティビティ",
+    "recentCandidates": "最近の候補者",
     "viewAll": "すべて表示",
     "exportReport": "レポートをエクスポート",
     "newCandidate": "新規候補者",
     "interviewUpcoming": "間近の面接",
     "hired": "採用された候補者",
     "rejected": "不合格の候補者",
+    "overallScore": "総合スコア",
+    "skillsScore": "スキル",
+    "cultureScore": "カルチャー",
+    "retentionScore": "定着性",
+    "analyzed": "選考通過 / 面接済み",
+    "topSkills": "トップスキル",
+    "fromDate": "開始日",
+    "toDate": "終了日",
+    "dateRequired": "開始日と終了日の両方を選択してください",
+    "dateStartInvalid": "開始日は今日以降に設定できません",
+    "dateEndInvalid": "終了日は今日以降に設定できません",
+    "dateStartEnd": "開始日は終了日より前に設定してください",
     "status": {
       "pending": "保留中",
       "reviewing": "審査中",
       "shortlisted": "選考通過",
+      "interviewed": "面接済み",
+      "offered": "オファー済み",
+      "hired": "採用",
       "rejected": "不合格",
-      "hired": "採用"
-    }
+      "analyzed": "分析済み"
+    },
+    "last7Days": "過去7日間",
+    "last30Days": "過去30日間",
+    "custom": "カスタム"
   }
 }
