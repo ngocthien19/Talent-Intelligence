@@ -88,13 +88,13 @@ const CandidateDetail = () => {
       <div className="flex items-center justify-center h-[60vh]">
         <div className="text-center">
           <div className="text-red-500 text-4xl mb-4">!</div>
-          <h3 className="text-lg font-semibold text-brand-secondary dark:text-white">Có lỗi xảy ra</h3>
-          <p className="text-sm text-brand-text/60 dark:text-gray-400 mt-1">{error || 'Không tìm thấy ứng viên'}</p>
+          <h3 className="text-lg font-semibold text-brand-secondary dark:text-white">{t('common.error') || 'Có lỗi xảy ra'}</h3>
+          <p className="text-sm text-brand-text/60 dark:text-gray-400 mt-1">{error || t('hr.candidate.detail.notFound')}</p>
           <button
             onClick={handleBack}
             className="mt-4 px-4 py-2 bg-brand-primary text-white rounded-lg hover:bg-brand-primary/80 transition-colors cursor-pointer"
           >
-            {t('common.back') || 'Quay lại'}
+            {t('hr.candidate.detail.backToList')}
           </button>
         </div>
       </div>
@@ -115,7 +115,7 @@ const CandidateDetail = () => {
         className="inline-flex items-center gap-2 text-sm text-brand-text/60 dark:text-gray-400 hover:text-brand-primary dark:hover:text-brand-light transition-colors duration-200 cursor-pointer"
       >
         <FaArrowLeft size={14} />
-        {t('common.back') || 'Quay lại danh sách'}
+        {t('hr.candidate.detail.backToList')}
       </motion.button>
 
       {/* Header */}

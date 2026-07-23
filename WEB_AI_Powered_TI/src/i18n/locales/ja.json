@@ -386,7 +386,8 @@
       "offered": "オファー済み",
       "hired": "採用",
       "rejected": "不合格",
-      "analyzed": "分析済み"
+      "analyzed": "分析済み",
+      "analyzing": "分析中"
     },
     "last7Days": "過去7日間",
     "last30Days": "過去30日間",
@@ -442,7 +443,30 @@
       "deleteBulkTitle": "複数候補者を削除",
       "deleteBulkMessage": "選択した{count}件の候補者を削除してもよろしいですか？この操作は元に戻せません。",
       "deleteTitle": "候補者を削除",
-      "deleteMessage": "候補者「{name}」を削除してもよろしいですか？この操作は元に戻せません。"
+      "deleteMessage": "候補者「{name}」を削除してもよろしいですか？この操作は元に戻せません。",
+      "detail": {
+        "email": "メールアドレス",
+        "phone": "電話番号",
+        "address": "住所",
+        "personalInfo": "個人情報",
+        "jobInfo": "求人情報",
+        "company": "企業",
+        "location": "場所",
+        "salary": "給与",
+        "experience": "経験",
+        "jobDesc": "仕事内容",
+        "skills": "スキル",
+        "requiredSkills": "必須スキル",
+        "niceToHaveSkills": "歓迎スキル",
+        "timeline": "応募ステータス",
+        "currentStatus": "現在のステータス",
+        "current": "現在",
+        "appliedOn": "応募日",
+        "coverLetter": "カバーレター",
+        "backToList": "一覧に戻る",
+        "notFound": "候補者が見つかりません",
+        "applied": "応募済み"
+      }
     }
   }
 }

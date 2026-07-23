@@ -67,9 +67,17 @@ const CandidateRow = ({
       </td>
       <td className="px-3 py-3">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-gradient-brand flex items-center justify-center text-white font-semibold text-xs flex-shrink-0 shadow-sm transition-transform duration-200 hover:scale-105">
-            {candidate.name?.charAt(0)?.toUpperCase() || 'U'}
-          </div>
+          {candidate.avatar ? (
+            <img
+              src={candidate.avatar.secure_url}
+              alt={candidate.name || 'Avatar'}
+              className="w-8 h-8 rounded-full object-cover border-2 border-brand-light/30 dark:border-gray-700 flex-shrink-0 shadow-sm transition-transform duration-200 hover:scale-105"
+            />
+          ) : (
+            <div className="w-8 h-8 rounded-full bg-gradient-brand flex items-center justify-center text-white font-semibold text-xs flex-shrink-0 shadow-sm transition-transform duration-200 hover:scale-105">
+              {candidate.name?.charAt(0)?.toUpperCase() || 'U'}
+            </div>
+          )}
           <div>
             <p className="font-medium text-brand-secondary dark:text-white truncate max-w-[150px] transition-colors duration-200 hover:text-brand-primary">
               {candidate.name || t('hr.candidate.unknown') || 'Chưa có tên'}

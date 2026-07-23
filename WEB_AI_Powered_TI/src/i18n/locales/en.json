@@ -393,7 +393,8 @@
       "offered": "Offered",
       "hired": "Hired",
       "rejected": "Rejected",
-      "analyzed": "Analyzed"
+      "analyzed": "Analyzed",
+      "analyzing": "Analyzing"
     },
     "last7Days": "Last 7 days",
     "last30Days": "Last 30 days",
@@ -449,7 +450,30 @@
       "deleteBulkTitle": "Delete Multiple Candidates",
       "deleteBulkMessage": "Are you sure you want to delete {count} selected candidates? This action cannot be undone.",
       "deleteTitle": "Delete Candidate",
-      "deleteMessage": "Are you sure you want to delete candidate \"{name}\"? This action cannot be undone."
+      "deleteMessage": "Are you sure you want to delete candidate \"{name}\"? This action cannot be undone.",
+      "detail": {
+        "email": "Email",
+        "phone": "Phone",
+        "address": "Address",
+        "personalInfo": "Personal Information",
+        "jobInfo": "Job Information",
+        "company": "Company",
+        "location": "Location",
+        "salary": "Salary",
+        "experience": "Experience",
+        "jobDesc": "Job Description",
+        "skills": "Skills",
+        "requiredSkills": "Required Skills",
+        "niceToHaveSkills": "Nice to Have Skills",
+        "timeline": "Application Status",
+        "currentStatus": "Current Status",
+        "current": "Current",
+        "appliedOn": "Applied On",
+        "coverLetter": "Cover Letter",
+        "backToList": "Back to list",
+        "notFound": "Candidate not found",
+        "applied": "Applied"
+      }
     }
   }
 }

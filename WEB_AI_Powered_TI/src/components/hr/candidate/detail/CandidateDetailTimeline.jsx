@@ -34,6 +34,7 @@ const STATUS_COLORS = {
   hired: 'text-green-500 bg-green-50 dark:bg-green-950/20',
   rejected: 'text-red-500 bg-red-50 dark:bg-red-950/20'
 }
+
 const CandidateDetailTimeline = ({ candidate }) => {
   const { t } = useLanguage()
 
@@ -60,7 +61,7 @@ const CandidateDetailTimeline = ({ candidate }) => {
     >
       <h2 className="text-lg font-bold text-brand-secondary dark:text-white mb-6 flex items-center gap-2">
         <FaClock size={18} className="text-brand-primary" />
-        {t('hr.candidate.timeline') || 'Trạng thái ứng tuyển'}
+        {t('hr.candidate.detail.timeline')}
       </h2>
 
       {/* Current status */}
@@ -69,9 +70,9 @@ const CandidateDetailTimeline = ({ candidate }) => {
           {currentStatus.icon && <currentStatus.icon size={20} />}
         </div>
         <div>
-          <p className="text-xs text-brand-text/60 dark:text-gray-400">{t('hr.candidate.currentStatus') || 'Trạng thái hiện tại'}</p>
+          <p className="text-xs text-brand-text/60 dark:text-gray-400">{t('hr.candidate.detail.currentStatus')}</p>
           <p className="text-lg font-bold text-brand-secondary dark:text-white">
-            {t(`hr.candidate.status.${candidate.status}`) || candidate.status}
+            {t(`hr.status.${candidate.status}`) || candidate.status}
           </p>
         </div>
       </div>
@@ -99,12 +100,12 @@ const CandidateDetailTimeline = ({ candidate }) => {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
                     <p className={`text-sm font-medium ${isActive ? 'text-brand-secondary dark:text-white' : 'text-brand-text/40 dark:text-gray-500'}`}>
-                      {t(`hr.candidate.status.${item.status}`) || item.label}
+                      {t(`hr.status.${item.status}`) || item.label}
                     </p>
                     {isCurrent && (
                       <span className="text-xs font-medium text-brand-primary flex items-center gap-1">
                         <FaCheckCircle size={12} />
-                        {t('hr.candidate.current') || 'Hiện tại'}
+                        {t('hr.candidate.detail.current')}
                       </span>
                     )}
                   </div>
@@ -123,7 +124,7 @@ const CandidateDetailTimeline = ({ candidate }) => {
       {/* Application date */}
       <div className="mt-6 pt-4 border-t border-brand-light/50 dark:border-gray-700/50">
         <p className="text-xs text-brand-text/40 dark:text-gray-500">
-          {t('hr.candidate.appliedOn') || 'Ngày ứng tuyển'}: {candidate.created_at ? formatDate(new Date(candidate.created_at)) : '--'}
+          {t('hr.candidate.detail.appliedOn')}: {candidate.created_at ? formatDate(new Date(candidate.created_at)) : '--'}
         </p>
       </div>
     </motion.div>

@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { FaUserCircle, FaEnvelope, FaPhone, FaMapMarkerAlt } from 'react-icons/fa'
+import { FaEnvelope, FaPhone, FaMapMarkerAlt } from 'react-icons/fa'
 import { useLanguage } from '~/hooks/useLanguage'
 import CandidateStatusBadge from '~/components/hr/candidate/CandidateStatusBadge'
 import { formatDate } from '~/utils/format'
@@ -29,7 +29,7 @@ const CandidateDetailHeader = ({ candidate }) => {
         <div className="flex-shrink-0">
           {candidate.avatar ? (
             <img
-              src={candidate.avatar}
+              src={candidate.avatar.secure_url}
               alt={candidate.name}
               className="w-24 h-24 rounded-full object-cover border-4 border-brand-light/50 dark:border-gray-700"
             />
@@ -50,7 +50,7 @@ const CandidateDetailHeader = ({ candidate }) => {
               <div className="flex flex-wrap items-center gap-3 mt-1">
                 <CandidateStatusBadge status={candidate.status} />
                 <span className="text-sm text-brand-text/60 dark:text-gray-400">
-                  {t('hr.candidate.applied') || 'Ứng tuyển'}: {candidate.created_at ? formatDate(new Date(candidate.created_at)) : '--'}
+                  {t('hr.candidate.detail.applied')}: {candidate.created_at ? formatDate(new Date(candidate.created_at)) : '--'}
                 </span>
               </div>
             </div>

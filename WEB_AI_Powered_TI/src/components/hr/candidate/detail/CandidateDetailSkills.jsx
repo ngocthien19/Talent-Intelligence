@@ -31,7 +31,7 @@ const CandidateDetailSkills = ({ candidate }) => {
     >
       <h2 className="text-lg font-bold text-brand-secondary dark:text-white mb-4 flex items-center gap-2">
         <FaTags size={18} className="text-brand-primary" />
-        {t('hr.candidate.skills') || 'Kỹ năng'}
+        {t('hr.candidate.detail.skills')}
       </h2>
 
       <div className="space-y-4">
@@ -39,7 +39,7 @@ const CandidateDetailSkills = ({ candidate }) => {
         {requiredSkills.length > 0 && (
           <div>
             <p className="text-xs font-medium text-brand-text/60 dark:text-gray-400 mb-2">
-              {t('hr.candidate.requiredSkills') || 'Kỹ năng bắt buộc'}
+              {t('hr.candidate.detail.requiredSkills')}
             </p>
             <div className="flex flex-wrap gap-2">
               {requiredSkills.map((skill, index) => (
@@ -59,7 +59,7 @@ const CandidateDetailSkills = ({ candidate }) => {
         {niceToHaveSkills.length > 0 && (
           <div>
             <p className="text-xs font-medium text-brand-text/60 dark:text-gray-400 mb-2">
-              {t('hr.candidate.niceToHaveSkills') || 'Kỹ năng thêm'}
+              {t('hr.candidate.detail.niceToHaveSkills')}
             </p>
             <div className="flex flex-wrap gap-2">
               {niceToHaveSkills.map((skill, index) => (

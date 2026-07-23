@@ -31,7 +31,7 @@ const CandidateDetailJob = ({ candidate }) => {
     >
       <h2 className="text-lg font-bold text-brand-secondary dark:text-white mb-4 flex items-center gap-2">
         <FaBriefcase size={18} className="text-brand-primary" />
-        {t('hr.candidate.jobInfo') || 'Thông tin công việc'}
+        {t('hr.candidate.detail.jobInfo')}
       </h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -49,7 +49,7 @@ const CandidateDetailJob = ({ candidate }) => {
           <div className="flex items-start gap-3 p-3 rounded-lg bg-brand-light/5 dark:bg-gray-800/50 hover:bg-brand-light/10 dark:hover:bg-gray-700/30 transition-all duration-200">
             <FaBuilding size={16} className="text-brand-text/40 dark:text-gray-500 mt-0.5" />
             <div>
-              <p className="text-xs text-brand-text/40 dark:text-gray-500">{t('hr.candidate.company') || 'Công ty'}</p>
+              <p className="text-xs text-brand-text/40 dark:text-gray-500">{t('hr.candidate.detail.company')}</p>
               <p className="text-sm font-medium text-brand-secondary dark:text-white">{candidate.company_name}</p>
             </div>
           </div>
@@ -59,7 +59,7 @@ const CandidateDetailJob = ({ candidate }) => {
           <div className="flex items-start gap-3 p-3 rounded-lg bg-brand-light/5 dark:bg-gray-800/50 hover:bg-brand-light/10 dark:hover:bg-gray-700/30 transition-all duration-200">
             <FaMapMarkerAlt size={16} className="text-brand-text/40 dark:text-gray-500 mt-0.5" />
             <div>
-              <p className="text-xs text-brand-text/40 dark:text-gray-500">{t('hr.candidate.location') || 'Địa điểm'}</p>
+              <p className="text-xs text-brand-text/40 dark:text-gray-500">{t('hr.candidate.detail.location')}</p>
               <p className="text-sm font-medium text-brand-secondary dark:text-white">{candidate.job_location}</p>
             </div>
           </div>
@@ -69,7 +69,7 @@ const CandidateDetailJob = ({ candidate }) => {
           <div className="flex items-start gap-3 p-3 rounded-lg bg-brand-light/5 dark:bg-gray-800/50 hover:bg-brand-light/10 dark:hover:bg-gray-700/30 transition-all duration-200">
             <FaMoneyBillWave size={16} className="text-brand-text/40 dark:text-gray-500 mt-0.5" />
             <div>
-              <p className="text-xs text-brand-text/40 dark:text-gray-500">{t('hr.candidate.salary') || 'Mức lương'}</p>
+              <p className="text-xs text-brand-text/40 dark:text-gray-500">{t('hr.candidate.detail.salary')}</p>
               <p className="text-sm font-medium text-brand-secondary dark:text-white">{formatSalary(candidate.salary_range)}</p>
             </div>
           </div>
@@ -79,7 +79,7 @@ const CandidateDetailJob = ({ candidate }) => {
           <div className="flex items-start gap-3 p-3 rounded-lg bg-brand-light/5 dark:bg-gray-800/50 hover:bg-brand-light/10 dark:hover:bg-gray-700/30 transition-all duration-200">
             <FaClock size={16} className="text-brand-text/40 dark:text-gray-500 mt-0.5" />
             <div>
-              <p className="text-xs text-brand-text/40 dark:text-gray-500">{t('hr.candidate.experience') || 'Kinh nghiệm'}</p>
+              <p className="text-xs text-brand-text/40 dark:text-gray-500">{t('hr.candidate.detail.experience')}</p>
               <p className="text-sm font-medium text-brand-secondary dark:text-white">{candidate.experience_level}</p>
             </div>
           </div>
@@ -89,7 +89,7 @@ const CandidateDetailJob = ({ candidate }) => {
       {/* Job description */}
       {candidate.job_description && (
         <div className="mt-4 p-4 rounded-lg bg-brand-light/5 dark:bg-gray-800/50">
-          <p className="text-xs text-brand-text/40 dark:text-gray-500 mb-1">{t('hr.candidate.jobDesc') || 'Mô tả công việc'}</p>
+          <p className="text-xs text-brand-text/40 dark:text-gray-500 mb-1">{t('hr.candidate.detail.jobDesc')}</p>
           <p className="text-sm text-brand-text dark:text-gray-300 whitespace-pre-wrap">{candidate.job_description}</p>
         </div>
       )}
