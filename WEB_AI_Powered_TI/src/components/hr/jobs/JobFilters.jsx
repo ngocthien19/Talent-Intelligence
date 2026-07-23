@@ -90,9 +90,7 @@ const JobFilters = ({
           </button>
         </div>
 
-        {/* ĐỔI xl:grid-cols-4 THÀNH lg:grid-cols-4 để form cân bằng sớm hơn trên màn hình laptop */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
-
           {/* Category */}
           <div className="min-w-0 flex flex-col">
             <label className="text-xs font-medium text-brand-text/60 dark:text-gray-400 block mb-1.5">
@@ -100,7 +98,6 @@ const JobFilters = ({
             </label>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                {/* THÊM h-[42px] (hoặc h-10) để các ô luôn cao bằng nhau */}
                 <button className="w-full h-[42px] flex items-center justify-between px-3.5 py-2 text-sm border border-brand-light/50 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-brand-secondary dark:text-white hover:bg-brand-light/30 dark:hover:bg-gray-700/50 transition-all duration-200 cursor-pointer shadow-sm">
                   <span className="truncate flex-1 text-left">
                     {getCategoryLabelText(draft.categoryId)}
@@ -108,7 +105,6 @@ const JobFilters = ({
                   <FaChevronDown size={12} className="text-brand-text/40 dark:text-gray-500 flex-shrink-0 ml-2" />
                 </button>
               </DropdownMenuTrigger>
-              {/* THÊM w-[var(--radix-dropdown-menu-trigger-width)] hoặc min-w-[200px] để menu dropdown rộng bằng chính ô input (nếu dùng shadcn/ui) */}
               <DropdownMenuContent align="start" className="w-[var(--radix-dropdown-menu-trigger-width)] min-w-[220px] p-1 bg-white dark:bg-gray-900 border border-brand-light/50 dark:border-gray-700 rounded-xl shadow-xl max-h-60 overflow-y-auto z-50">
                 <DropdownMenuItem
                   onClick={() => handleDraftChange('categoryId', '')}

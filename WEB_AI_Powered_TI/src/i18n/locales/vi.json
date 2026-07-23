@@ -130,7 +130,9 @@
     "partTime": "Bán thời gian",
     "contract": "Hợp đồng",
     "internship": "Thực tập",
-    "freelance": "Freelance"
+    "freelance": "Freelance",
+    "allLocations": "Tất cả địa điểm",
+    "selectLocation": "Chọn địa điểm..."
   },
   "salary": {
     "all": "Tất cả mức lương",
@@ -141,6 +143,19 @@
     "20to30M": "20 - 30 triệu",
     "30to50M": "30 - 50 triệu",
     "above50M": "Trên 50 triệu"
+  },
+  "location": {
+    "hanoi": "Hà Nội",
+    "hoChiMinh": "TP.Hồ Chí Minh",
+    "daNang": "Đà Nẵng",
+    "haiphong": "Hải Phòng",
+    "cantho": "Cần Thơ",
+    "nhatrang": "Nha Trang",
+    "hue": "Huế",
+    "vungtau": "Vũng Tàu",
+    "dalat": "Đà Lạt",
+    "bienhoa": "Biên Hòa",
+    "binhduong": "Bình Dương"
   },
   "applications": {
     "title": "Hồ sơ đã ứng tuyển",
@@ -501,6 +516,7 @@
       }
     },
     "job": {
+      "noResults": "Không tìm thấy công việc nào",
       "viewDetail": "Xem chi tiết",
       "add": "Thêm việc làm",
       "edit": "Chỉnh sửa",

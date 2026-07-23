@@ -15,15 +15,6 @@ export const jobApi = {
     )
     return response.data
   },
-
-  // Lấy chi tiết công việc
-  getJobDetail: async (id) => {
-    const response = await authorizedAxiosInstance.get(
-      `${DEV_API_URL}/api/hr/jobs/${id}`
-    )
-    return response.data
-  },
-
   // Tạo công việc mới
   createJob: async (data) => {
     const response = await authorizedAxiosInstance.post(
@@ -89,6 +80,27 @@ export const jobApi = {
   getCategoryDropdown: async () => {
     const response = await authorizedAxiosInstance.get(
       `${DEV_API_URL}/api/hr/categories/dropdown`
+    )
+    return response.data
+  },
+  // Lấy chi tiết công việc (kèm candidates và stats)
+  getJobDetail: async (id) => {
+    const response = await authorizedAxiosInstance.get(
+      `${DEV_API_URL}/api/hr/jobs/${id}/detail`
+    )
+    return response.data
+  },
+
+  // Lấy ứng viên của công việc
+  getJobCandidates: async (id, params = {}) => {
+    const queryParams = new URLSearchParams()
+    Object.keys(params).forEach(key => {
+      if (params[key] !== undefined && params[key] !== '') {
+        queryParams.append(key, params[key])
+      }
+    })
+    const response = await authorizedAxiosInstance.get(
+      `${DEV_API_URL}/api/hr/jobs/${id}/candidates?${queryParams.toString()}`
     )
     return response.data
   }

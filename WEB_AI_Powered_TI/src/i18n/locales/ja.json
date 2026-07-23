@@ -130,7 +130,9 @@
     "partTime": "パートタイム",
     "contract": "契約社員",
     "internship": "インターン",
-    "freelance": "フリーランス"
+    "freelance": "フリーランス",
+    "allLocations": "すべての場所",
+    "selectLocation": "場所を選択..."
   },
   "salary": {
     "all": "すべての給与帯",
@@ -141,6 +143,19 @@
     "20to30M": "2000万 - 3000万円",
     "30to50M": "3000万 - 5000万円",
     "above50M": "5000万円以上"
+  },
+  "location": {
+    "hanoi": "ハノイ",
+    "hoChiMinh": "ホーチミン市",
+    "daNang": "ダナン",
+    "haiphong": "ハイフォン",
+    "cantho": "カントー",
+    "nhatrang": "ニャチャン",
+    "hue": "フエ",
+    "vungtau": "ブンタウ",
+    "dalat": "ダラット",
+    "bienhoa": "ビエンホア",
+    "binhduong": "ビンズオン"
   },
   "applications": {
     "title": "応募履歴",
@@ -494,6 +509,7 @@
       }
     },
     "job": {
+      "noResults": "求人が見つかりません",
       "viewDetail": "詳細を見る",
       "add": "求人を追加",
       "edit": "編集",

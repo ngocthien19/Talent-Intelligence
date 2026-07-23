@@ -42,19 +42,25 @@ export const NOTIFICATION_TYPES = {
 }
 
 export const LOCATIONS = [
-  { value: '', label: 'Tất cả địa điểm' },
-  { value: 'Hà Nội', label: 'Hà Nội' },
-  { value: 'TP.Hồ Chí Minh', label: 'TP.Hồ Chí Minh' },
-  { value: 'Đà Nẵng', label: 'Đà Nẵng' },
-  { value: 'Hải Phòng', label: 'Hải Phòng' },
-  { value: 'Cần Thơ', label: 'Cần Thơ' },
-  { value: 'Nha Trang', label: 'Nha Trang' },
-  { value: 'Huế', label: 'Huế' },
-  { value: 'Vũng Tàu', label: 'Vũng Tàu' },
-  { value: 'Đà Lạt', label: 'Đà Lạt' },
-  { value: 'Biên Hòa', label: 'Biên Hòa' },
-  { value: 'Bình Dương', label: 'Bình Dương' }
+  { value: '', labelKey: 'job.allLocations' },
+  { value: 'Hà Nội', labelKey: 'location.hanoi' },
+  { value: 'TP.Hồ Chí Minh', labelKey: 'location.hoChiMinh' },
+  { value: 'Đà Nẵng', labelKey: 'location.daNang' },
+  { value: 'Hải Phòng', labelKey: 'location.haiphong' },
+  { value: 'Cần Thơ', labelKey: 'location.cantho' },
+  { value: 'Nha Trang', labelKey: 'location.nhatrang' },
+  { value: 'Huế', labelKey: 'location.hue' },
+  { value: 'Vũng Tàu', labelKey: 'location.vungtau' },
+  { value: 'Đà Lạt', labelKey: 'location.dalat' },
+  { value: 'Biên Hòa', labelKey: 'location.bienhoa' },
+  { value: 'Bình Dương', labelKey: 'location.binhduong' }
 ]
+
+export const getLocationLabel = (value, t) => {
+  const option = LOCATIONS.find(opt => opt.value === value)
+  if (!option) return value || t?.('job.allLocations') || 'Tất cả địa điểm'
+  return t?.(option.labelKey) || option.labelKey
+}
 
 export const EXPERIENCE_LEVELS = [
   { value: '', labelKey: 'job.allExperience' },
