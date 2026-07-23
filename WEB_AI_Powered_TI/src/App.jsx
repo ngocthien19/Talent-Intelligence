@@ -21,7 +21,7 @@ import Candidates from '~/pages/hr/candidates/Candidates'
 import CandidateDetail from '~/pages/hr/candidates/CandidateDetail'
 import HRJobs from '~/pages/hr/jobs/HRJobs'
 import JobDetail from '~/pages/hr/jobs/JobDetail'
-
+import Interviews from '~/pages/hr/interviews/Interviews'
 
 import Login from '~/pages/auth/Login'
 import Register from '~/pages/auth/Register'
@@ -86,6 +86,7 @@ function App() {
           <Route path="candidates/:id" element={<CandidateDetail />} />
           <Route path="jobs" element={<HRJobs />} />
           <Route path="jobs/:id" element={<JobDetail />} />
+          <Route path="interviews" element={<Interviews />} />
 
         </Route>
       </Routes>
