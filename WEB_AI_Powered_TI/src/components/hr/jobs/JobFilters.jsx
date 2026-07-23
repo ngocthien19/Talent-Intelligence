@@ -55,14 +55,8 @@ const JobFilters = ({
     onReset()
   }
 
-  // Get label helpers - Sử dụng từ constant
-  const getExperienceLabelText = (value) => {
-    return getExperienceLabel(value, t)
-  }
-
-  const getEmploymentLabelText = (value) => {
-    return getEmploymentLabel(value, t)
-  }
+  const getExperienceLabelText = (value) => getExperienceLabel(value, t)
+  const getEmploymentLabelText = (value) => getEmploymentLabel(value, t)
 
   const getStatusLabelText = (value) => {
     if (!value) return t('hr.job.all') || 'Tất cả'
@@ -83,40 +77,44 @@ const JobFilters = ({
       transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
       className="bg-white dark:bg-gray-800 rounded-xl shadow-custom border border-brand-light/30 dark:border-gray-700/50 overflow-hidden"
     >
-      <div className="p-4 md:p-6">
+      <div className="p-4 md:p-5">
         <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
           <h3 className="text-sm font-semibold text-brand-secondary dark:text-white">
             {t('hr.job.filters') || 'Bộ lọc'}
           </h3>
           <button
             onClick={handleReset}
-            className="text-xs text-brand-text/60 dark:text-gray-400 hover:text-brand-primary transition-colors cursor-pointer"
+            className="text-xs text-brand-text/60 dark:text-gray-400 hover:text-brand-primary transition-colors cursor-pointer font-medium"
           >
             {t('hr.job.clearFilters') || 'Xóa tất cả'}
           </button>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+        {/* ĐỔI xl:grid-cols-4 THÀNH lg:grid-cols-4 để form cân bằng sớm hơn trên màn hình laptop */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
+
           {/* Category */}
-          <div className="min-w-0">
-            <label className="text-xs font-medium text-brand-text/60 dark:text-gray-400 block mb-1">
+          <div className="min-w-0 flex flex-col">
+            <label className="text-xs font-medium text-brand-text/60 dark:text-gray-400 block mb-1.5">
               {t('hr.job.category') || 'Danh mục'}
             </label>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="w-full flex items-center justify-between px-3 py-2 text-sm border border-brand-light/50 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-brand-secondary dark:text-white hover:bg-brand-light/30 dark:hover:bg-gray-700/50 transition-all duration-200 cursor-pointer">
+                {/* THÊM h-[42px] (hoặc h-10) để các ô luôn cao bằng nhau */}
+                <button className="w-full h-[42px] flex items-center justify-between px-3.5 py-2 text-sm border border-brand-light/50 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-brand-secondary dark:text-white hover:bg-brand-light/30 dark:hover:bg-gray-700/50 transition-all duration-200 cursor-pointer shadow-sm">
                   <span className="truncate flex-1 text-left">
                     {getCategoryLabelText(draft.categoryId)}
                   </span>
                   <FaChevronDown size={12} className="text-brand-text/40 dark:text-gray-500 flex-shrink-0 ml-2" />
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-56 p-1 bg-white dark:bg-gray-900 border border-brand-light/50 dark:border-gray-700 rounded-xl shadow-xl max-h-60 overflow-y-auto">
+              {/* THÊM w-[var(--radix-dropdown-menu-trigger-width)] hoặc min-w-[200px] để menu dropdown rộng bằng chính ô input (nếu dùng shadcn/ui) */}
+              <DropdownMenuContent align="start" className="w-[var(--radix-dropdown-menu-trigger-width)] min-w-[220px] p-1 bg-white dark:bg-gray-900 border border-brand-light/50 dark:border-gray-700 rounded-xl shadow-xl max-h-60 overflow-y-auto z-50">
                 <DropdownMenuItem
                   onClick={() => handleDraftChange('categoryId', '')}
-                  className={`cursor-pointer px-3 py-2 rounded-lg transition-all duration-200 ${
+                  className={`cursor-pointer px-3 py-2.5 rounded-lg transition-all duration-200 text-sm ${
                     draft.categoryId === ''
-                      ? 'bg-brand-primary/10 text-brand-primary dark:bg-brand-primary/20'
+                      ? 'bg-brand-primary/10 text-brand-primary dark:bg-brand-primary/20 font-medium'
                       : 'text-brand-text dark:text-gray-300 hover:bg-brand-light/30 dark:hover:bg-gray-700/50'
                   }`}
                 >
@@ -126,9 +124,9 @@ const JobFilters = ({
                   <DropdownMenuItem
                     key={cat.id}
                     onClick={() => handleDraftChange('categoryId', cat.id)}
-                    className={`cursor-pointer px-3 py-2 rounded-lg transition-all duration-200 ${
+                    className={`cursor-pointer px-3 py-2.5 rounded-lg transition-all duration-200 text-sm ${
                       draft.categoryId === cat.id
-                        ? 'bg-brand-primary/10 text-brand-primary dark:bg-brand-primary/20'
+                        ? 'bg-brand-primary/10 text-brand-primary dark:bg-brand-primary/20 font-medium'
                         : 'text-brand-text dark:text-gray-300 hover:bg-brand-light/30 dark:hover:bg-gray-700/50'
                     }`}
                   >
@@ -140,27 +138,27 @@ const JobFilters = ({
           </div>
 
           {/* Experience Level */}
-          <div className="min-w-0">
-            <label className="text-xs font-medium text-brand-text/60 dark:text-gray-400 block mb-1">
+          <div className="min-w-0 flex flex-col">
+            <label className="text-xs font-medium text-brand-text/60 dark:text-gray-400 block mb-1.5">
               {t('hr.job.experienceLevel') || 'Cấp bậc'}
             </label>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="w-full flex items-center justify-between px-3 py-2 text-sm border border-brand-light/50 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-brand-secondary dark:text-white hover:bg-brand-light/30 dark:hover:bg-gray-700/50 transition-all duration-200 cursor-pointer">
+                <button className="w-full h-[42px] flex items-center justify-between px-3.5 py-2 text-sm border border-brand-light/50 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-brand-secondary dark:text-white hover:bg-brand-light/30 dark:hover:bg-gray-700/50 transition-all duration-200 cursor-pointer shadow-sm">
                   <span className="truncate flex-1 text-left">
                     {getExperienceLabelText(draft.experienceLevel)}
                   </span>
                   <FaChevronDown size={12} className="text-brand-text/40 dark:text-gray-500 flex-shrink-0 ml-2" />
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-56 p-1 bg-white dark:bg-gray-900 border border-brand-light/50 dark:border-gray-700 rounded-xl shadow-xl max-h-60 overflow-y-auto">
+              <DropdownMenuContent align="start" className="w-[var(--radix-dropdown-menu-trigger-width)] min-w-[220px] p-1 bg-white dark:bg-gray-900 border border-brand-light/50 dark:border-gray-700 rounded-xl shadow-xl max-h-60 overflow-y-auto z-50">
                 {EXPERIENCE_LEVELS.map((opt) => (
                   <DropdownMenuItem
                     key={opt.value}
                     onClick={() => handleDraftChange('experienceLevel', opt.value)}
-                    className={`cursor-pointer px-3 py-2 rounded-lg transition-all duration-200 ${
+                    className={`cursor-pointer px-3 py-2.5 rounded-lg transition-all duration-200 text-sm ${
                       draft.experienceLevel === opt.value
-                        ? 'bg-brand-primary/10 text-brand-primary dark:bg-brand-primary/20'
+                        ? 'bg-brand-primary/10 text-brand-primary dark:bg-brand-primary/20 font-medium'
                         : 'text-brand-text dark:text-gray-300 hover:bg-brand-light/30 dark:hover:bg-gray-700/50'
                     }`}
                   >
@@ -172,27 +170,27 @@ const JobFilters = ({
           </div>
 
           {/* Employment Type */}
-          <div className="min-w-0">
-            <label className="text-xs font-medium text-brand-text/60 dark:text-gray-400 block mb-1">
+          <div className="min-w-0 flex flex-col">
+            <label className="text-xs font-medium text-brand-text/60 dark:text-gray-400 block mb-1.5">
               {t('hr.job.employmentType') || 'Loại hình'}
             </label>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="w-full flex items-center justify-between px-3 py-2 text-sm border border-brand-light/50 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-brand-secondary dark:text-white hover:bg-brand-light/30 dark:hover:bg-gray-700/50 transition-all duration-200 cursor-pointer">
+                <button className="w-full h-[42px] flex items-center justify-between px-3.5 py-2 text-sm border border-brand-light/50 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-brand-secondary dark:text-white hover:bg-brand-light/30 dark:hover:bg-gray-700/50 transition-all duration-200 cursor-pointer shadow-sm">
                   <span className="truncate flex-1 text-left">
                     {getEmploymentLabelText(draft.employmentType)}
                   </span>
                   <FaChevronDown size={12} className="text-brand-text/40 dark:text-gray-500 flex-shrink-0 ml-2" />
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-56 p-1 bg-white dark:bg-gray-900 border border-brand-light/50 dark:border-gray-700 rounded-xl shadow-xl max-h-60 overflow-y-auto">
+              <DropdownMenuContent align="start" className="w-[var(--radix-dropdown-menu-trigger-width)] min-w-[220px] p-1 bg-white dark:bg-gray-900 border border-brand-light/50 dark:border-gray-700 rounded-xl shadow-xl max-h-60 overflow-y-auto z-50">
                 {EMPLOYMENT_TYPES.map((opt) => (
                   <DropdownMenuItem
                     key={opt.value}
                     onClick={() => handleDraftChange('employmentType', opt.value)}
-                    className={`cursor-pointer px-3 py-2 rounded-lg transition-all duration-200 ${
+                    className={`cursor-pointer px-3 py-2.5 rounded-lg transition-all duration-200 text-sm ${
                       draft.employmentType === opt.value
-                        ? 'bg-brand-primary/10 text-brand-primary dark:bg-brand-primary/20'
+                        ? 'bg-brand-primary/10 text-brand-primary dark:bg-brand-primary/20 font-medium'
                         : 'text-brand-text dark:text-gray-300 hover:bg-brand-light/30 dark:hover:bg-gray-700/50'
                     }`}
                   >
@@ -204,27 +202,27 @@ const JobFilters = ({
           </div>
 
           {/* Status */}
-          <div className="min-w-0">
-            <label className="text-xs font-medium text-brand-text/60 dark:text-gray-400 block mb-1">
+          <div className="min-w-0 flex flex-col">
+            <label className="text-xs font-medium text-brand-text/60 dark:text-gray-400 block mb-1.5">
               {t('hr.job.status') || 'Trạng thái'}
             </label>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="w-full flex items-center justify-between px-3 py-2 text-sm border border-brand-light/50 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-brand-secondary dark:text-white hover:bg-brand-light/30 dark:hover:bg-gray-700/50 transition-all duration-200 cursor-pointer">
+                <button className="w-full h-[42px] flex items-center justify-between px-3.5 py-2 text-sm border border-brand-light/50 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-brand-secondary dark:text-white hover:bg-brand-light/30 dark:hover:bg-gray-700/50 transition-all duration-200 cursor-pointer shadow-sm">
                   <span className="truncate flex-1 text-left">
                     {getStatusLabelText(draft.isActive)}
                   </span>
                   <FaChevronDown size={12} className="text-brand-text/40 dark:text-gray-500 flex-shrink-0 ml-2" />
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-56 p-1 bg-white dark:bg-gray-900 border border-brand-light/50 dark:border-gray-700 rounded-xl shadow-xl max-h-60 overflow-y-auto">
+              <DropdownMenuContent align="start" className="w-[var(--radix-dropdown-menu-trigger-width)] min-w-[220px] p-1 bg-white dark:bg-gray-900 border border-brand-light/50 dark:border-gray-700 rounded-xl shadow-xl max-h-60 overflow-y-auto z-50">
                 {STATUS_OPTIONS.map((opt) => (
                   <DropdownMenuItem
                     key={opt.value}
                     onClick={() => handleDraftChange('isActive', opt.value)}
-                    className={`cursor-pointer px-3 py-2 rounded-lg transition-all duration-200 ${
+                    className={`cursor-pointer px-3 py-2.5 rounded-lg transition-all duration-200 text-sm ${
                       draft.isActive === opt.value
-                        ? 'bg-brand-primary/10 text-brand-primary dark:bg-brand-primary/20'
+                        ? 'bg-brand-primary/10 text-brand-primary dark:bg-brand-primary/20 font-medium'
                         : 'text-brand-text dark:text-gray-300 hover:bg-brand-light/30 dark:hover:bg-gray-700/50'
                     }`}
                   >
@@ -237,16 +235,16 @@ const JobFilters = ({
         </div>
 
         {/* Actions */}
-        <div className="flex items-center justify-end gap-3 mt-4 pt-4 border-t border-brand-light/50 dark:border-gray-700">
+        <div className="flex items-center justify-end gap-3 mt-6 pt-5 border-t border-brand-light/50 dark:border-gray-700">
           <button
             onClick={handleReset}
-            className="px-4 py-2 text-sm font-medium text-brand-text/60 dark:text-gray-400 hover:text-brand-secondary dark:hover:text-white transition-colors cursor-pointer"
+            className="px-5 py-2 text-sm font-medium text-brand-text/60 dark:text-gray-400 hover:text-brand-secondary dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors cursor-pointer"
           >
             {t('common.reset') || 'Đặt lại'}
           </button>
           <button
             onClick={handleApply}
-            className="px-4 py-2 text-sm font-medium bg-brand-primary text-white rounded-lg hover:bg-brand-primary/80 transition-all duration-200 cursor-pointer hover:scale-[1.02] active:scale-95"
+            className="px-6 py-2 text-sm font-medium bg-brand-primary text-white rounded-lg hover:bg-brand-primary/90 shadow-sm transition-all duration-200 cursor-pointer hover:-translate-y-0.5 active:translate-y-0"
           >
             {t('common.apply') || 'Áp dụng'}
           </button>
