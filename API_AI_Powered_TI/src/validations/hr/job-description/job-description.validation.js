@@ -1,3 +1,4 @@
+// src/validations/hr/job-description/job-description.validation.js
 import Joi from 'joi'
 
 // Validation cho tạo JD
@@ -8,7 +9,14 @@ export const createJDValidation = Joi.object({
   benefits: Joi.string().optional(),
   requiredSkills: Joi.array().items(Joi.string()).optional(),
   niceToHaveSkills: Joi.array().items(Joi.string()).optional(),
-  experienceLevel: Joi.string().valid('Fresher', 'Junior', 'Mid-Level', 'Senior', 'Lead', 'Manager').optional(),
+  experienceLevel: Joi.string().valid(
+    'Mới tốt nghiệp',
+    'Junior (1-3 years)',
+    'Mid-Level (3-5 years)',
+    'Senior (5-7 years)',
+    'Lead (7-10 years)',
+    'Manager (10+ years)'
+  ).optional(),
   employmentType: Joi.string().valid('Full-time', 'Part-time', 'Contract', 'Internship', 'Freelance').optional(),
   location: Joi.string().optional(),
   salaryRange: Joi.object({
@@ -28,7 +36,14 @@ export const updateJDValidation = Joi.object({
   benefits: Joi.string().optional(),
   requiredSkills: Joi.array().items(Joi.string()).optional(),
   niceToHaveSkills: Joi.array().items(Joi.string()).optional(),
-  experienceLevel: Joi.string().valid('Fresher', 'Junior', 'Mid-Level', 'Senior', 'Lead', 'Manager').optional(),
+  experienceLevel: Joi.string().valid(
+    'Mới tốt nghiệp',
+    'Junior (1-3 years)',
+    'Mid-Level (3-5 years)',
+    'Senior (5-7 years)',
+    'Lead (7-10 years)',
+    'Manager (10+ years)'
+  ).optional(),
   employmentType: Joi.string().valid('Full-time', 'Part-time', 'Contract', 'Internship', 'Freelance').optional(),
   location: Joi.string().optional(),
   salaryRange: Joi.object({
@@ -43,7 +58,14 @@ export const updateJDValidation = Joi.object({
 // Validation cho danh sách JD
 export const getJDListValidation = Joi.object({
   keyword: Joi.string().min(1).max(100).optional(),
-  experienceLevel: Joi.string().valid('Fresher', 'Junior', 'Mid-Level', 'Senior', 'Lead', 'Manager').optional(),
+  experienceLevel: Joi.string().valid(
+    'Mới tốt nghiệp',
+    'Junior (1-3 years)',
+    'Mid-Level (3-5 years)',
+    'Senior (5-7 years)',
+    'Lead (7-10 years)',
+    'Manager (10+ years)'
+  ).optional(),
   employmentType: Joi.string().valid('Full-time', 'Part-time', 'Contract', 'Internship', 'Freelance').optional(),
   isActive: Joi.boolean().optional(),
   categoryId: Joi.string().uuid().optional(),
