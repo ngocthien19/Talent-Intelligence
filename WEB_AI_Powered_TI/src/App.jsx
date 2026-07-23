@@ -17,6 +17,8 @@ import MockInterview from '~/pages/candidate/MockInterview'
 
 import HRLayout from '~/layouts/hr/HRLayout'
 import Dashboard from '~/pages/hr/Dashboard'
+import Candidates from '~/pages/hr/Candidates'
+
 
 import Login from '~/pages/auth/Login'
 import Register from '~/pages/auth/Register'
@@ -77,6 +79,8 @@ function App() {
         <Route path="/hr" element={<HRLayout />}>
           <Route index element={<Dashboard />} />
           <Route path="dashboard" element={<Dashboard />} />
+          <Route path="candidates" element={<Candidates />} />
+
 
         </Route>
       </Routes>
