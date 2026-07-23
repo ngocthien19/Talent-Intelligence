@@ -6,7 +6,7 @@ const dashboardService = {
 
     const dateCondition = dashboardModel.buildDateCondition(period, startDate, endDate)
 
-    // Lấy tất cả thông tin song song, bắt lỗi cho từng promise
+    // Lấy tất cả thông tin song song
     const [
       totalCandidates,
       candidatesByStatus,
@@ -28,10 +28,13 @@ const dashboardService = {
     // Đảm bảo topSkills luôn là array
     const topSkills = Array.isArray(topSkillsResult) ? topSkillsResult : []
 
-    // Format lại dữ liệu trạng thái
+    // ============================================
+    // QUAN TRỌNG: Fix statusCounts - Không gán vào pending
+    // ============================================
     const statusCounts = {
       pending: 0,
-      reviewing: 0,
+      analyzing: 0,
+      analyzed: 0,
       shortlisted: 0,
       interviewed: 0,
       offered: 0,
@@ -42,20 +45,28 @@ const dashboardService = {
     if (Array.isArray(candidatesByStatus)) {
       candidatesByStatus.forEach(item => {
         const status = item.status?.toLowerCase() || 'pending'
-        if (Object.keys(statusCounts).includes(status)) {
+        // Nếu status có trong danh sách thì cộng vào, không thì bỏ qua (không gán vào pending)
+        if (statusCounts.hasOwnProperty(status)) {
           statusCounts[status] = parseInt(item.count) || 0
         } else {
-          statusCounts.pending += parseInt(item.count) || 0
+          // Log để debug nếu có status lạ
+          console.warn(`Unknown status: ${status}`)
         }
       })
     }
+
+    // Tính toán summary từ statusCounts
+    const totalAnalyzed = (statusCounts.analyzed || 0) +
+                          (statusCounts.shortlisted || 0) +
+                          (statusCounts.interviewed || 0) +
+                          (statusCounts.offered || 0)
 
     return {
       period,
       summary: {
         total: totalCandidates || 0,
         new: newCandidates || 0,
-        analyzed: (statusCounts.shortlisted || 0) + (statusCounts.interviewed || 0) + (statusCounts.offered || 0),
+        analyzed: totalAnalyzed,
         shortlisted: statusCounts.shortlisted || 0,
         hired: statusCounts.hired || 0,
         rejected: statusCounts.rejected || 0

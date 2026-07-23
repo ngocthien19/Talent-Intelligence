@@ -6,6 +6,8 @@ import validate from '~/middlewares/validate.middleware'
 import {
   getCandidatesValidation,
   updateStatusValidation,
+  updateStatusBulkValidation,
+  deleteBulkValidation,
   idValidation
 } from '~/validations/hr/candidate/candidate-management.validation'
 
@@ -28,7 +30,7 @@ router.get(
   candidateManagementController.getCandidateDetail
 )
 
-// Cập nhật trạng thái
+// Cập nhật trạng thái (single)
 router.put(
   '/candidates/:id/status',
   validate(idValidation, 'params'),
@@ -36,11 +38,25 @@ router.put(
   candidateManagementController.updateStatus
 )
 
-// Xóa ứng viên
+// Cập nhật trạng thái (bulk)
+router.put(
+  '/candidates/status/bulk',
+  validate(updateStatusBulkValidation, 'body'),
+  candidateManagementController.updateStatusBulk
+)
+
+// Xóa ứng viên (single)
 router.delete(
   '/candidates/:id',
   validate(idValidation, 'params'),
   candidateManagementController.deleteCandidate
+)
+
+// Xóa bulk
+router.delete(
+  '/candidates/bulk',
+  validate(deleteBulkValidation, 'body'),
+  candidateManagementController.deleteBulk
 )
 
 // Widgets

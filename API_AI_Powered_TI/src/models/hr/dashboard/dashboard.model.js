@@ -1,4 +1,4 @@
-import pool from '~/config/db.js'
+import pool from '~/config/db'
 
 const dashboardModel = {
   buildDateCondition: (period, startDate, endDate) => {
@@ -101,21 +101,17 @@ const dashboardModel = {
   getTopSkills: async (companyId, dateCondition, limit = 10) => {
     const result = await pool.query(
       `SELECT 
-      skill,
-      COUNT(*) as count
-     FROM (
-       SELECT jsonb_array_elements_text(cp.skills) as skill
-       FROM applications a
-       JOIN candidate_profiles cp ON a.candidate_profile_id = cp.id
+        skill,
+        COUNT(*) as count
+       FROM applications a,
+       LATERAL jsonb_array_elements_text(
+         COALESCE(a.required_skills, '[]'::jsonb)
+       ) AS skill
        WHERE a.company_id = $1
-       AND cp.skills IS NOT NULL
-       AND jsonb_typeof(cp.skills) = 'array'
-       AND jsonb_array_length(cp.skills) > 0
        ${dateCondition}
-     ) s
-     GROUP BY skill
-     ORDER BY count DESC
-     LIMIT $2`,
+       GROUP BY skill
+       ORDER BY count DESC
+       LIMIT $2`,
       [companyId, limit]
     )
     return result.rows || []
