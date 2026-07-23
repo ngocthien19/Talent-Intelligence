@@ -1,3 +1,4 @@
+// src/components/hr/jobs/JobTable.jsx
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FaSpinner, FaTrash, FaCheck, FaPause, FaTimes } from 'react-icons/fa'
@@ -18,10 +19,7 @@ const JobTable = ({
   onActivateBulk,
   onDeactivateBulk,
   onPageChange,
-  onSortChange,
   onEdit,
-  currentSortBy,
-  currentSortOrder,
   isLoading
 }) => {
   const { t } = useLanguage()
@@ -34,16 +32,27 @@ const JobTable = ({
     onConfirm: () => {}
   })
   const [isProcessing, setIsProcessing] = useState(false)
-  const [isBulkActionOpen, setIsBulkActionOpen] = useState(false)
 
   const allSelected = jobs.length > 0 && jobs.every(j => selectedIds.includes(j.id))
   const selectedCount = selectedIds.length
 
   // Mở modal xác nhận xóa 1 công việc
-  const openDeleteConfirm = (id, title) => {
+  const openDeleteConfirm = (id, jobTitle) => {
+    const displayTitle = jobTitle || 'công việc'
+    const messageTemplate = t('hr.job.deleteMessage') || 'Bạn có chắc chắn muốn xóa công việc "{title}"? Hành động này không thể hoàn tác.'
+
+    // Tách message thành các phần để highlight
+    const parts = messageTemplate.split(/\{title\}/)
+
     setConfirmModalConfig({
       title: t('hr.job.deleteTitle') || 'Xóa công việc',
-      message: t('hr.job.deleteMessage') || `Bạn có chắc chắn muốn xóa công việc "${title}"? Hành động này không thể hoàn tác.`,
+      message: (
+        <>
+          {parts[0]}
+          <span className="font-bold text-brand-primary">"{displayTitle}"</span>
+          {parts[1] || ''}
+        </>
+      ),
       type: 'danger',
       confirmText: t('hr.job.delete') || 'Xóa',
       onConfirm: () => handleConfirmDelete(id)
@@ -60,9 +69,20 @@ const JobTable = ({
 
   // Mở modal xác nhận xóa hàng loạt
   const openDeleteBulkConfirm = () => {
+    const messageTemplate = t('hr.job.deleteBulkMessage') || 'Bạn có chắc chắn muốn xóa {count} công việc đã chọn? Hành động này không thể hoàn tác.'
+
+    // Tách message thành các phần để highlight
+    const parts = messageTemplate.split(/\{count\}/)
+
     setConfirmModalConfig({
       title: t('hr.job.deleteBulkTitle') || 'Xóa hàng loạt công việc',
-      message: t('hr.job.deleteBulkMessage') || `Bạn có chắc chắn muốn xóa ${selectedCount} công việc đã chọn? Hành động này không thể hoàn tác.`,
+      message: (
+        <>
+          {parts[0]}
+          <span className="font-bold text-red-600">{selectedCount}</span>
+          {parts[1] || ''}
+        </>
+      ),
       type: 'danger',
       confirmText: t('hr.job.delete') || 'Xóa',
       onConfirm: handleConfirmDeleteBulk
@@ -75,14 +95,24 @@ const JobTable = ({
     await onDeleteBulk(selectedIds)
     setIsProcessing(false)
     setIsConfirmModalOpen(false)
-    setIsBulkActionOpen(false)
   }
 
   // Mở modal xác nhận kích hoạt hàng loạt
   const openActivateBulkConfirm = () => {
+    const messageTemplate = t('hr.job.activateBulkMessage') || 'Bạn có chắc chắn muốn kích hoạt {count} công việc đã chọn?'
+
+    // Tách message thành các phần để highlight
+    const parts = messageTemplate.split(/\{count\}/)
+
     setConfirmModalConfig({
       title: t('hr.job.activateBulkTitle') || 'Kích hoạt hàng loạt công việc',
-      message: t('hr.job.activateBulkMessage') || `Bạn có chắc chắn muốn kích hoạt ${selectedCount} công việc đã chọn?`,
+      message: (
+        <>
+          {parts[0]}
+          <span className="font-bold text-emerald-600">{selectedCount}</span>
+          {parts[1] || ''}
+        </>
+      ),
       type: 'info',
       confirmText: t('hr.job.activate') || 'Kích hoạt',
       onConfirm: handleConfirmActivateBulk
@@ -95,14 +125,24 @@ const JobTable = ({
     await onActivateBulk(selectedIds)
     setIsProcessing(false)
     setIsConfirmModalOpen(false)
-    setIsBulkActionOpen(false)
   }
 
   // Mở modal xác nhận tạm dừng hàng loạt
   const openDeactivateBulkConfirm = () => {
+    const messageTemplate = t('hr.job.deactivateBulkMessage') || 'Bạn có chắc chắn muốn tạm dừng {count} công việc đã chọn?'
+
+    // Tách message thành các phần để highlight
+    const parts = messageTemplate.split(/\{count\}/)
+
     setConfirmModalConfig({
       title: t('hr.job.deactivateBulkTitle') || 'Tạm dừng hàng loạt công việc',
-      message: t('hr.job.deactivateBulkMessage') || `Bạn có chắc chắn muốn tạm dừng ${selectedCount} công việc đã chọn?`,
+      message: (
+        <>
+          {parts[0]}
+          <span className="font-bold text-yellow-600">{selectedCount}</span>
+          {parts[1] || ''}
+        </>
+      ),
       type: 'warning',
       confirmText: t('hr.job.deactivate') || 'Tạm dừng',
       onConfirm: handleConfirmDeactivateBulk
@@ -115,26 +155,11 @@ const JobTable = ({
     await onDeactivateBulk(selectedIds)
     setIsProcessing(false)
     setIsConfirmModalOpen(false)
-    setIsBulkActionOpen(false)
   }
 
   // Xóa chọn
   const handleClearSelection = () => {
     onSelectAll(false)
-  }
-
-  // Handle sort
-  const handleSort = (field) => {
-    if (currentSortBy === field) {
-      onSortChange(field, currentSortOrder === 'DESC' ? 'ASC' : 'DESC')
-    } else {
-      onSortChange(field, 'DESC')
-    }
-  }
-
-  const getSortIcon = (field) => {
-    if (currentSortBy !== field) return null
-    return currentSortOrder === 'DESC' ? '↓' : '↑'
   }
 
   return (
@@ -217,14 +242,8 @@ const JobTable = ({
                     className="w-4 h-4 rounded border-brand-light/50 dark:border-gray-700 text-brand-primary focus:ring-brand-primary/50 transition-all cursor-pointer"
                   />
                 </th>
-                <th
-                  className="px-3 py-3 text-left text-xs font-semibold text-brand-text/60 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:text-brand-secondary dark:hover:text-white transition-colors select-none"
-                  onClick={() => handleSort('title')}
-                >
-                  <div className="flex items-center gap-1">
-                    {t('hr.job.title') || 'Tiêu đề'}
-                    <span className="text-[10px] text-brand-primary/60">{getSortIcon('title')}</span>
-                  </div>
+                <th className="px-3 py-3 text-left text-xs font-semibold text-brand-text/60 dark:text-gray-400 uppercase tracking-wider">
+                  {t('hr.job.title') || 'Tiêu đề'}
                 </th>
                 <th className="px-3 py-3 text-left text-xs font-semibold text-brand-text/60 dark:text-gray-400 uppercase tracking-wider">
                   {t('hr.job.experienceLevel') || 'Cấp bậc'}
@@ -238,14 +257,8 @@ const JobTable = ({
                 <th className="px-3 py-3 text-left text-xs font-semibold text-brand-text/60 dark:text-gray-400 uppercase tracking-wider">
                   {t('hr.job.status') || 'Trạng thái'}
                 </th>
-                <th
-                  className="px-3 py-3 text-left text-xs font-semibold text-brand-text/60 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:text-brand-secondary dark:hover:text-white transition-colors select-none"
-                  onClick={() => handleSort('created_at')}
-                >
-                  <div className="flex items-center gap-1">
-                    {t('hr.job.createdAt') || 'Ngày tạo'}
-                    <span className="text-[10px] text-brand-primary/60">{getSortIcon('created_at')}</span>
-                  </div>
+                <th className="px-3 py-3 text-left text-xs font-semibold text-brand-text/60 dark:text-gray-400 uppercase tracking-wider">
+                  {t('hr.job.createdAt') || 'Ngày tạo'}
                 </th>
                 <th className="px-3 py-3 text-right text-xs font-semibold text-brand-text/60 dark:text-gray-400 uppercase tracking-wider">
                   {t('hr.job.actions') || 'Thao tác'}

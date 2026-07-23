@@ -20,6 +20,7 @@ import Dashboard from '~/pages/hr/dashboard/Dashboard'
 import Candidates from '~/pages/hr/candidates/Candidates'
 import CandidateDetail from '~/pages/hr/candidates/CandidateDetail'
 import HRJobs from '~/pages/hr/jobs/HRJobs'
+import JobDetail from '~/pages/hr/jobs/JobDetail'
 
 
 import Login from '~/pages/auth/Login'
@@ -84,7 +85,7 @@ function App() {
           <Route path="candidates" element={<Candidates />} />
           <Route path="candidates/:id" element={<CandidateDetail />} />
           <Route path="jobs" element={<HRJobs />} />
-
+          <Route path="jobs/:id" element={<JobDetail />} />
 
         </Route>
       </Routes>

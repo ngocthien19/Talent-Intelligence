@@ -501,6 +501,7 @@
       }
     },
     "job": {
+      "viewDetail": "Xem chi tiết",
       "add": "Thêm việc làm",
       "edit": "Chỉnh sửa",
       "delete": "Xóa",
@@ -577,7 +578,20 @@
         "skillsRequired": "Vui lòng thêm ít nhất 1 kỹ năng bắt buộc",
         "salaryMinMax": "Mức lương tối thiểu không được lớn hơn tối đa",
         "salaryPositive": "Mức lương phải là số dương"
-      }
+      },
+      "backToList": "Quay lại danh sách",
+      "totalApplications": "Tổng ứng viên",
+      "pending": "Chờ xử lý",
+      "shortlisted": "Đã lọc",
+      "interviewed": "Đã phỏng vấn",
+      "hired": "Đã nhận",
+      "rejected": "Từ chối",
+      "skills": "Kỹ năng",
+      "candidates": "Ứng viên ứng tuyển",
+      "noCandidates": "Chưa có ứng viên nào ứng tuyển",
+      "viewAllCandidates": "Xem tất cả ứng viên",
+      "quickActions": "Hành động nhanh",
+      "viewCandidates": "Xem ứng viên"
     }
   }
 }

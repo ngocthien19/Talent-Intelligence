@@ -494,6 +494,7 @@
       }
     },
     "job": {
+      "viewDetail": "詳細を見る",
       "add": "求人を追加",
       "edit": "編集",
       "delete": "削除",
@@ -570,7 +571,20 @@
         "skillsRequired": "必須スキルを1つ以上追加してください",
         "salaryMinMax": "最低給与は最高給与より大きくできません",
         "salaryPositive": "給与は正の数である必要があります"
-      }
+      },
+      "backToList": "一覧に戻る",
+      "totalApplications": "総応募数",
+      "pending": "保留中",
+      "shortlisted": "選考通過",
+      "interviewed": "面接済み",
+      "hired": "採用",
+      "rejected": "不合格",
+      "skills": "スキル",
+      "candidates": "応募者",
+      "noCandidates": "応募者はまだいません",
+      "viewAllCandidates": "すべての応募者を見る",
+      "quickActions": "クイックアクション",
+      "viewCandidates": "応募者を見る"
     }
   }
 }

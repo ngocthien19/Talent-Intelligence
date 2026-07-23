@@ -501,6 +501,7 @@
       }
     },
     "job": {
+      "viewDetail": "View Details",
       "add": "Add Job",
       "edit": "Edit",
       "delete": "Delete",
@@ -577,7 +578,20 @@
         "skillsRequired": "Please add at least 1 required skill",
         "salaryMinMax": "Minimum salary cannot be greater than maximum",
         "salaryPositive": "Salary must be a positive number"
-      }
+      },
+      "backToList": "Back to list",
+      "totalApplications": "Total Applications",
+      "pending": "Pending",
+      "shortlisted": "Shortlisted",
+      "interviewed": "Interviewed",
+      "hired": "Hired",
+      "rejected": "Rejected",
+      "skills": "Skills",
+      "candidates": "Candidates",
+      "noCandidates": "No candidates yet",
+      "viewAllCandidates": "View all candidates",
+      "quickActions": "Quick Actions",
+      "viewCandidates": "View Candidates"
     }
   }
 }
