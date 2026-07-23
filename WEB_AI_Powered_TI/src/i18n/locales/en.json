@@ -130,7 +130,9 @@
     "partTime": "Part-time",
     "contract": "Contract",
     "internship": "Internship",
-    "freelance": "Freelance"
+    "freelance": "Freelance",
+    "allLocations": "All locations",
+    "selectLocation": "Select location..."
   },
   "salary": {
     "all": "All salary ranges",
@@ -141,6 +143,19 @@
     "20to30M": "20 - 30 million",
     "30to50M": "30 - 50 million",
     "above50M": "Above 50 million"
+  },
+  "location": {
+    "hanoi": "Hanoi",
+    "hoChiMinh": "Ho Chi Minh City",
+    "daNang": "Da Nang",
+    "haiphong": "Haiphong",
+    "cantho": "Can Tho",
+    "nhatrang": "Nha Trang",
+    "hue": "Hue",
+    "vungtau": "Vung Tau",
+    "dalat": "Da Lat",
+    "bienhoa": "Bien Hoa",
+    "binhduong": "Binh Duong"
   },
   "applications": {
     "title": "My Applications",
@@ -501,6 +516,7 @@
       }
     },
     "job": {
+      "noResults": "No jobs found",
       "viewDetail": "View Details",
       "add": "Add Job",
       "edit": "Edit",

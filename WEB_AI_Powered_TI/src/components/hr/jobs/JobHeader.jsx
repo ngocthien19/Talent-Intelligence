@@ -41,9 +41,19 @@ const JobHeader = ({
           {t('hr.jobs') || 'Quản lý việc làm'}
         </h1>
         <p className="text-sm text-brand-text/60 dark:text-gray-400">
-          {totalCount > 0
-            ? `${t('hr.job.showing') || 'Hiển thị'} ${totalCount} ${t('hr.job.jobs') || 'công việc'}`
-            : t('hr.job.noJobs') || 'Chưa có công việc nào'}
+          {totalCount === 0 ? (
+            <span className="text-red-500 font-medium">
+              {t('hr.job.noResults') || 'Không tìm thấy công việc nào'}
+            </span>
+          ) : (
+            <>
+              <span>{t('hr.job.showing') || 'Hiển thị'}</span>{' '}
+              <span className="font-bold text-brand-primary text-base">
+                {totalCount}
+              </span>{' '}
+              <span>{t('hr.job.jobs') || 'công việc'}</span>
+            </>
+          )}
         </p>
       </div>
 

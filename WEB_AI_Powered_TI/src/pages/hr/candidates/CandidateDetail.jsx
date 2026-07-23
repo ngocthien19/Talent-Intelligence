@@ -112,10 +112,10 @@ const CandidateDetail = () => {
       <motion.button
         variants={itemVariants}
         onClick={handleBack}
-        className="inline-flex items-center gap-2 text-sm text-brand-text/60 dark:text-gray-400 hover:text-brand-primary dark:hover:text-brand-light transition-colors duration-200 cursor-pointer"
+        className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-brand-primary border border-brand-primary rounded-lg hover:bg-brand-primary hover:!text-white dark:border-brand-primary dark:text-brand-light dark:hover:bg-brand-primary dark:hover:text-white transition-all duration-200 cursor-pointer hover:scale-[1.02] active:scale-95"
       >
         <FaArrowLeft size={14} />
-        {t('hr.candidate.detail.backToList')}
+        {t('hr.job.backToList') || 'Quay lại danh sách'}
       </motion.button>
 
       {/* Header */}

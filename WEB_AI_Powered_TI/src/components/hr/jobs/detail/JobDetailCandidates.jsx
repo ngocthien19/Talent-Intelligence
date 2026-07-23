@@ -30,12 +30,6 @@ const JobDetailCandidates = ({ candidates, jobId }) => {
             <FaUsers size={18} className="text-brand-primary" />
             {t('hr.job.candidates') || 'Ứng viên ứng tuyển'}
           </h2>
-          <Link
-            to={`/hr/candidates${jobId ? `?jobId=${jobId}` : ''}`}
-            className="text-sm text-brand-primary hover:underline transition-all duration-200 cursor-pointer"
-          >
-            {t('hr.job.viewAll') || 'Xem tất cả'}
-          </Link>
         </div>
         <div className="text-center py-8 text-brand-text/60 dark:text-gray-400">
           <p className="text-sm">{t('hr.job.noCandidates') || 'Chưa có ứng viên nào ứng tuyển'}</p>
@@ -54,12 +48,6 @@ const JobDetailCandidates = ({ candidates, jobId }) => {
           <FaUsers size={18} className="text-brand-primary" />
           {t('hr.job.candidates') || 'Ứng viên ứng tuyển'}
         </h2>
-        <Link
-          to={`/hr/candidates${jobId ? `?jobId=${jobId}` : ''}`}
-          className="text-sm text-brand-primary hover:underline transition-all duration-200 cursor-pointer"
-        >
-          {t('hr.job.viewAll') || 'Xem tất cả'}
-        </Link>
       </div>
 
       <div className="space-y-3">
@@ -68,7 +56,21 @@ const JobDetailCandidates = ({ candidates, jobId }) => {
             key={candidate.id || index}
             className="flex items-center gap-3 p-3 rounded-lg hover:bg-brand-light/20 dark:hover:bg-gray-700/30 transition-all duration-200 cursor-pointer"
           >
-            <div className="w-10 h-10 rounded-full bg-gradient-brand flex items-center justify-center text-white font-semibold text-sm flex-shrink-0">
+            {/* Avatar */}
+            {candidate.avatar ? (
+              <img
+                src={candidate.avatar.secure_url}
+                alt={candidate.name || 'Avatar'}
+                className="w-10 h-10 rounded-full object-cover border-2 border-brand-light/30 dark:border-gray-700 flex-shrink-0"
+                onError={(e) => {
+                  e.target.style.display = 'none'
+                  const parent = e.target.parentElement
+                  const fallback = parent?.querySelector('.fallback-avatar')
+                  if (fallback) fallback.classList.remove('hidden')
+                }}
+              />
+            ) : null}
+            <div className={`w-10 h-10 rounded-full bg-gradient-brand flex items-center justify-center text-white font-semibold text-sm flex-shrink-0 fallback-avatar ${candidate.avatar ? 'hidden' : ''}`}>
               {candidate.name?.charAt(0)?.toUpperCase() || 'U'}
             </div>
             <div className="flex-1 min-w-0">
