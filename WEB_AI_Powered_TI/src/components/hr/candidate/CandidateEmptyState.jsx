@@ -1,7 +1,6 @@
 import { motion } from 'framer-motion'
-import { FaUsers, FaSearch, FaPlus } from 'react-icons/fa'
+import { FaUsers, FaSearch } from 'react-icons/fa'
 import { useLanguage } from '~/hooks/useLanguage'
-import { Link } from 'react-router-dom'
 
 const CandidateEmptyState = ({ onReset, keyword }) => {
   const { t } = useLanguage()
@@ -35,23 +34,14 @@ const CandidateEmptyState = ({ onReset, keyword }) => {
         }
       </p>
 
-      <div className="flex flex-wrap items-center justify-center gap-3 mt-6">
-        {keyword && (
-          <button
-            onClick={onReset}
-            className="px-4 py-2 text-sm font-medium border border-brand-light/50 dark:border-gray-700 rounded-lg hover:bg-brand-light/30 dark:hover:bg-gray-700/50 transition-all duration-200 cursor-pointer"
-          >
-            {t('hr.candidate.clearFilters') || 'Xóa bộ lọc'}
-          </button>
-        )}
-        <Link
-          to="/hr/candidates/new"
-          className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-brand-primary text-white rounded-lg hover:bg-brand-primary/80 transition-all duration-200 cursor-pointer hover:scale-[1.02] active:scale-95"
+      {keyword && (
+        <button
+          onClick={onReset}
+          className="mt-6 px-4 py-2 text-sm font-medium border border-brand-light/50 dark:border-gray-700 rounded-lg hover:bg-brand-light/30 dark:hover:bg-gray-700/50 transition-all duration-200 cursor-pointer"
         >
-          <FaPlus size={14} />
-          {t('hr.candidate.add') || 'Thêm ứng viên'}
-        </Link>
-      </div>
+          {t('hr.candidate.clearFilters') || 'Xóa bộ lọc'}
+        </button>
+      )}
     </motion.div>
   )
 }

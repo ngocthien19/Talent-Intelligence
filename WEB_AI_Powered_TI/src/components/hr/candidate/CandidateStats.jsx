@@ -1,4 +1,3 @@
-import { motion } from 'framer-motion'
 import {
   FaUsers,
   FaClock,
@@ -28,16 +27,29 @@ const colorMap = {
   red: 'text-red-500 bg-red-50 dark:bg-red-950/20'
 }
 
-const statVariants = {
-  hidden: { opacity: 0, scale: 0.95 },
-  visible: {
-    opacity: 1,
-    scale: 1,
-    transition: {
-      duration: 0.3,
-      ease: [0.25, 0.46, 0.45, 0.94]
-    }
+const getTitleKey = (id) => {
+  const titleMap = {
+    'total': 'hr.totalCandidates',
+    'pending': 'hr.candidate.pending',
+    'analyzed': 'hr.candidate.analyzed',
+    'shortlisted': 'hr.candidate.shortlisted',
+    'hired': 'hr.candidate.hired',
+    'rejected': 'hr.candidate.rejected'
   }
+  return titleMap[id] || 'hr.totalCandidates'
+}
+
+// Map label key sang ngôn ngữ
+const getLabelKey = (label) => {
+  const labelMap = {
+    'tuần này': 'hr.thisWeek',
+    'cần xem xét': 'hr.needReview',
+    'đã phân tích': 'hr.analyzed',
+    'shortlist': 'hr.shortlisted',
+    'tỷ lệ trúng tuyển': 'hr.hireRate',
+    'tỷ lệ từ chối': 'hr.rejectRate'
+  }
+  return labelMap[label] || label
 }
 
 const CandidateStats = ({ widgets }) => {
@@ -57,29 +69,27 @@ const CandidateStats = ({ widgets }) => {
   }
 
   return (
-    <motion.div
-      variants={{
-        visible: {
-          transition: {
-            staggerChildren: 0.05
-          }
-        }
-      }}
-      initial="hidden"
-      animate="visible"
-      className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4"
-    >
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4">
       {widgets.map((widget, index) => {
         const Icon = iconMap[widget.icon] || FaUsers
         const colorClass = colorMap[widget.color] || 'text-gray-500 bg-gray-50 dark:bg-gray-800'
 
+        // Lấy title từ ngôn ngữ
+        const titleKey = getTitleKey(widget.id)
+        const title = t(titleKey) || widget.title
+
+        // Lấy label từ ngôn ngữ
+        let label = widget.change?.label || ''
+        if (label) {
+          const labelKey = getLabelKey(label)
+          const translatedLabel = t(labelKey)
+          label = translatedLabel !== labelKey ? translatedLabel : label
+        }
+
         return (
-          <motion.div
+          <div
             key={widget.id || index}
-            variants={statVariants}
-            whileHover={{ scale: 1.02, y: -2 }}
-            transition={{ duration: 0.2 }}
-            className="bg-white dark:bg-gray-800 rounded-xl shadow-custom p-4 border border-brand-light/30 dark:border-gray-700/50 hover:shadow-glow transition-all duration-300 cursor-pointer"
+            className="bg-white dark:bg-gray-800 rounded-xl shadow-custom p-4 border border-brand-light/30 dark:border-gray-700/50 hover:shadow-glow hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300 cursor-pointer"
           >
             <div className="flex items-center justify-between">
               <div className={`p-2 rounded-xl ${colorClass}`}>
@@ -95,17 +105,17 @@ const CandidateStats = ({ widgets }) => {
               {formatCompactNumber(widget.value)}
             </h3>
             <p className="text-xs text-brand-text/60 dark:text-gray-400 truncate">
-              {widget.title}
+              {title}
             </p>
             {widget.change && widget.change.label && (
               <p className="text-[10px] text-brand-text/40 dark:text-gray-500 mt-0.5">
-                {widget.change.label}
+                {label}
               </p>
             )}
-          </motion.div>
+          </div>
         )
       })}
-    </motion.div>
+    </div>
   )
 }
 

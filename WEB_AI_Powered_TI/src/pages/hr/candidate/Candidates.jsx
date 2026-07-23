@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FaSpinner } from 'react-icons/fa'
@@ -24,21 +24,24 @@ const containerVariants = {
   }
 }
 
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.4,
-      ease: [0.25, 0.46, 0.45, 0.94]
-    }
-  }
+const DEFAULT_FILTERS = {
+  status: '',
+  keyword: '',
+  minScore: '',
+  maxScore: '',
+  startDate: '',
+  endDate: '',
+  sortBy: 'created_at',
+  sortOrder: 'DESC',
+  page: 1,
+  limit: 20
 }
 
 const Candidates = () => {
   const { t } = useLanguage()
   const [searchParams, setSearchParams] = useSearchParams()
+
+  const skipAutoFetch = useRef(false)
 
   // State
   const [isLoading, setIsLoading] = useState(true)
@@ -53,9 +56,7 @@ const Candidates = () => {
   })
   const [error, setError] = useState(null)
   const [selectedIds, setSelectedIds] = useState([])
-  const [isFilterOpen, setIsFilterOpen] = useState(false)
 
-  // Filter state
   const [filters, setFilters] = useState({
     status: searchParams.get('status') || '',
     keyword: searchParams.get('keyword') || '',
@@ -81,25 +82,23 @@ const Candidates = () => {
     }
   }, [])
 
-  // Fetch candidates
-  const fetchCandidates = useCallback(async () => {
+  const fetchCandidatesWithParams = useCallback(async (customFilters) => {
     setIsTableLoading(true)
     setError(null)
     try {
       const params = {
-        status: filters.status || undefined,
-        keyword: filters.keyword || undefined,
-        minScore: filters.minScore ? parseFloat(filters.minScore) : undefined,
-        maxScore: filters.maxScore ? parseFloat(filters.maxScore) : undefined,
-        startDate: filters.startDate || undefined,
-        endDate: filters.endDate || undefined,
-        sortBy: filters.sortBy || 'created_at',
-        sortOrder: filters.sortOrder || 'DESC',
-        limit: filters.limit || 20,
-        page: filters.page || 1
+        status: customFilters.status || undefined,
+        keyword: customFilters.keyword || undefined,
+        minScore: customFilters.minScore ? parseFloat(customFilters.minScore) : undefined,
+        maxScore: customFilters.maxScore ? parseFloat(customFilters.maxScore) : undefined,
+        startDate: customFilters.startDate || undefined,
+        endDate: customFilters.endDate || undefined,
+        sortBy: customFilters.sortBy || 'created_at',
+        sortOrder: customFilters.sortOrder || 'DESC',
+        limit: customFilters.limit || 20,
+        page: customFilters.page || 1
       }
 
-      // Clean undefined params
       Object.keys(params).forEach(key =>
         params[key] === undefined && delete params[key]
       )
@@ -124,26 +123,34 @@ const Candidates = () => {
     } finally {
       setIsTableLoading(false)
     }
-  }, [filters])
+  }, [])
+
+  const fetchCandidates = useCallback(() => {
+    return fetchCandidatesWithParams(filters)
+  }, [filters, fetchCandidatesWithParams])
 
   // Fetch all data
   const fetchAll = useCallback(async () => {
     setIsLoading(true)
-    await Promise.all([fetchWidgets(), fetchCandidates()])
+    await Promise.all([fetchWidgets(), fetchCandidatesWithParams(filters)])
     setIsLoading(false)
-  }, [fetchWidgets, fetchCandidates])
+  }, [fetchWidgets, fetchCandidatesWithParams])
 
   // Initial load
   useEffect(() => {
     fetchAll()
   }, [])
 
-  // Fetch when filters change (debounced)
   useEffect(() => {
+    if (skipAutoFetch.current) {
+      skipAutoFetch.current = false
+      return
+    }
     const timer = setTimeout(() => {
       fetchCandidates()
     }, 300)
     return () => clearTimeout(timer)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters.keyword, filters.page, filters.limit, filters.sortBy, filters.sortOrder])
 
   // Update URL params
@@ -160,7 +167,7 @@ const Candidates = () => {
     setSearchParams(params, { replace: true })
   }, [filters, setSearchParams])
 
-  // Handlers
+  // Handlers cho các field "live" (keyword, page, sortBy, sortOrder)
   const handleFilterChange = (key, value) => {
     if (key === 'page') {
       setFilters(prev => ({ ...prev, page: value }))
@@ -169,25 +176,23 @@ const Candidates = () => {
     setFilters(prev => ({ ...prev, [key]: value, page: 1 }))
   }
 
-  const handleApplyFilters = () => {
-    fetchCandidates()
-    setIsFilterOpen(false)
+  const handleApplyFilters = (draftValues) => {
+    const newFilters = { ...filters, ...draftValues, page: 1 }
+    setFilters(newFilters)
+    fetchCandidatesWithParams(newFilters)
   }
 
   const handleResetFilters = () => {
-    setFilters({
-      status: '',
-      keyword: '',
-      minScore: '',
-      maxScore: '',
-      startDate: '',
-      endDate: '',
-      sortBy: 'created_at',
-      sortOrder: 'DESC',
-      page: 1,
-      limit: 20
-    })
-    setIsFilterOpen(false)
+    skipAutoFetch.current = true
+    setFilters(DEFAULT_FILTERS)
+    fetchCandidatesWithParams(DEFAULT_FILTERS)
+  }
+
+  const handleSearch = (keyword) => {
+    const newFilters = { ...filters, keyword, page: 1 }
+    skipAutoFetch.current = true
+    setFilters(newFilters)
+    fetchCandidatesWithParams(newFilters)
   }
 
   const handleSelectAll = (checked) => {
@@ -222,12 +227,26 @@ const Candidates = () => {
   }
 
   const handleDelete = async (id) => {
-    if (!confirm('Bạn có chắc chắn muốn xóa ứng viên này?')) return
-
     try {
       const response = await candidateApi.deleteCandidate(id)
       if (response.success) {
         toast.success('Xóa ứng viên thành công')
+        fetchCandidates()
+        fetchWidgets()
+      } else {
+        toast.error(response.message || 'Xóa thất bại')
+      }
+    } catch (err) {
+      toast.error('Xóa thất bại')
+    }
+  }
+
+  const handleDeleteBulk = async (ids) => {
+    try {
+      const response = await candidateApi.deleteBulk(ids)
+      if (response.success) {
+        toast.success(response.message || 'Xóa ứng viên thành công')
+        setSelectedIds([])
         fetchCandidates()
         fetchWidgets()
       } else {
@@ -256,26 +275,18 @@ const Candidates = () => {
       variants={containerVariants}
       className="space-y-6"
     >
-      {/* Header */}
+      {/* Header - chỉ có title + search (Enter mới tìm) */}
       <CandidateHeader
         filters={filters}
-        onFilterChange={handleFilterChange}
-        onApplyFilters={handleApplyFilters}
-        onResetFilters={handleResetFilters}
-        isFilterOpen={isFilterOpen}
-        setIsFilterOpen={setIsFilterOpen}
-        selectedCount={selectedIds.length}
+        onSearch={handleSearch}
         totalCount={pagination.total}
-        onRefresh={fetchAll}
-        isRefreshing={isLoading}
       />
 
       {/* Stats */}
       <CandidateStats widgets={widgets} />
 
-      {/* Filters */}
+      {/* Filters - hiển thị luôn */}
       <CandidateFilters
-        isOpen={isFilterOpen}
         filters={filters}
         onFilterChange={handleFilterChange}
         onApply={handleApplyFilters}
@@ -301,6 +312,7 @@ const Candidates = () => {
                 onSelectOne={handleSelectOne}
                 onStatusUpdate={handleStatusUpdate}
                 onDelete={handleDelete}
+                onDeleteBulk={handleDeleteBulk}
                 onPageChange={(page) => handleFilterChange('page', page)}
                 onSortChange={(sortBy, sortOrder) => {
                   setFilters(prev => ({ ...prev, sortBy, sortOrder }))

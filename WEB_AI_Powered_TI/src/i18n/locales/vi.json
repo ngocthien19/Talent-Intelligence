@@ -168,7 +168,8 @@
     "retry": "Thử lại",
     "noData": "Không có dữ liệu",
     "noDataDesc": "Chưa có dữ liệu để hiển thị",
-    "error": "Có lỗi xảy ra"
+    "error": "Có lỗi xảy ra",
+    "refresh": "Làm mới"
   },
    "profile": {
     "title": "Hồ sơ của tôi",
@@ -325,6 +326,11 @@
     "welcomeMessage": "Chào bạn! Tôi là trợ lý phỏng vấn AI.\n\nTôi sẽ giúp bạn luyện tập phỏng vấn như một buổi phỏng vấn thực tế. Bạn có thể:\n\n- Trò chuyện tự nhiên: Trả lời các câu hỏi của tôi như trong phỏng vấn thật\n- Hỏi đáp: Hỏi tôi bất kỳ câu hỏi nào về phỏng vấn\n- Nhận phản hồi: Tôi sẽ đánh giá và góp ý cho câu trả lời của bạn\n\nHãy bắt đầu bằng cách giới thiệu về bản thân bạn nhé!"
   },
   "hr": {
+    "thisWeek": "tuần này",
+    "needReview": "cần xem xét",
+    "shortlisted": "shortlist",
+    "hireRate": "tỷ lệ trúng tuyển",
+    "rejectRate": "tỷ lệ từ chối",
     "dashboard": "Dashboard",
     "dashboardDesc": "Tổng quan tình hình tuyển dụng của công ty bạn",
     "candidates": "Ứng viên",
@@ -431,7 +437,19 @@
       "selected": "Đã chọn",
       "all": "Tất cả",
       "emptyDesc": "Bắt đầu tuyển dụng bằng cách thêm ứng viên mới hoặc đợi ứng viên ứng tuyển",
-      "noCandidatesFoundWith": "Không tìm thấy ứng viên nào với từ khóa"
+      "noCandidatesFoundWith": "Không tìm thấy ứng viên nào với từ khóa",
+      "noResults": "Không tìm thấy ứng viên nào",
+      "withKeyword": "với từ khóa",
+      "withStatus": "trạng thái",
+      "withScore": "điểm",
+      "withDate": "ngày",
+      "showingAll": "Hiển thị tất cả {total} ứng viên",
+      "showingFiltered": "Tìm thấy {total} ứng viên {filters}",
+      "bulkActions": "Thao tác hàng loạt:",
+      "deleteBulkTitle": "Xóa hàng loạt ứng viên",
+      "deleteBulkMessage": "Bạn có chắc chắn muốn xóa {count} ứng viên đã chọn? Hành động này không thể hoàn tác.",
+      "deleteTitle": "Xóa ứng viên",
+      "deleteMessage": "Bạn có chắc chắn muốn xóa ứng viên \"{name}\"? Hành động này không thể hoàn tác."
     }
   }
 }

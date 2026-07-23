@@ -168,7 +168,8 @@
     "retry": "再試行",
     "noData": "データなし",
     "noDataDesc": "表示するデータがありません",
-    "error": "エラーが発生しました" 
+    "error": "エラーが発生しました",
+    "refresh": "更新"
   },
   "profile": {
     "title": "プロフィール",
@@ -318,6 +319,11 @@
     "welcomeMessage": "こんにちは！私はAI面接アシスタントです。\n\n実際の面接のように面接練習をお手伝いします。以下のことができます：\n\n- 自然な会話：実際の面接のように私の質問に答える\n- Q&A：面接に関する質問は何でも聞いてください\n- フィードバック：回答を評価し、改善点をフィードバックします\n\nまずは自己紹介から始めましょう！"
   },
   "hr": {
+    "thisWeek": "今週",
+    "needReview": "要確認",
+    "shortlisted": "選考通過",
+    "hireRate": "採用率",
+    "rejectRate": "不合格率",
     "dashboard": "ダッシュボード",
     "dashboardDesc": "会社の採用状況の概要",
     "candidates": "候補者",
@@ -424,7 +430,19 @@
       "selected": "選択済み",
       "all": "すべて",
       "emptyDesc": "新しい候補者を追加するか、候補者の応募を待って採用を開始してください",
-      "noCandidatesFoundWith": "キーワードに該当する候補者は見つかりません"
+      "noCandidatesFoundWith": "キーワードに該当する候補者は見つかりません",
+      "noResults": "候補者が見つかりません",
+      "withKeyword": "キーワード",
+      "withStatus": "ステータス",
+      "withScore": "スコア",
+      "withDate": "日付",
+      "showingAll": "全{tota}件の候補者を表示",
+      "showingFiltered": "{total}件の候補者を見つけました {filters}",
+      "bulkActions": "一括操作:",
+      "deleteBulkTitle": "複数候補者を削除",
+      "deleteBulkMessage": "選択した{count}件の候補者を削除してもよろしいですか？この操作は元に戻せません。",
+      "deleteTitle": "候補者を削除",
+      "deleteMessage": "候補者「{name}」を削除してもよろしいですか？この操作は元に戻せません。"
     }
   }
 }

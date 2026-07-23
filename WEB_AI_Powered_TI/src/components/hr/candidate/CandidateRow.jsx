@@ -4,8 +4,15 @@ import { Link } from 'react-router-dom'
 import {
   FaEye,
   FaTrash,
-  FaChevronDown
+  FaChevronDown,
+  FaStar
 } from 'react-icons/fa'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger
+} from '~/components/ui/tooltip'
 import { useLanguage } from '~/hooks/useLanguage'
 import CandidateStatusBadge from './CandidateStatusBadge'
 import { getDaysAgo, formatCompactNumber } from '~/utils/format'
@@ -38,14 +45,6 @@ const CandidateRow = ({
 }) => {
   const { t } = useLanguage()
   const [isStatusOpen, setIsStatusOpen] = useState(false)
-  const [isDeleting, setIsDeleting] = useState(false)
-
-  const handleDelete = async () => {
-    if (!confirm(t('hr.candidate.deleteConfirm') || 'Bạn có chắc chắn muốn xóa ứng viên này?')) return
-    setIsDeleting(true)
-    await onDelete(candidate.id)
-    setIsDeleting(false)
-  }
 
   return (
     <motion.tr
@@ -99,16 +98,15 @@ const CandidateRow = ({
             </span>
             <div className="flex gap-0.5">
               {[...Array(5)].map((_, i) => (
-                <span
+                <FaStar
                   key={i}
-                  className={`text-[9px] transition-colors duration-200 ${
+                  size={10}
+                  className={`transition-colors duration-200 ${
                     i < Math.round(candidate.overall_score / 20)
-                      ? 'text-yellow-400'
+                      ? 'text-yellow-400 fill-yellow-400'
                       : 'text-gray-300 dark:text-gray-600'
                   }`}
-                >
-                  ★
-                </span>
+                />
               ))}
             </div>
           </div>
@@ -170,25 +168,39 @@ const CandidateRow = ({
       </td>
       <td className="px-3 py-3 text-right">
         <div className="flex items-center justify-end gap-1">
-          <Link
-            to={`/hr/candidates/${candidate.id}`}
-            className="p-2 rounded-lg text-brand-text/40 dark:text-gray-500 hover:text-brand-primary hover:bg-brand-primary/10 transition-all duration-200 cursor-pointer hover:scale-110"
-            title={t('hr.candidate.viewDetail') || 'Xem chi tiết'}
-          >
-            <FaEye size={14} />
-          </Link>
-          <button
-            onClick={handleDelete}
-            disabled={isDeleting}
-            className="p-2 rounded-lg text-brand-text/40 dark:text-gray-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-all duration-200 cursor-pointer disabled:opacity-50 hover:scale-110"
-            title={t('hr.candidate.delete') || 'Xóa'}
-          >
-            {isDeleting ? (
-              <div className="w-3.5 h-3.5 border-2 border-red-500 border-t-transparent rounded-full animate-spin" />
-            ) : (
-              <FaTrash size={14} />
-            )}
-          </button>
+          {/* View Detail - Tooltip */}
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link
+                  to={`/hr/candidates/${candidate.id}`}
+                  className="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-brand-primary text-brand-primary hover:bg-brand-primary hover:!text-white dark:border-brand-primary dark:text-brand-light dark:hover:bg-brand-primary dark:hover:text-white transition-all duration-200 cursor-pointer hover:scale-110 active:scale-95"
+                >
+                  <FaEye size={15} />
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent side="top">
+                <p>{t('hr.candidate.viewDetail') || 'Xem chi tiết'}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+
+          {/* Delete - Tooltip */}
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={() => onDelete(candidate.id)}
+                  className="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-red-500 text-red-500 hover:bg-red-500 hover:text-white dark:border-red-400 dark:text-red-400 dark:hover:bg-red-500 dark:hover:text-white transition-all duration-200 cursor-pointer hover:scale-110 active:scale-95"
+                >
+                  <FaTrash size={15} />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="top">
+                <p>{t('hr.candidate.delete') || 'Xóa'}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
       </td>
     </motion.tr>
