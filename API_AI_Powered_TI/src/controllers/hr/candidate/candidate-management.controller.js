@@ -80,7 +80,7 @@ const candidateManagementController = {
     }
   },
 
-  // Cập nhật trạng thái
+  // Cập nhật trạng thái (single)
   updateStatus: async (req, res) => {
     try {
       const { id } = req.params
@@ -108,7 +108,49 @@ const candidateManagementController = {
     }
   },
 
-  // Xóa ứng viên
+  // Cập nhật trạng thái bulk
+  updateStatusBulk: async (req, res) => {
+    try {
+      const { ids, status } = req.body
+      const companyId = req.user?.companyId
+
+      if (!companyId) {
+        return res.status(400).json({
+          success: false,
+          message: 'Không tìm thấy company ID'
+        })
+      }
+
+      if (!ids || !Array.isArray(ids) || ids.length === 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'Vui lòng cung cấp danh sách ID ứng viên'
+        })
+      }
+
+      if (!status) {
+        return res.status(400).json({
+          success: false,
+          message: 'Vui lòng cung cấp trạng thái'
+        })
+      }
+
+      const result = await candidateManagementService.updateCandidateStatusBulk(ids, status, companyId)
+
+      return res.status(200).json({
+        success: true,
+        message: `Cập nhật trạng thái thành công cho ${result.updatedCount} ứng viên`,
+        data: result
+      })
+    } catch (error) {
+      return res.status(400).json({
+        success: false,
+        message: error.message
+      })
+    }
+  },
+
+  // Xóa ứng viên (single)
   deleteCandidate: async (req, res) => {
     try {
       const { id } = req.params
@@ -130,6 +172,41 @@ const candidateManagementController = {
       })
     } catch (error) {
       return res.status(404).json({
+        success: false,
+        message: error.message
+      })
+    }
+  },
+
+  // Xóa bulk
+  deleteBulk: async (req, res) => {
+    try {
+      const { ids } = req.body
+      const companyId = req.user?.companyId
+
+      if (!companyId) {
+        return res.status(400).json({
+          success: false,
+          message: 'Không tìm thấy company ID'
+        })
+      }
+
+      if (!ids || !Array.isArray(ids) || ids.length === 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'Vui lòng cung cấp danh sách ID ứng viên'
+        })
+      }
+
+      const result = await candidateManagementService.deleteBulk(ids, companyId)
+
+      return res.status(200).json({
+        success: true,
+        message: `Xóa thành công ${result.deletedCount} ứng viên`,
+        data: result
+      })
+    } catch (error) {
+      return res.status(400).json({
         success: false,
         message: error.message
       })

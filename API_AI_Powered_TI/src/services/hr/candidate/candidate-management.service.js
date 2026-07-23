@@ -1,7 +1,8 @@
 import candidateManagementModel from '~/models/hr/candidate/candidate-management.model'
+import { CANDIDATE_STATUS } from '~/utils/constants'
 
 const candidateManagementService = {
-  // Lấy danh sách ứng viên
+
   getCandidates: async (companyId, filters) => {
     return await candidateManagementModel.getCandidates({
       companyId,
@@ -9,7 +10,6 @@ const candidateManagementService = {
     })
   },
 
-  // Lấy chi tiết ứng viên
   getCandidateDetail: async (candidateId, companyId) => {
     const candidate = await candidateManagementModel.getCandidateDetail(candidateId, companyId)
     if (!candidate) {
@@ -18,12 +18,12 @@ const candidateManagementService = {
     return candidate
   },
 
-  // Cập nhật trạng thái
   updateCandidateStatus: async (candidateId, status) => {
-    const validStatus = ['pending', 'analyzing', 'analyzed', 'shortlisted', 'interviewed', 'offered', 'hired', 'rejected']
-    if (!validStatus.includes(status)) {
+    // Validate status
+    if (!CANDIDATE_STATUS.includes(status)) {
       throw new Error('Trạng thái không hợp lệ')
     }
+
     const result = await candidateManagementModel.updateCandidateStatus(candidateId, status)
     if (!result) {
       throw new Error('Không tìm thấy ứng viên')
@@ -31,7 +31,31 @@ const candidateManagementService = {
     return result
   },
 
-  // Xóa ứng viên
+  updateCandidateStatusBulk: async (ids, status, companyId) => {
+    // Validate status
+    if (!CANDIDATE_STATUS.includes(status)) {
+      throw new Error('Trạng thái không hợp lệ')
+    }
+
+    // Kiểm tra tất cả ID có thuộc company không
+    const existingIds = await candidateManagementModel.getExistingIds(ids, companyId)
+    if (existingIds.length === 0) {
+      throw new Error('Không tìm thấy ứng viên nào')
+    }
+
+    const notFound = ids.filter(id => !existingIds.includes(id))
+    if (notFound.length > 0) {
+      throw new Error(`Không tìm thấy ứng viên với ID: ${notFound.join(', ')}`)
+    }
+
+    // Cập nhật status
+    const result = await candidateManagementModel.updateStatusBulk(ids, status)
+    return {
+      updatedCount: result.length,
+      updatedIds: result.map(r => r.id)
+    }
+  },
+
   deleteCandidate: async (candidateId, companyId) => {
     const result = await candidateManagementModel.deleteCandidate(candidateId, companyId)
     if (!result) {
@@ -40,7 +64,26 @@ const candidateManagementService = {
     return result
   },
 
-  // Lấy thống kê nhanh cho widgets
+  deleteBulk: async (ids, companyId) => {
+    // Kiểm tra tất cả ID có thuộc company không
+    const existingIds = await candidateManagementModel.getExistingIds(ids, companyId)
+    if (existingIds.length === 0) {
+      throw new Error('Không tìm thấy ứng viên nào')
+    }
+
+    const notFound = ids.filter(id => !existingIds.includes(id))
+    if (notFound.length > 0) {
+      throw new Error(`Không tìm thấy ứng viên với ID: ${notFound.join(', ')}`)
+    }
+
+    // Xóa
+    const result = await candidateManagementModel.deleteBulk(ids)
+    return {
+      deletedCount: result.length,
+      deletedIds: result.map(r => r.id)
+    }
+  },
+
   getWidgetStats: async (companyId) => {
     const [
       total,

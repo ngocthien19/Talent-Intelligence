@@ -17,6 +17,15 @@ export const updateStatusValidation = Joi.object({
   status: Joi.string().valid('pending', 'analyzing', 'analyzed', 'shortlisted', 'interviewed', 'offered', 'hired', 'rejected').required()
 })
 
+export const updateStatusBulkValidation = Joi.object({
+  ids: Joi.array().items(Joi.string().uuid()).min(1).required(),
+  status: Joi.string().valid('pending', 'analyzing', 'analyzed', 'shortlisted', 'interviewed', 'offered', 'hired', 'rejected').required()
+})
+
+export const deleteBulkValidation = Joi.object({
+  ids: Joi.array().items(Joi.string().uuid()).min(1).required()
+})
+
 export const idValidation = Joi.object({
   id: Joi.string().uuid().required()
 })
@@ -24,5 +33,7 @@ export const idValidation = Joi.object({
 export default {
   getCandidatesValidation,
   updateStatusValidation,
+  updateStatusBulkValidation,
+  deleteBulkValidation,
   idValidation
 }
