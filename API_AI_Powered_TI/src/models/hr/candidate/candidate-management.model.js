@@ -35,10 +35,10 @@ const candidateManagementModel = {
     // Tìm kiếm theo keyword (tên, email, vị trí)
     if (keyword) {
       conditions.push(`(
-        cp.name ILIKE $${paramIndex} OR 
-        cp.email ILIKE $${paramIndex} OR 
-        a.position ILIKE $${paramIndex}
-      )`)
+      cp.name ILIKE $${paramIndex} OR 
+      cp.email ILIKE $${paramIndex} OR 
+      a.position ILIKE $${paramIndex}
+    )`)
       params.push(`%${keyword}%`)
       paramIndex++
     }
@@ -71,11 +71,11 @@ const candidateManagementModel = {
 
     // Đếm tổng số bản ghi
     const countQuery = `
-      SELECT COUNT(*) as total
-      FROM applications a
-      LEFT JOIN candidate_profiles cp ON a.candidate_profile_id = cp.id
-      ${whereClause}
-    `
+    SELECT COUNT(*) as total
+    FROM applications a
+    LEFT JOIN candidate_profiles cp ON a.candidate_profile_id = cp.id
+    ${whereClause}
+  `
     const countResult = await pool.query(countQuery, params)
     const total = parseInt(countResult.rows[0]?.total || 0)
 
@@ -93,37 +93,37 @@ const candidateManagementModel = {
     const limitParam = parseInt(limit)
     const offsetParam = parseInt(offset)
 
-    // Lấy dữ liệu
     const dataQuery = `
-      SELECT 
-        a.id,
-        cp.name,
-        cp.email,
-        cp.phone,
-        cp.address,
-        a.position as position_applied,
-        a.cover_letter_text as cover_letter,
-        a.source,
-        a.overall_score,
-        a.skills_match_score,
-        a.culture_fit_score,
-        a.retention_score,
-        a.status,
-        a.is_notified,
-        a.report_sent_at,
-        a.created_at,
-        a.updated_at,
-        jd.title as job_title,
-        jd.location as job_location,
-        comp.name as company_name
-      FROM applications a
-      LEFT JOIN candidate_profiles cp ON a.candidate_profile_id = cp.id
-      LEFT JOIN job_descriptions jd ON a.job_description_id = jd.id
-      LEFT JOIN companies comp ON a.company_id = comp.id
-      ${whereClause}
-      ORDER BY ${sortField} ${sortOrder}
-      LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
-    `
+    SELECT 
+      a.id,
+      cp.name,
+      cp.email,
+      cp.phone,
+      cp.address,
+      cp.avatar,
+      a.position as position_applied,
+      a.cover_letter_text as cover_letter,
+      a.source,
+      a.overall_score,
+      a.skills_match_score,
+      a.culture_fit_score,
+      a.retention_score,
+      a.status,
+      a.is_notified,
+      a.report_sent_at,
+      a.created_at,
+      a.updated_at,
+      jd.title as job_title,
+      jd.location as job_location,
+      comp.name as company_name
+    FROM applications a
+    LEFT JOIN candidate_profiles cp ON a.candidate_profile_id = cp.id
+    LEFT JOIN job_descriptions jd ON a.job_description_id = jd.id
+    LEFT JOIN companies comp ON a.company_id = comp.id
+    ${whereClause}
+    ORDER BY ${sortField} ${sortOrder}
+    LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
+  `
 
     const dataParams = [...params, limitParam, offsetParam]
     const result = await pool.query(dataQuery, dataParams)
