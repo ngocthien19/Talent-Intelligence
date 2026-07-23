@@ -393,7 +393,8 @@
       "offered": "Đã offer",
       "hired": "Đã nhận",
       "rejected": "Từ chối",
-      "analyzed": "Đã phân tích"
+      "analyzed": "Đã phân tích",
+      "analyzing": "Đang phân tích"
     },
     "last7Days": "7 ngày qua",
     "last30Days": "30 ngày qua",
@@ -449,7 +450,30 @@
       "deleteBulkTitle": "Xóa hàng loạt ứng viên",
       "deleteBulkMessage": "Bạn có chắc chắn muốn xóa {count} ứng viên đã chọn? Hành động này không thể hoàn tác.",
       "deleteTitle": "Xóa ứng viên",
-      "deleteMessage": "Bạn có chắc chắn muốn xóa ứng viên \"{name}\"? Hành động này không thể hoàn tác."
+      "deleteMessage": "Bạn có chắc chắn muốn xóa ứng viên \"{name}\"? Hành động này không thể hoàn tác.",
+      "detail": {
+        "email": "Email",
+        "phone": "Số điện thoại",
+        "address": "Địa chỉ",
+        "personalInfo": "Thông tin cá nhân",
+        "jobInfo": "Thông tin công việc",
+        "company": "Công ty",
+        "location": "Địa điểm",
+        "salary": "Mức lương",
+        "experience": "Kinh nghiệm",
+        "jobDesc": "Mô tả công việc",
+        "skills": "Kỹ năng",
+        "requiredSkills": "Kỹ năng bắt buộc",
+        "niceToHaveSkills": "Kỹ năng thêm",
+        "timeline": "Trạng thái ứng tuyển",
+        "currentStatus": "Trạng thái hiện tại",
+        "current": "Hiện tại",
+        "appliedOn": "Ngày ứng tuyển",
+        "coverLetter": "Thư giới thiệu",
+        "backToList": "Quay lại danh sách",
+        "notFound": "Không tìm thấy ứng viên",
+        "applied": "Ứng tuyển"
+      }
     }
   }
 }
