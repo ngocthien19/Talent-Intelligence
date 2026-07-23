@@ -60,10 +60,10 @@ export const EXPERIENCE_LEVELS = [
   { value: '', labelKey: 'job.allExperience' },
   { value: 'Mới tốt nghiệp', labelKey: 'job.fresher' },
   { value: 'Junior (1-3 years)', labelKey: 'job.junior' },
-  { value: 'Mid-level (3-5 years)mid', labelKey: 'job.midLevel' },
+  { value: 'Mid-Level (3-5 years)', labelKey: 'job.midLevel' },
   { value: 'Senior (5-7 years)', labelKey: 'job.senior' },
   { value: 'Lead (7-10 years)', labelKey: 'job.lead' },
-  { value: 'Manager (10+ years)manager', labelKey: 'job.manager' }
+  { value: 'Manager (10+ years)', labelKey: 'job.manager' }
 ]
 
 export const getExperienceLabel = (value, t) => {
