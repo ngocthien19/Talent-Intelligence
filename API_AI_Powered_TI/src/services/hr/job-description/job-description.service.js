@@ -127,28 +127,53 @@ async function sendToMatchedCandidates(job, data, companyName) {
     return
   }
 
-  // Tối ưu: Chuẩn hóa skills (lowercase)
   const normalizedRequiredSkills = requiredSkills.map(s => s.toLowerCase().trim())
 
-  // Query không phân biệt hoa thường
+  // Lấy tất cả candidate profiles có skills
   const query = `
-    SELECT DISTINCT c.id as candidate_id, u.id as user_id, u.email, u.fullname, c.parsed_data
-    FROM users u
-    JOIN candidates c ON u.id = c.user_id
-    CROSS JOIN jsonb_array_elements_text(c.parsed_data->'skills') AS skill
+    SELECT 
+      a.id as application_id,
+      cp.user_id,
+      u.id as user_id,
+      u.email, 
+      u.fullname, 
+      cp.parsed_data,
+      cp.skills
+    FROM applications a
+    JOIN candidate_profiles cp ON a.candidate_profile_id = cp.id
+    JOIN users u ON cp.user_id = u.id
     WHERE u.role_id = (SELECT id FROM roles WHERE name = 'candidate')
     AND u.is_active = true
-    AND c.parsed_data IS NOT NULL
-    AND c.parsed_data->'skills' IS NOT NULL
-    AND LOWER(skill) = ANY($1)
+    AND cp.skills IS NOT NULL
+    GROUP BY a.id, cp.user_id, u.id, u.email, u.fullname, cp.parsed_data, cp.skills
     ORDER BY u.id
   `
 
-  const candidates = await pool.query(query, [normalizedRequiredSkills])
+  const candidates = await pool.query(query)
 
+  // Lọc và xử lý trong JavaScript
   for (const candidate of candidates.rows) {
-    const candidateSkills = candidate.parsed_data?.skills || []
+    // Xử lý skills - cả object và array
+    let candidateSkills = []
+
+    if (Array.isArray(candidate.skills)) {
+      candidateSkills = candidate.skills
+    } else if (typeof candidate.skills === 'object' && candidate.skills !== null) {
+      // Nếu là object, lấy values
+      candidateSkills = Object.values(candidate.skills)
+    }
+
+    // Chuẩn hóa và kiểm tra có skill phù hợp không
     const normalizedCandidateSkills = candidateSkills.map(s => s.toLowerCase().trim())
+
+    // Kiểm tra có ít nhất 1 skill trùng khớp
+    const hasMatchingSkill = normalizedRequiredSkills.some(skill =>
+      normalizedCandidateSkills.includes(skill)
+    )
+
+    if (!hasMatchingSkill) {
+      continue // Bỏ qua nếu không có skill phù hợp
+    }
 
     const matchedSkills = requiredSkills.filter(skill =>
       normalizedCandidateSkills.includes(skill.toLowerCase().trim())
@@ -158,30 +183,37 @@ async function sendToMatchedCandidates(job, data, companyName) {
     const totalRequired = requiredSkills.length
 
     // Gửi notification real-time
-    await notificationService.sendToCandidate(candidate.candidate_id, {
-      type: 'new_job_opportunity_matched',
-      title: `Việc làm phù hợp với bạn: ${data.title}`,
-      content: `Công ty ${companyName} đang tuyển vị trí "${data.title}". Bạn có ${matchCount}/${totalRequired} kỹ năng phù hợp!`,
-      extraData: {
-        jobId: job.id,
-        jobTitle: data.title,
-        companyName: companyName,
-        location: data.location,
-        employmentType: data.employmentType,
-        experienceLevel: data.experienceLevel,
-        requiredSkills: requiredSkills,
-        matchedSkills: matchedSkills,
-        matchCount: matchCount,
-        totalRequired: totalRequired
-      }
-    })
+    try {
+      await notificationService.sendToCandidate(candidate.application_id, {
+        type: 'new_job_opportunity_matched',
+        title: `Việc làm phù hợp với bạn: ${data.title}`,
+        content: `Công ty ${companyName} đang tuyển vị trí "${data.title}". Bạn có ${matchCount}/${totalRequired} kỹ năng phù hợp!`,
+        extraData: {
+          jobId: job.id,
+          jobTitle: data.title,
+          companyName: companyName,
+          location: data.location,
+          employmentType: data.employmentType,
+          experienceLevel: data.experienceLevel,
+          requiredSkills: requiredSkills,
+          matchedSkills: matchedSkills,
+          matchCount: matchCount,
+          totalRequired: totalRequired
+        }
+      })
+    } catch (error) {
+      // console.error('Failed to send notification:', error)
+    }
 
     // Gửi email
     if (candidate.email) {
-      await sendJobAlertEmail(candidate, job, data, companyName, matchedSkills, matchCount, totalRequired)
+      try {
+        await sendJobAlertEmail(candidate, job, data, companyName, matchedSkills, matchCount, totalRequired)
+      } catch (error) {
+        // console.error('Failed to send email:', error)
+      }
     }
   }
-
 }
 
 // GỬI EMAIL JOB ALERT CHO CANDIDATE

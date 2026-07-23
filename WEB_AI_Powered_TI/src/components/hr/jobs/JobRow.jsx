@@ -1,10 +1,10 @@
 import { motion } from 'framer-motion'
+import { Link } from 'react-router-dom'
 import {
   FaEdit,
   FaTrash,
-  FaBriefcase,
-  FaMapMarkerAlt,
-  FaMoneyBillWave
+  FaEye,
+  FaMapMarkerAlt
 } from 'react-icons/fa'
 import {
   Tooltip,
@@ -14,7 +14,7 @@ import {
 } from '~/components/ui/tooltip'
 import { useLanguage } from '~/hooks/useLanguage'
 import JobStatusBadge from './JobStatusBadge'
-import { formatDate, formatSalary } from '~/utils/format'
+import { formatDate } from '~/utils/format'
 
 const JobRow = ({
   job,
@@ -87,13 +87,30 @@ const JobRow = ({
       </td>
       <td className="px-3 py-3 text-right">
         <div className="flex items-center justify-end gap-1">
-          {/* Edit - Tooltip */}
+          {/* View Detail - Tooltip */}
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link
+                  to={`/hr/jobs/${job.id}`}
+                  className="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white dark:border-blue-400 dark:text-blue-400 dark:hover:bg-blue-500 dark:hover:text-white transition-all duration-200 cursor-pointer hover:scale-110 active:scale-95"
+                >
+                  <FaEye size={15} />
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent side="top">
+                <p>{t('hr.job.viewDetail') || 'Xem chi tiết'}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+
+          {/* Edit - Tooltip - Màu cam */}
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
                 <button
                   onClick={() => onEdit(job)}
-                  className="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-brand-primary text-brand-primary hover:bg-brand-primary hover:text-white dark:border-brand-primary dark:text-brand-light dark:hover:bg-brand-primary dark:hover:text-white transition-all duration-200 cursor-pointer hover:scale-110 active:scale-95"
+                  className="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white dark:border-orange-400 dark:text-orange-400 dark:hover:bg-orange-500 dark:hover:text-white transition-all duration-200 cursor-pointer hover:scale-110 active:scale-95"
                 >
                   <FaEdit size={15} />
                 </button>

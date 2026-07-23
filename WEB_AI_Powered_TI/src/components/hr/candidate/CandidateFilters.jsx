@@ -51,13 +51,9 @@ const CandidateFilters = ({
 }) => {
   const { t } = useLanguage()
 
-  // draft: giá trị đang được chọn trên UI, CHƯA áp dụng vào việc fetch dữ liệu
   const [draft, setDraft] = useState(() => getDraftFromFilters(filters))
   const [errors, setErrors] = useState({})
 
-  // Khi filters "đã áp dụng" ở component cha đổi (sau khi bấm Áp dụng thành
-  // công, hoặc sau khi Reset), đồng bộ lại draft để UI khớp với trạng thái
-  // thật đang dùng để fetch.
   useEffect(() => {
     setDraft(getDraftFromFilters(filters))
   }, [filters.status, filters.minScore, filters.maxScore, filters.startDate, filters.endDate])
@@ -66,13 +62,11 @@ const CandidateFilters = ({
     setDraft(prev => ({ ...prev, [key]: value }))
   }
 
-  // Validate trên draft (KHÔNG phải trên filters đã áp dụng)
   const validateDraft = () => {
     const newErrors = {}
     const today = new Date()
     today.setHours(23, 59, 59, 999)
 
-    // Validate score range
     if (draft.minScore) {
       const min = parseFloat(draft.minScore)
       if (isNaN(min) || min < 0 || min > 100) {
@@ -95,17 +89,16 @@ const CandidateFilters = ({
       }
     }
 
-    // Validate dates
     if (draft.startDate && draft.endDate) {
       const start = new Date(draft.startDate)
       const end = new Date(draft.endDate)
 
       if (start > end) {
-        newErrors.startDate = 'Ngày bắt đầu phải nhỏ hơn ngày kết thúc'
+        newErrors.startDate = 'Ngày bắt đầu nhỏ hơn kết thúc'
       }
 
       if (end > today) {
-        newErrors.endDate = 'Ngày kết thúc không được vượt quá ngày hiện tại'
+        newErrors.endDate = 'Ngày kết thúc không vượt hiện tại'
       }
     }
 
@@ -113,7 +106,6 @@ const CandidateFilters = ({
     return Object.keys(newErrors).length === 0
   }
 
-  // Validate ngay khi draft đổi để báo lỗi sớm cho người dùng - KHÔNG fetch gì cả
   useEffect(() => {
     validateDraft()
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -127,18 +119,14 @@ const CandidateFilters = ({
 
   const handleReset = () => {
     setErrors({})
-    // Không tự set draft ở đây - component cha sẽ reset `filters`,
-    // và effect phía trên sẽ tự đồng bộ draft theo filters mới.
     onReset()
   }
 
-  // Get status label
   const getStatusLabel = (value) => {
     const option = STATUS_OPTIONS.find(opt => opt.value === value)
     return option ? t(option.labelKey) : t('hr.candidate.all')
   }
 
-  // Get sort label
   const getSortLabel = (value) => {
     const option = SORT_OPTIONS.find(opt => opt.value === value)
     return option ? t(option.labelKey) : t('hr.candidate.date')
@@ -151,40 +139,44 @@ const CandidateFilters = ({
       transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
       className="bg-white dark:bg-gray-800 rounded-xl shadow-custom border border-brand-light/30 dark:border-gray-700/50 overflow-hidden"
     >
-      <div className="p-4 md:p-6">
+      <div className="p-4 md:p-5">
         <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
           <h3 className="text-sm font-semibold text-brand-secondary dark:text-white">
             {t('hr.candidate.filters') || 'Bộ lọc'}
           </h3>
           <button
             onClick={handleReset}
-            className="text-xs text-brand-text/60 dark:text-gray-400 hover:text-brand-primary transition-colors cursor-pointer"
+            className="text-xs font-medium text-brand-text/60 dark:text-gray-400 hover:text-brand-primary transition-colors cursor-pointer"
           >
             {t('hr.candidate.clearFilters') || 'Xóa tất cả'}
           </button>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-          {/* Status - DropdownMenu với width cố định */}
-          <div className="xl:col-span-1">
-            <label className="text-xs font-medium text-brand-text/60 dark:text-gray-400 block mb-1">
+        {/* Tinh chỉnh Grid gap và thêm lg:grid-cols-3 để form đáp ứng mượt hơn */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 md:gap-5">
+
+          {/* Status */}
+          <div className="flex flex-col min-w-0 xl:col-span-1">
+            <label className="text-xs font-medium text-brand-text/60 dark:text-gray-400 block mb-1.5">
               {t('hr.candidate.status') || 'Trạng thái'}
             </label>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="w-[180px] flex items-center justify-between px-3 py-2 text-sm border border-brand-light/50 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-brand-secondary dark:text-white hover:bg-brand-light/30 dark:hover:bg-gray-700/50 transition-all duration-200 cursor-pointer">
-                  <span className="truncate">{getStatusLabel(draft.status)}</span>
+                {/* Đổi w-[180px] thành w-full, thêm h-[42px] và shadow-sm */}
+                <button className="w-full h-[42px] flex items-center justify-between px-3.5 py-2 text-sm border border-brand-light/50 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-brand-secondary dark:text-white hover:bg-brand-light/30 dark:hover:bg-gray-700/50 transition-all duration-200 cursor-pointer shadow-sm">
+                  <span className="truncate flex-1 text-left">{getStatusLabel(draft.status)}</span>
                   <FaChevronDown size={12} className="text-brand-text/40 dark:text-gray-500 flex-shrink-0 ml-2" />
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-48 p-1 bg-white dark:bg-gray-900 border border-brand-light/50 dark:border-gray-700 rounded-xl shadow-xl">
+              {/* Thêm w-[var(--radix-dropdown-menu-trigger-width)] để độ rộng dropdown bằng với nút input */}
+              <DropdownMenuContent align="start" className="w-[var(--radix-dropdown-menu-trigger-width)] min-w-[200px] p-1 bg-white dark:bg-gray-900 border border-brand-light/50 dark:border-gray-700 rounded-xl shadow-xl z-50">
                 {STATUS_OPTIONS.map((opt) => (
                   <DropdownMenuItem
                     key={opt.value}
                     onClick={() => handleDraftChange('status', opt.value)}
-                    className={`cursor-pointer px-3 py-2 rounded-lg transition-all duration-200 ${
+                    className={`cursor-pointer px-3 py-2.5 rounded-lg transition-all duration-200 text-sm ${
                       draft.status === opt.value
-                        ? 'bg-brand-primary/10 text-brand-primary dark:bg-brand-primary/20'
+                        ? 'bg-brand-primary/10 text-brand-primary dark:bg-brand-primary/20 font-medium'
                         : 'text-brand-text dark:text-gray-300 hover:bg-brand-light/30 dark:hover:bg-gray-700/50'
                     }`}
                   >
@@ -196,10 +188,11 @@ const CandidateFilters = ({
           </div>
 
           {/* Min Score */}
-          <div>
-            <label className="text-xs font-medium text-brand-text/60 dark:text-gray-400 block mb-1">
+          <div className="flex flex-col min-w-0">
+            <label className="text-xs font-medium text-brand-text/60 dark:text-gray-400 block mb-1.5">
               {t('hr.candidate.minScore') || 'Điểm từ'}
             </label>
+            {/* Thêm h-[42px] và shadow-sm */}
             <input
               type="number"
               min="0"
@@ -207,18 +200,18 @@ const CandidateFilters = ({
               value={draft.minScore || ''}
               onChange={(e) => handleDraftChange('minScore', e.target.value)}
               placeholder="0"
-              className={`w-full px-3 py-2 text-sm border rounded-lg bg-white dark:bg-gray-900 text-brand-secondary dark:text-white placeholder:text-brand-text/40 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-primary/50 transition-all duration-200 ${
+              className={`w-full h-[42px] px-3.5 py-2 text-sm border rounded-lg bg-white dark:bg-gray-900 text-brand-secondary dark:text-white placeholder:text-brand-text/40 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-primary/50 transition-all duration-200 shadow-sm ${
                 errors.minScore ? 'border-red-500 focus:ring-red-500' : 'border-brand-light/50 dark:border-gray-700'
               }`}
             />
             {errors.minScore && (
-              <p className="text-xs text-red-500 mt-1">{errors.minScore}</p>
+              <p className="text-[11px] text-red-500 mt-1 leading-tight">{errors.minScore}</p>
             )}
           </div>
 
           {/* Max Score */}
-          <div>
-            <label className="text-xs font-medium text-brand-text/60 dark:text-gray-400 block mb-1">
+          <div className="flex flex-col min-w-0">
+            <label className="text-xs font-medium text-brand-text/60 dark:text-gray-400 block mb-1.5">
               {t('hr.candidate.maxScore') || 'Điểm đến'}
             </label>
             <input
@@ -228,72 +221,73 @@ const CandidateFilters = ({
               value={draft.maxScore || ''}
               onChange={(e) => handleDraftChange('maxScore', e.target.value)}
               placeholder="100"
-              className={`w-full px-3 py-2 text-sm border rounded-lg bg-white dark:bg-gray-900 text-brand-secondary dark:text-white placeholder:text-brand-text/40 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-primary/50 transition-all duration-200 ${
+              className={`w-full h-[42px] px-3.5 py-2 text-sm border rounded-lg bg-white dark:bg-gray-900 text-brand-secondary dark:text-white placeholder:text-brand-text/40 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-primary/50 transition-all duration-200 shadow-sm ${
                 errors.maxScore ? 'border-red-500 focus:ring-red-500' : 'border-brand-light/50 dark:border-gray-700'
               }`}
             />
             {errors.maxScore && (
-              <p className="text-xs text-red-500 mt-1">{errors.maxScore}</p>
+              <p className="text-[11px] text-red-500 mt-1 leading-tight">{errors.maxScore}</p>
             )}
           </div>
 
           {/* Start Date */}
-          <div>
-            <label className="text-xs font-medium text-brand-text/60 dark:text-gray-400 block mb-1">
+          <div className="flex flex-col min-w-0">
+            <label className="text-xs font-medium text-brand-text/60 dark:text-gray-400 block mb-1.5">
               {t('hr.fromDate') || 'Từ ngày'}
             </label>
             <input
               type="date"
               value={draft.startDate || ''}
               onChange={(e) => handleDraftChange('startDate', e.target.value)}
-              className={`w-full px-3 py-2 text-sm border rounded-lg bg-white dark:bg-gray-900 text-brand-secondary dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-primary/50 transition-all duration-200 ${
+              className={`w-full h-[42px] px-3.5 py-2 text-sm border rounded-lg bg-white dark:bg-gray-900 text-brand-secondary dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-primary/50 transition-all duration-200 shadow-sm ${
                 errors.startDate ? 'border-red-500 focus:ring-red-500' : 'border-brand-light/50 dark:border-gray-700'
               }`}
             />
             {errors.startDate && (
-              <p className="text-xs text-red-500 mt-1">{errors.startDate}</p>
+              <p className="text-[11px] text-red-500 mt-1 leading-tight">{errors.startDate}</p>
             )}
           </div>
 
           {/* End Date */}
-          <div>
-            <label className="text-xs font-medium text-brand-text/60 dark:text-gray-400 block mb-1">
+          <div className="flex flex-col min-w-0">
+            <label className="text-xs font-medium text-brand-text/60 dark:text-gray-400 block mb-1.5">
               {t('hr.toDate') || 'Đến ngày'}
             </label>
             <input
               type="date"
               value={draft.endDate || ''}
               onChange={(e) => handleDraftChange('endDate', e.target.value)}
-              className={`w-full px-3 py-2 text-sm border rounded-lg bg-white dark:bg-gray-900 text-brand-secondary dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-primary/50 transition-all duration-200 ${
+              className={`w-full h-[42px] px-3.5 py-2 text-sm border rounded-lg bg-white dark:bg-gray-900 text-brand-secondary dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-primary/50 transition-all duration-200 shadow-sm ${
                 errors.endDate ? 'border-red-500 focus:ring-red-500' : 'border-brand-light/50 dark:border-gray-700'
               }`}
             />
             {errors.endDate && (
-              <p className="text-xs text-red-500 mt-1">{errors.endDate}</p>
+              <p className="text-[11px] text-red-500 mt-1 leading-tight">{errors.endDate}</p>
             )}
           </div>
 
-          {/* Sort By - vẫn "live", không nằm trong draft/apply */}
-          <div>
-            <label className="text-xs font-medium text-brand-text/60 dark:text-gray-400 block mb-1">
+          {/* Sort By */}
+          <div className="flex flex-col min-w-0 xl:col-span-1">
+            <label className="text-xs font-medium text-brand-text/60 dark:text-gray-400 block mb-1.5">
               {t('hr.candidate.sortBy') || 'Sắp xếp theo'}
             </label>
-            <div className="flex items-center gap-2">
+            <div className="flex items-start gap-2">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="w-[150px] flex-1 flex items-center justify-between px-3 py-2 text-sm border border-brand-light/50 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-brand-secondary dark:text-white hover:bg-brand-light/30 dark:hover:bg-gray-700/50 transition-all duration-200 cursor-pointer">
-                    <span className="truncate">{getSortLabel(filters.sortBy)}</span>
+                  {/* Bỏ w-[150px], dùng flex-1 để lấp đầy khoảng trống, chiều cao h-[42px] */}
+                  <button className="flex-1 h-[42px] min-w-0 flex items-center justify-between px-3.5 py-2 text-sm border border-brand-light/50 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-brand-secondary dark:text-white hover:bg-brand-light/30 dark:hover:bg-gray-700/50 transition-all duration-200 cursor-pointer shadow-sm">
+                    <span className="truncate text-left flex-1">{getSortLabel(filters.sortBy)}</span>
                     <FaChevronDown size={12} className="text-brand-text/40 dark:text-gray-500 flex-shrink-0 ml-2" />
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="w-48 p-1 bg-white dark:bg-gray-900 border border-brand-light/50 dark:border-gray-700 rounded-xl shadow-xl">
+                <DropdownMenuContent align="end" className="w-[var(--radix-dropdown-menu-trigger-width)] min-w-[180px] p-1 bg-white dark:bg-gray-900 border border-brand-light/50 dark:border-gray-700 rounded-xl shadow-xl z-50">
                   {SORT_OPTIONS.map((opt) => (
                     <DropdownMenuItem
                       key={opt.value}
                       onClick={() => onFilterChange('sortBy', opt.value)}
-                      className={`cursor-pointer px-3 py-2 rounded-lg transition-all duration-200 ${
+                      className={`cursor-pointer px-3 py-2.5 rounded-lg transition-all duration-200 text-sm ${
                         filters.sortBy === opt.value
-                          ? 'bg-brand-primary/10 text-brand-primary dark:bg-brand-primary/20'
+                          ? 'bg-brand-primary/10 text-brand-primary dark:bg-brand-primary/20 font-medium'
                           : 'text-brand-text dark:text-gray-300 hover:bg-brand-light/30 dark:hover:bg-gray-700/50'
                       }`}
                     >
@@ -303,13 +297,13 @@ const CandidateFilters = ({
                 </DropdownMenuContent>
               </DropdownMenu>
 
-              {/* Sort Order button với Tooltip */}
+              {/* Nút Đảo chiều: Đổi thành h-[42px] w-[42px] để vuông vức và bằng chiều cao ô input */}
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <button
                       onClick={() => onFilterChange('sortOrder', filters.sortOrder === 'DESC' ? 'ASC' : 'DESC')}
-                      className="w-10 h-10 flex items-center justify-center border border-brand-light/50 dark:border-gray-700 rounded-lg hover:bg-brand-light/30 dark:hover:bg-gray-700/50 transition-all duration-200 cursor-pointer"
+                      className="w-[42px] h-[42px] flex-shrink-0 flex items-center justify-center border border-brand-light/50 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 hover:bg-brand-light/30 dark:hover:bg-gray-700/50 transition-all duration-200 cursor-pointer shadow-sm"
                     >
                       {filters.sortOrder === 'DESC' ? (
                         <FaArrowDown size={14} className="text-brand-text dark:text-gray-300" />
@@ -319,7 +313,7 @@ const CandidateFilters = ({
                     </button>
                   </TooltipTrigger>
                   <TooltipContent side="top">
-                    <p>{filters.sortOrder === 'DESC' ? 'Giảm dần' : 'Tăng dần'}</p>
+                    <p className="text-xs">{filters.sortOrder === 'DESC' ? 'Giảm dần' : 'Tăng dần'}</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -327,17 +321,17 @@ const CandidateFilters = ({
           </div>
         </div>
 
-        {/* Actions */}
-        <div className="flex items-center justify-end gap-3 mt-4 pt-4 border-t border-brand-light/50 dark:border-gray-700">
+        {/* Actions - Chỉnh padding/margin và style button */}
+        <div className="flex items-center justify-end gap-3 mt-6 pt-5 border-t border-brand-light/50 dark:border-gray-700">
           <button
             onClick={handleReset}
-            className="px-4 py-2 text-sm font-medium text-brand-text/60 dark:text-gray-400 hover:text-brand-secondary dark:hover:text-white transition-colors cursor-pointer"
+            className="px-5 py-2 text-sm font-medium text-brand-text/60 dark:text-gray-400 hover:text-brand-secondary dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors cursor-pointer"
           >
             {t('common.reset') || 'Đặt lại'}
           </button>
           <button
             onClick={handleApply}
-            className="px-4 py-2 text-sm font-medium bg-brand-primary text-white rounded-lg hover:bg-brand-primary/80 transition-all duration-200 cursor-pointer hover:scale-[1.02] active:scale-95"
+            className="px-6 py-2 text-sm font-medium bg-brand-primary text-white rounded-lg hover:bg-brand-primary/90 shadow-sm transition-all duration-200 cursor-pointer hover:-translate-y-0.5 active:translate-y-0"
           >
             {t('common.apply') || 'Áp dụng'}
           </button>

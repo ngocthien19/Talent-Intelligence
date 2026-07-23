@@ -197,7 +197,8 @@ const HRJobs = () => {
 
   const handleSelectAll = (checked) => {
     if (checked) {
-      setSelectedIds(jobs.map(j => j.id))
+      const currentJobIds = jobs.map(j => j.id).filter(id => id)
+      setSelectedIds(currentJobIds)
     } else {
       setSelectedIds([])
     }
