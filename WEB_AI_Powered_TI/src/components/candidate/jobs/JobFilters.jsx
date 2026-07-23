@@ -27,7 +27,8 @@ import {
   EMPLOYMENT_TYPES,
   SALARY_RANGES,
   getExperienceLabel,
-  getEmploymentTypeLabel
+  getEmploymentLabel,
+  getSalaryLabel
 } from '~/utils/constant'
 
 const JobFilters = ({ filters, onFilterChange, onClearFilters, onClearFilter }) => {
@@ -48,10 +49,29 @@ const JobFilters = ({ filters, onFilterChange, onClearFilters, onClearFilter }) 
 
   const activeCount = getActiveFilterCount()
 
-  const getSalaryLabel = (value) => {
-    if (!value) return 'Tất cả mức lương'
-    const found = SALARY_RANGES.find(s => s.value === value)
-    return found ? found.label : 'Tất cả mức lương'
+  // Lấy label cho từng filter - SỬ DỤNG HÀM TỪ CONSTANT
+  const getCategoryLabel = (value) => {
+    if (!value) return t('jobs.category') || 'Danh mục'
+    const category = filterOptions.categories?.find(c => c.id === value)
+    return category ? category.name : t('jobs.category') || 'Danh mục'
+  }
+
+  const getLocationLabel = (value) => {
+    if (!value) return t('jobs.location') || 'Địa điểm'
+    const location = LOCATIONS.find(l => l.value === value)
+    return location ? location.label : value
+  }
+
+  const getExperienceLabelText = (value) => {
+    return getExperienceLabel(value, t)
+  }
+
+  const getEmploymentLabelText = (value) => {
+    return getEmploymentLabel(value, t)
+  }
+
+  const getSalaryLabelText = (value) => {
+    return getSalaryLabel(value, t)
   }
 
   return (
@@ -102,31 +122,31 @@ const JobFilters = ({ filters, onFilterChange, onClearFilters, onClearFilter }) 
           >
             {activeFilters.category_id && (
               <Badge
-                label={filterOptions.categories?.find(c => c.id === activeFilters.category_id)?.name || 'Danh mục'}
+                label={getCategoryLabel(activeFilters.category_id)}
                 onRemove={() => onClearFilter('category_id')}
               />
             )}
             {activeFilters.location && (
               <Badge
-                label={activeFilters.location}
+                label={getLocationLabel(activeFilters.location)}
                 onRemove={() => onClearFilter('location')}
               />
             )}
             {activeFilters.experience_level && (
               <Badge
-                label={getExperienceLabel(activeFilters.experience_level)}
+                label={getExperienceLabelText(activeFilters.experience_level)}
                 onRemove={() => onClearFilter('experience_level')}
               />
             )}
             {activeFilters.employment_type && (
               <Badge
-                label={getEmploymentTypeLabel(activeFilters.employment_type)}
+                label={getEmploymentLabelText(activeFilters.employment_type)}
                 onRemove={() => onClearFilter('employment_type')}
               />
             )}
             {activeFilters.salary_range && (
               <Badge
-                label={getSalaryLabel(activeFilters.salary_range)}
+                label={getSalaryLabelText(activeFilters.salary_range)}
                 onRemove={() => onClearFilter('salary_range')}
               />
             )}
@@ -142,9 +162,7 @@ const JobFilters = ({ filters, onFilterChange, onClearFilters, onClearFilter }) 
             <DropdownMenuTrigger className="px-3 py-2 text-sm border border-brand-light dark:border-gray-700 rounded-lg hover:bg-brand-light dark:hover:bg-gray-700 transition-all duration-200 flex items-center gap-2 cursor-pointer">
               <FaTag size={14} className="text-brand-text/60 dark:text-gray-400" />
               <span className="text-brand-text dark:text-gray-300">
-                {activeFilters.category_id
-                  ? filterOptions.categories.find(c => c.id === activeFilters.category_id)?.name
-                  : (t('jobs.category') || 'Danh mục')}
+                {getCategoryLabel(activeFilters.category_id)}
               </span>
               <FaChevronDown size={12} className="text-brand-text/40 dark:text-gray-500" />
             </DropdownMenuTrigger>
@@ -152,8 +170,14 @@ const JobFilters = ({ filters, onFilterChange, onClearFilters, onClearFilter }) 
               <DropdownMenuGroup>
                 <DropdownMenuLabel>{t('jobs.category') || 'Danh mục'}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => onFilterChange('category_id', '')} className="cursor-pointer">
+                <DropdownMenuItem
+                  onClick={() => onFilterChange('category_id', '')}
+                  className={`cursor-pointer transition-all duration-200 ${!activeFilters.category_id ? 'text-brand-primary font-medium' : ''}`}
+                >
                   {t('jobs.all') || 'Tất cả'}
+                  {!activeFilters.category_id && (
+                    <FaCheck className="ml-auto text-brand-primary" size={14} />
+                  )}
                 </DropdownMenuItem>
                 {filterOptions.categories.map((category) => (
                   <DropdownMenuItem
@@ -177,7 +201,7 @@ const JobFilters = ({ filters, onFilterChange, onClearFilters, onClearFilter }) 
           <DropdownMenuTrigger className="px-3 py-2 text-sm border border-brand-light dark:border-gray-700 rounded-lg hover:bg-brand-light dark:hover:bg-gray-700 transition-all duration-200 flex items-center gap-2 cursor-pointer">
             <FaMapMarkerAlt size={14} className="text-brand-text/60 dark:text-gray-400" />
             <span className="text-brand-text dark:text-gray-300">
-              {activeFilters.location || (t('jobs.location') || 'Địa điểm')}
+              {getLocationLabel(activeFilters.location)}
             </span>
             <FaChevronDown size={12} className="text-brand-text/40 dark:text-gray-500" />
           </DropdownMenuTrigger>
@@ -206,9 +230,7 @@ const JobFilters = ({ filters, onFilterChange, onClearFilters, onClearFilter }) 
           <DropdownMenuTrigger className="px-3 py-2 text-sm border border-brand-light dark:border-gray-700 rounded-lg hover:bg-brand-light dark:hover:bg-gray-700 transition-all duration-200 flex items-center gap-2 cursor-pointer">
             <FaClock size={14} className="text-brand-text/60 dark:text-gray-400" />
             <span className="text-brand-text dark:text-gray-300">
-              {activeFilters.experience_level
-                ? getExperienceLabel(activeFilters.experience_level)
-                : (t('jobs.experience') || 'Kinh nghiệm')}
+              {getExperienceLabelText(activeFilters.experience_level)}
             </span>
             <FaChevronDown size={12} className="text-brand-text/40 dark:text-gray-500" />
           </DropdownMenuTrigger>
@@ -222,7 +244,7 @@ const JobFilters = ({ filters, onFilterChange, onClearFilters, onClearFilter }) 
                   onClick={() => onFilterChange('experience_level', level.value)}
                   className={`cursor-pointer transition-all duration-200 ${activeFilters.experience_level === level.value ? 'text-brand-primary font-medium' : ''}`}
                 >
-                  {level.label}
+                  {getExperienceLabelText(level.value)}
                   {activeFilters.experience_level === level.value && (
                     <FaCheck className="ml-auto text-brand-primary" size={14} />
                   )}
@@ -237,9 +259,7 @@ const JobFilters = ({ filters, onFilterChange, onClearFilters, onClearFilter }) 
           <DropdownMenuTrigger className="px-3 py-2 text-sm border border-brand-light dark:border-gray-700 rounded-lg hover:bg-brand-light dark:hover:bg-gray-700 transition-all duration-200 flex items-center gap-2 cursor-pointer">
             <FaBriefcase size={14} className="text-brand-text/60 dark:text-gray-400" />
             <span className="text-brand-text dark:text-gray-300">
-              {activeFilters.employment_type
-                ? getEmploymentTypeLabel(activeFilters.employment_type)
-                : (t('jobs.type') || 'Loại hình')}
+              {getEmploymentLabelText(activeFilters.employment_type)}
             </span>
             <FaChevronDown size={12} className="text-brand-text/40 dark:text-gray-500" />
           </DropdownMenuTrigger>
@@ -253,7 +273,7 @@ const JobFilters = ({ filters, onFilterChange, onClearFilters, onClearFilter }) 
                   onClick={() => onFilterChange('employment_type', type.value)}
                   className={`cursor-pointer transition-all duration-200 ${activeFilters.employment_type === type.value ? 'text-brand-primary font-medium' : ''}`}
                 >
-                  {type.label}
+                  {getEmploymentLabelText(type.value)}
                   {activeFilters.employment_type === type.value && (
                     <FaCheck className="ml-auto text-brand-primary" size={14} />
                   )}
@@ -268,9 +288,7 @@ const JobFilters = ({ filters, onFilterChange, onClearFilters, onClearFilter }) 
           <DropdownMenuTrigger className="px-3 py-2 text-sm border border-brand-light dark:border-gray-700 rounded-lg hover:bg-brand-light dark:hover:bg-gray-700 transition-all duration-200 flex items-center gap-2 cursor-pointer">
             <FaMoneyBillWave size={14} className="text-brand-text/60 dark:text-gray-400" />
             <span className="text-brand-text dark:text-gray-300">
-              {activeFilters.salary_range
-                ? getSalaryLabel(activeFilters.salary_range)
-                : (t('jobs.salary') || 'Mức lương')}
+              {getSalaryLabelText(activeFilters.salary_range)}
             </span>
             <FaChevronDown size={12} className="text-brand-text/40 dark:text-gray-500" />
           </DropdownMenuTrigger>
@@ -284,7 +302,7 @@ const JobFilters = ({ filters, onFilterChange, onClearFilters, onClearFilter }) 
                   onClick={() => onFilterChange('salary_range', range.value)}
                   className={`cursor-pointer transition-all duration-200 ${activeFilters.salary_range === range.value ? 'text-brand-primary font-medium' : ''}`}
                 >
-                  {range.label}
+                  {getSalaryLabelText(range.value)}
                   {activeFilters.salary_range === range.value && (
                     <FaCheck className="ml-auto text-brand-primary" size={14} />
                   )}
