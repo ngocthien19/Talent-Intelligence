@@ -85,6 +85,49 @@ const jobDescriptionController = {
     }
   },
 
+  getDetail: async (req, res) => {
+    try {
+      const { id } = req.params
+      const companyId = req.user.companyId
+
+      const result = await jobDescriptionService.getJobDetail(id, companyId)
+
+      return res.status(200).json({
+        success: true,
+        data: result
+      })
+    } catch (error) {
+      return res.status(404).json({
+        success: false,
+        message: error.message
+      })
+    }
+  },
+
+  // Lấy danh sách ứng viên của job
+  getJobCandidates: async (req, res) => {
+    try {
+      const { id } = req.params
+      const companyId = req.user.companyId
+      const { limit = 20, offset = 0 } = req.query
+
+      const result = await jobDescriptionService.getCandidatesByJobId(id, companyId, {
+        limit: parseInt(limit),
+        offset: parseInt(offset)
+      })
+
+      return res.status(200).json({
+        success: true,
+        data: result
+      })
+    } catch (error) {
+      return res.status(404).json({
+        success: false,
+        message: error.message
+      })
+    }
+  },
+
   // Cập nhật JD
   update: async (req, res) => {
     try {

@@ -1,3 +1,4 @@
+
 import express from 'express'
 import jobDescriptionController from '~/controllers/hr/job-description/job-description.controller'
 import { authGuard } from '~/middlewares/auth.guard'
@@ -23,7 +24,20 @@ router.get(
   jobDescriptionController.getList
 )
 
-// Chi tiết JD
+router.get(
+  '/jobs/:id/detail',
+  validate(idValidation, 'params'),
+  jobDescriptionController.getDetail
+)
+
+// Lấy ứng viên của job
+router.get(
+  '/jobs/:id/candidates',
+  validate(idValidation, 'params'),
+  jobDescriptionController.getJobCandidates
+)
+
+// Chi tiết JD (cơ bản)
 router.get(
   '/jobs/:id',
   validate(idValidation, 'params'),
@@ -52,6 +66,7 @@ router.delete(
   jobDescriptionController.delete
 )
 
+// Bulk action
 router.post(
   '/jobs/bulk',
   validate(bulkActionValidation, 'body'),

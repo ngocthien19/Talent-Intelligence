@@ -45,6 +45,33 @@ const jobDescriptionService = {
     return jd
   },
 
+  getJobDetail: async (id, companyId) => {
+    // Lấy thông tin job
+    const job = await jobDescriptionModel.getById(id, companyId)
+    if (!job) {
+      throw new Error('Không tìm thấy mô tả công việc')
+    }
+
+    // Lấy danh sách ứng viên (5 ứng viên gần nhất)
+    const candidates = await jobDescriptionModel.getCandidatesByJobId(id, companyId, 5)
+
+    // Lấy thống kê ứng viên
+    const stats = await jobDescriptionModel.getCandidateStatsByJobId(id, companyId)
+
+    return {
+      job,
+      candidates,
+      stats
+    }
+  },
+
+  // Lấy tất cả ứng viên của job (có phân trang)
+  getCandidatesByJobId: async (jobId, companyId, filters = {}) => {
+    const { limit = 20, offset = 0 } = filters
+    const result = await jobDescriptionModel.getCandidatesByJobId(jobId, companyId, limit, offset)
+    return result
+  },
+
   update: async (id, companyId, data) => {
     const exists = await jobDescriptionModel.exists(id, companyId)
     if (!exists) {

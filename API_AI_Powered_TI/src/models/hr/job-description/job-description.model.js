@@ -164,6 +164,58 @@ const jobDescriptionModel = {
     return result.rows[0]
   },
 
+  // Lấy ứng viên của job
+  getCandidatesByJobId: async (jobId, companyId, limit = 10) => {
+    const result = await pool.query(
+      `SELECT 
+        a.id,
+        a.candidate_profile_id,
+        a.overall_score as score,
+        a.status,
+        a.created_at as applied_at,
+        cp.name,
+        cp.email,
+        cp.avatar
+       FROM applications a
+       LEFT JOIN candidate_profiles cp ON a.candidate_profile_id = cp.id
+       WHERE a.job_description_id = $1 
+       AND a.company_id = $2
+       ORDER BY a.created_at DESC
+       LIMIT $3`,
+      [jobId, companyId, limit]
+    )
+    return result.rows
+  },
+
+  // Lấy thống kê ứng viên theo trạng thái
+  getCandidateStatsByJobId: async (jobId, companyId) => {
+    const result = await pool.query(
+      `SELECT 
+        COUNT(*) as total,
+        COUNT(CASE WHEN status = 'pending' THEN 1 END) as pending,
+        COUNT(CASE WHEN status = 'analyzed' THEN 1 END) as analyzed,
+        COUNT(CASE WHEN status = 'shortlisted' THEN 1 END) as shortlisted,
+        COUNT(CASE WHEN status = 'interviewed' THEN 1 END) as interviewed,
+        COUNT(CASE WHEN status = 'offered' THEN 1 END) as offered,
+        COUNT(CASE WHEN status = 'hired' THEN 1 END) as hired,
+        COUNT(CASE WHEN status = 'rejected' THEN 1 END) as rejected
+       FROM applications
+       WHERE job_description_id = $1 
+       AND company_id = $2`,
+      [jobId, companyId]
+    )
+    return result.rows[0] || {
+      total: 0,
+      pending: 0,
+      analyzed: 0,
+      shortlisted: 0,
+      interviewed: 0,
+      offered: 0,
+      hired: 0,
+      rejected: 0
+    }
+  },
+
   // Cập nhật JD
   update: async (id, companyId, data) => {
     const fields = []
