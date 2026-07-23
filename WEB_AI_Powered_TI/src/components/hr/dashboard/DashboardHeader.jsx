@@ -7,6 +7,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger
 } from '~/components/ui/dropdown-menu'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger
+} from '~/components/ui/tooltip'
 import { useLanguage } from '~/hooks/useLanguage'
 import { formatDate, dateToInputString, inputStringToDate } from '~/utils/format'
 
@@ -38,7 +44,7 @@ const DashboardHeader = ({
   const startInputRef = useRef(null)
   const endInputRef = useRef(null)
 
-  // Periods với key ngôn ngữ - SỬA
+  // Periods với key ngôn ngữ
   const getPeriods = () => [
     { value: 'today', label: t('hr.today') || 'Hôm nay' },
     { value: '7days', label: t('hr.last7Days') || '7 ngày qua' },
@@ -230,20 +236,40 @@ const DashboardHeader = ({
               </div>
 
               <div className="flex items-center gap-1 pl-2 border-l border-brand-light/50 dark:border-gray-700">
-                <button
-                  onClick={handleApplyCustomDate}
-                  title={t('common.apply') || 'Áp dụng'}
-                  className="p-1.5 flex items-center justify-center text-white bg-brand-primary rounded hover:bg-brand-primary/80 transition-all cursor-pointer"
-                >
-                  <FaCheck size={12} />
-                </button>
-                <button
-                  onClick={handleClearDates}
-                  title={t('common.clear') || 'Hủy bỏ'}
-                  className="p-1.5 flex items-center justify-center text-red-500 bg-red-50 dark:bg-red-950/30 rounded hover:bg-red-100 dark:hover:bg-red-900/50 transition-all cursor-pointer"
-                >
-                  <FaTimes size={12} />
-                </button>
+                {/* Nút Áp dụng với Tooltip */}
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        onClick={handleApplyCustomDate}
+                        disabled={!tempStartDate || !tempEndDate || !!dateError}
+                        className="p-1.5 flex items-center justify-center text-white bg-brand-primary rounded hover:bg-brand-primary/80 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-brand-primary"
+                      >
+                        <FaCheck size={12} />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">
+                      <p>{t('common.apply') || 'Áp dụng'}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+
+                {/* Nút Xóa với Tooltip */}
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        onClick={handleClearDates}
+                        className="p-1.5 flex items-center justify-center text-red-500 bg-red-50 dark:bg-red-950/30 rounded hover:bg-red-100 dark:hover:bg-red-900/50 transition-all cursor-pointer"
+                      >
+                        <FaTimes size={12} />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">
+                      <p>{t('common.clear') || 'Hủy bỏ'}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </div>
             </motion.div>
           )}

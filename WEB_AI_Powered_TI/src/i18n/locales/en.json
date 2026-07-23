@@ -168,7 +168,8 @@
     "retry": "Retry",
     "noData": "No data",
     "noDataDesc": "No data available to display",
-    "error": "An error occurred"
+    "error": "An error occurred",
+    "refresh": "Refresh"
   },
   "profile": {
     "title": "My Profile",
@@ -325,6 +326,11 @@
     "welcomeMessage": "Hello! I am your AI interview assistant.\n\nI will help you practice interviews like a real interview session. You can:\n\n- Natural conversation: Answer my questions like in a real interview\n- Q&A: Ask me any questions about interviews\n- Get feedback: I will evaluate and give feedback on your answers\n\nLet's start by introducing yourself!"
   },
   "hr": {
+    "thisWeek": "this week",
+    "needReview": "need review",
+    "shortlisted": "shortlist",
+    "hireRate": "hire rate",
+    "rejectRate": "reject rate",
     "dashboard": "Dashboard",
     "dashboardDesc": "Overview of your company's recruitment situation",
     "candidates": "Candidates",
@@ -431,7 +437,19 @@
       "selected": "Selected",
       "all": "All",
       "emptyDesc": "Start recruiting by adding new candidates or wait for candidates to apply",
-      "noCandidatesFoundWith": "No candidates found with keyword"
+      "noCandidatesFoundWith": "No candidates found with keyword",
+      "noResults": "No candidates found",
+      "withKeyword": "with keyword",
+      "withStatus": "status",
+      "withScore": "score",
+      "withDate": "date",
+      "showingAll": "Showing all {total} candidates",
+      "showingFiltered": "Found {total} candidates {filters}",
+      "bulkActions": "Bulk actions:",
+      "deleteBulkTitle": "Delete Multiple Candidates",
+      "deleteBulkMessage": "Are you sure you want to delete {count} selected candidates? This action cannot be undone.",
+      "deleteTitle": "Delete Candidate",
+      "deleteMessage": "Are you sure you want to delete candidate \"{name}\"? This action cannot be undone."
     }
   }
 }

@@ -41,6 +41,15 @@ export const candidateApi = {
     return response.data
   },
 
+  // Xóa hàng loạt ứng viên
+  deleteBulk: async (ids) => {
+    const response = await authorizedAxiosInstance.delete(
+      `${DEV_API_URL}/api/hr/candidates/bulk`,
+      { data: { ids } }
+    )
+    return response.data
+  },
+
   // Lấy widgets
   getWidgets: async () => {
     const response = await authorizedAxiosInstance.get(
