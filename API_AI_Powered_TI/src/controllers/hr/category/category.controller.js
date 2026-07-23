@@ -55,7 +55,14 @@ const categoryController = {
 
   getDropdown: async (req, res) => {
     try {
-      const companyId = req.user.companyId
+      const companyId = req.user?.companyId
+
+      if (!companyId) {
+        return res.status(400).json({
+          success: false,
+          message: 'Không tìm thấy company ID'
+        })
+      }
 
       const result = await categoryService.getDropdown(companyId)
 
