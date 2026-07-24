@@ -6,7 +6,9 @@ import validate from '~/middlewares/validate.middleware'
 import {
   createScheduleValidation,
   idValidation,
-  candidateIdValidation
+  candidateIdValidation,
+  updateStatusValidation,
+  bulkDeleteValidation
 } from '~/validations/hr/calendar/calendar.validation'
 
 const router = express.Router()
@@ -21,12 +23,17 @@ router.post(
   calendarController.createSchedule
 )
 
-// Tạo Google Calendar Event
-router.post(
-  '/schedules/:id/calendar',
-  validate(idValidation, 'params'),
-  calendarController.createCalendarEvent
-)
+// Lấy danh sách lịch theo công ty (có filter)
+router.get('/schedules', calendarController.getSchedulesByCompany)
+
+// Lấy thống kê trạng thái lịch - THÊM MỚI
+router.get('/schedules/stats', calendarController.getScheduleStats)
+
+// Lấy lịch sắp tới
+router.get('/schedules/upcoming', calendarController.getUpcomingSchedules)
+
+// Lấy lịch hôm nay
+router.get('/schedules/today', calendarController.getTodaySchedules)
 
 // Lấy danh sách lịch theo candidate
 router.get(
@@ -35,8 +42,12 @@ router.get(
   calendarController.getSchedulesByCandidate
 )
 
-// Lấy danh sách lịch theo công ty
-router.get('/schedules', calendarController.getSchedulesByCompany)
+// Lấy số lượng lịch của candidate
+router.get(
+  '/schedules/count/:candidateId',
+  validate(candidateIdValidation, 'params'),
+  calendarController.getScheduleCount
+)
 
 // Lấy chi tiết lịch
 router.get(
@@ -56,27 +67,37 @@ router.put(
 router.put(
   '/schedules/:id/status',
   validate(idValidation, 'params'),
+  validate(updateStatusValidation, 'body'),
   calendarController.updateStatus
 )
 
-// Hủy lịch
+// Cập nhật lịch (chỉnh sửa thông tin)
+router.put(
+  '/schedules/:id',
+  validate(idValidation, 'params'),
+  validate(createScheduleValidation, 'body'),
+  calendarController.updateSchedule
+)
+
+// Hủy lịch (xóa mềm)
 router.delete(
   '/schedules/:id',
   validate(idValidation, 'params'),
   calendarController.cancelSchedule
 )
 
-// Lấy lịch sắp tới
-router.get('/schedules/upcoming', calendarController.getUpcomingSchedules)
+// Xóa hàng loạt lịch
+router.post(
+  '/schedules/bulk-delete',
+  validate(bulkDeleteValidation, 'body'),
+  calendarController.bulkDeleteSchedules
+)
 
-// Lấy lịch hôm nay
-router.get('/schedules/today', calendarController.getTodaySchedules)
-
-// Lấy số lượng lịch
-router.get(
-  '/schedules/count/:candidateId',
-  validate(candidateIdValidation, 'params'),
-  calendarController.getScheduleCount
+// Tạo Google Calendar Event
+router.post(
+  '/schedules/:id/calendar',
+  validate(idValidation, 'params'),
+  calendarController.createCalendarEvent
 )
 
 export default router
