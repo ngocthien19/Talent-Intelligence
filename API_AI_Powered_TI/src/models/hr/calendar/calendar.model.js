@@ -103,19 +103,16 @@ const calendarModel = {
     const params = []
     let paramIndex = 1
 
-    // Company ID
     conditions.push(`a.company_id = $${paramIndex}`)
     params.push(companyId)
     paramIndex++
 
-    // Filter theo status
     if (status) {
       conditions.push(`s.status = $${paramIndex}`)
       params.push(status)
       paramIndex++
     }
 
-    // Search theo keyword (tên ứng viên, email, vị trí)
     if (keyword) {
       conditions.push(`(
         cp.name ILIKE $${paramIndex} OR 
@@ -126,7 +123,6 @@ const calendarModel = {
       paramIndex++
     }
 
-    // Filter theo ngày
     if (startDate) {
       conditions.push(`s.interview_date::date >= $${paramIndex}`)
       params.push(startDate)
@@ -141,7 +137,6 @@ const calendarModel = {
 
     const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : ''
 
-    // Đếm tổng số bản ghi
     const countQuery = `
       SELECT COUNT(*) as total
       FROM interview_schedules s
@@ -152,7 +147,6 @@ const calendarModel = {
     const countResult = await pool.query(countQuery, params)
     const total = parseInt(countResult.rows[0]?.total || 0)
 
-    // Lấy dữ liệu
     const dataQuery = `
       SELECT 
         s.id,
@@ -213,6 +207,45 @@ const calendarModel = {
        WHERE s.id = $1`,
       [id]
     )
+    return result.rows[0]
+  },
+
+  // Cập nhật thông tin lịch (ngày giờ, địa điểm, ghi chú...)
+  updateSchedule: async (id, data) => {
+    const fields = []
+    const values = []
+    let idx = 1
+
+    const map = {
+      interview_date: data.interview_date,
+      duration: data.duration,
+      location: data.location,
+      meeting_link: data.meeting_link,
+      notes: data.notes
+    }
+
+    Object.entries(map).forEach(([key, value]) => {
+      if (value !== undefined) {
+        fields.push(`${key} = $${idx}`)
+        values.push(value)
+        idx++
+      }
+    })
+
+    if (fields.length === 0) {
+      return await calendarModel.getScheduleById(id)
+    }
+
+    fields.push('updated_at = CURRENT_TIMESTAMP')
+    values.push(id)
+
+    const query = `
+      UPDATE interview_schedules
+      SET ${fields.join(', ')}
+      WHERE id = $${idx}
+      RETURNING *
+    `
+    const result = await pool.query(query, values)
     return result.rows[0]
   },
 

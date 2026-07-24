@@ -24,6 +24,7 @@ const calendarService = {
       applicationId,
       interviewDate,
       duration,
+      interviewType = 'online',
       location,
       meetLink,
       notes,
@@ -49,18 +50,21 @@ const calendarService = {
       position_applied: application.position
     }
 
-    const finalMeetLink = meetLink || generateMeetLink()
+    const isOnline = interviewType !== 'offline'
+
+    const finalMeetLink = isOnline ? (meetLink || generateMeetLink()) : null
+    const finalLocation = isOnline ? (location || 'Google Meet') : location
 
     const schedule = await calendarModel.createSchedule({
       candidateId: applicationId,
       interviewDate,
       duration,
-      location: location || 'Google Meet',
+      location: finalLocation,
       meetingLink: finalMeetLink,
       notes
     })
 
-    if (autoCreateCalendar) {
+    if (autoCreateCalendar && isOnline) {
       try {
         await calendarService.createGoogleCalendarEvent(schedule.id)
       } catch (error) {
@@ -78,7 +82,7 @@ const calendarService = {
         scheduleId: schedule.id,
         interviewDate: interviewDate,
         duration: duration || 60,
-        location: location || 'Google Meet',
+        location: finalLocation,
         meetingLink: finalMeetLink,
         positionApplied: candidate.position_applied,
         status: schedule.status
@@ -146,24 +150,22 @@ const calendarService = {
       throw new Error('Không tìm thấy lịch phỏng vấn')
     }
 
-    const allowedFields = ['interviewDate', 'duration', 'location', 'meetLink', 'notes']
-    const updateFields = {}
-
-    allowedFields.forEach(field => {
-      if (updateData[field] !== undefined) {
-        updateFields[field] = updateData[field]
-      }
-    })
+    const interviewType = updateData.interviewType
+    const isOnline = interviewType ? interviewType !== 'offline' : !!schedule.meeting_link
 
     const dbUpdate = {
-      interview_date: updateFields.interviewDate,
-      duration: updateFields.duration,
-      location: updateFields.location,
-      meeting_link: updateFields.meetLink,
-      notes: updateFields.notes
+      interview_date: updateData.interviewDate,
+      duration: updateData.duration,
+      location: updateData.location,
+      // Nếu người dùng chuyển sang offline khi sửa -> xoá meeting_link cũ đi
+      meeting_link: interviewType
+        ? (isOnline ? (updateData.meetLink || schedule.meeting_link) : null)
+        : updateData.meetLink,
+      notes: updateData.notes
     }
 
-    return schedule
+    const updated = await calendarModel.updateSchedule(id, dbUpdate)
+    return updated
   },
 
   cancelSchedule: async (id) => {
@@ -211,6 +213,12 @@ const calendarService = {
     const schedule = await calendarModel.getScheduleById(scheduleId)
     if (!schedule) {
       throw new Error('Không tìm thấy lịch phỏng vấn')
+    }
+
+    // Không có meeting_link nghĩa là lịch offline -> không tự sinh Meet link mới
+    const isOnline = !!schedule.meeting_link
+    if (!isOnline) {
+      throw new Error('Lịch phỏng vấn trực tiếp không hỗ trợ tạo Google Meet')
     }
 
     const application = await applicationModel.findByIdAdmin(schedule.candidate_id)

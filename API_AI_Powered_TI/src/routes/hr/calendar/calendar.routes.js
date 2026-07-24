@@ -5,6 +5,7 @@ import { ROLES } from '~/utils/constants'
 import validate from '~/middlewares/validate.middleware'
 import {
   createScheduleValidation,
+  updateScheduleValidation,
   idValidation,
   candidateIdValidation,
   updateStatusValidation,
@@ -26,7 +27,7 @@ router.post(
 // Lấy danh sách lịch theo công ty (có filter)
 router.get('/schedules', calendarController.getSchedulesByCompany)
 
-// Lấy thống kê trạng thái lịch - THÊM MỚI
+// Lấy thống kê trạng thái lịch
 router.get('/schedules/stats', calendarController.getScheduleStats)
 
 // Lấy lịch sắp tới
@@ -71,11 +72,10 @@ router.put(
   calendarController.updateStatus
 )
 
-// Cập nhật lịch (chỉnh sửa thông tin)
 router.put(
   '/schedules/:id',
   validate(idValidation, 'params'),
-  validate(createScheduleValidation, 'body'),
+  validate(updateScheduleValidation, 'body'),
   calendarController.updateSchedule
 )
 
