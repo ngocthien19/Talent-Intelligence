@@ -17,7 +17,7 @@ import { useLanguage } from '~/hooks/useLanguage'
 import InterviewStatusBadge from './InterviewStatusBadge'
 import { formatDate } from '~/utils/format'
 
-const InterviewDetailModal = ({ isOpen, onClose, interview }) => {
+const InterviewDetailModal = ({ isOpen, onClose, interview, onConfirm, onUpdateStatus }) => {
   const { t } = useLanguage()
 
   if (!isOpen || !interview) return null
@@ -28,11 +28,22 @@ const InterviewDetailModal = ({ isOpen, onClose, interview }) => {
     <div className={`flex items-start gap-3 py-2 ${className}`}>
       <Icon size={16} className="text-brand-primary/60 mt-0.5 flex-shrink-0" />
       <div>
-        <p className="text-xs text-brand-text/60 dark:text-gray-400">{t('hr.interview.statusLabel') || 'Trạng thái'}</p>
+        <p className="text-xs text-brand-text/60 dark:text-gray-400">{label}</p>
         <p className="text-sm text-brand-secondary dark:text-white">{value || '--'}</p>
       </div>
     </div>
   )
+
+  // Handlers
+  const handleConfirm = () => {
+    if (onConfirm) onConfirm(interview.id)
+    onClose()
+  }
+
+  const handleCancel = () => {
+    if (onUpdateStatus) onUpdateStatus(interview.id, 'cancelled')
+    onClose()
+  }
 
   return (
     <AnimatePresence>
@@ -82,7 +93,21 @@ const InterviewDetailModal = ({ isOpen, onClose, interview }) => {
                     {t('hr.interview.candidateInfo') || 'Thông tin ứng viên'}
                   </p>
                   <div className="flex items-center gap-2">
-                    <div className="w-10 h-10 rounded-full bg-gradient-brand flex items-center justify-center text-white font-semibold text-sm flex-shrink-0">
+                    {/* Avatar - ưu tiên ảnh nếu có */}
+                    {interview.avatar ? (
+                      <img
+                        src={interview.avatar}
+                        alt={interview.candidate_name}
+                        className="w-10 h-10 rounded-full object-cover border-2 border-brand-light/30 dark:border-gray-700 flex-shrink-0"
+                        onError={(e) => {
+                          e.target.style.display = 'none'
+                          const parent = e.target.parentElement
+                          const fallback = parent?.querySelector('.fallback-avatar')
+                          if (fallback) fallback.classList.remove('hidden')
+                        }}
+                      />
+                    ) : null}
+                    <div className={`w-10 h-10 rounded-full bg-gradient-brand flex items-center justify-center text-white font-semibold text-sm flex-shrink-0 fallback-avatar ${interview.avatar ? 'hidden' : ''}`}>
                       {interview.candidate_name?.charAt(0)?.toUpperCase() || 'U'}
                     </div>
                     <div>
@@ -130,6 +155,18 @@ const InterviewDetailModal = ({ isOpen, onClose, interview }) => {
                     label={t('hr.interview.location') || 'Địa điểm'}
                     value={interview.location || 'Google Meet'}
                   />
+                  <DetailItem
+                    icon={FaEnvelope}
+                    label={t('hr.interview.email') || 'Email'}
+                    value={interview.candidate_email || '--'}
+                  />
+                  {interview.candidate_phone && (
+                    <DetailItem
+                      icon={FaPhone}
+                      label={t('hr.interview.phone') || 'Số điện thoại'}
+                      value={interview.candidate_phone}
+                    />
+                  )}
                   {interview.meeting_link && (
                     <DetailItem
                       icon={FaLink}
@@ -149,7 +186,7 @@ const InterviewDetailModal = ({ isOpen, onClose, interview }) => {
                   <DetailItem
                     icon={FaFileAlt}
                     label={t('hr.interview.notes') || 'Ghi chú'}
-                    value={interview.notes || 'Không có ghi chú'}
+                    value={interview.notes || t('hr.interview.noNotes') || 'Không có ghi chú'}
                   />
                 </div>
               </div>
@@ -157,15 +194,33 @@ const InterviewDetailModal = ({ isOpen, onClose, interview }) => {
               {/* Actions */}
               <div className="flex items-center justify-end gap-3 pt-4 border-t border-brand-light/50 dark:border-gray-700">
                 {interview.status === 'scheduled' && (
-                  <button className="px-4 py-2 text-sm font-medium bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-all duration-200 cursor-pointer hover:scale-[1.02] active:scale-95">
+                  <button
+                    onClick={handleConfirm}
+                    className="px-4 py-2 text-sm font-medium bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-all duration-200 cursor-pointer hover:scale-[1.02] active:scale-95"
+                  >
                     <FaCheckCircle className="inline mr-2" size={14} />
                     {t('hr.interview.confirm') || 'Xác nhận'}
                   </button>
                 )}
                 {interview.status === 'scheduled' && (
-                  <button className="px-4 py-2 text-sm font-medium border border-red-500 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition-all duration-200 cursor-pointer hover:scale-[1.02] active:scale-95">
+                  <button
+                    onClick={handleCancel}
+                    className="px-4 py-2 text-sm font-medium border border-red-500 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition-all duration-200 cursor-pointer hover:scale-[1.02] active:scale-95"
+                  >
                     <FaTimesCircle className="inline mr-2" size={14} />
                     {t('hr.interview.cancel') || 'Hủy'}
+                  </button>
+                )}
+                {interview.status === 'confirmed' && (
+                  <button
+                    onClick={() => {
+                      if (onUpdateStatus) onUpdateStatus(interview.id, 'completed')
+                      onClose()
+                    }}
+                    className="px-4 py-2 text-sm font-medium bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all duration-200 cursor-pointer hover:scale-[1.02] active:scale-95"
+                  >
+                    <FaCheckCircle className="inline mr-2" size={14} />
+                    {t('hr.interview.markComplete') || 'Đánh dấu hoàn thành'}
                   </button>
                 )}
                 <button

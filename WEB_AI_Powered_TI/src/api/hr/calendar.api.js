@@ -24,6 +24,13 @@ export const calendarApi = {
     return response.data
   },
 
+  getScheduleStats: async () => {
+    const response = await authorizedAxiosInstance.get(
+      `${API_URL}/schedules/stats`
+    )
+    return response.data
+  },
+
   getScheduleById: async (id) => {
     const response = await authorizedAxiosInstance.get(
       `${API_URL}/schedules/${id}/detail`
@@ -34,6 +41,14 @@ export const calendarApi = {
   getSchedulesByCandidate: async (candidateId) => {
     const response = await authorizedAxiosInstance.get(
       `${API_URL}/schedules/candidate/${candidateId}`
+    )
+    return response.data
+  },
+
+  updateSchedule: async (id, data) => {
+    const response = await authorizedAxiosInstance.put(
+      `${API_URL}/schedules/${id}`,
+      data
     )
     return response.data
   },
@@ -92,13 +107,6 @@ export const calendarApi = {
   getScheduleCount: async (candidateId) => {
     const response = await authorizedAxiosInstance.get(
       `${API_URL}/schedules/count/${candidateId}`
-    )
-    return response.data
-  },
-
-  getScheduleStats: async () => {
-    const response = await authorizedAxiosInstance.get(
-      `${API_URL}/schedules/stats`
     )
     return response.data
   }
