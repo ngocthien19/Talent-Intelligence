@@ -24,7 +24,7 @@ const InterviewFormModal = ({
     clearErrors
   } = useForm({
     defaultValues: {
-      candidateId: '',
+      applicationId: '',
       interviewDate: '',
       interviewTime: '09:00',
       duration: 60,
@@ -40,7 +40,7 @@ const InterviewFormModal = ({
       if (editingInterview) {
         const date = new Date(editingInterview.interview_date)
         reset({
-          candidateId: editingInterview.candidate_id || '',
+          applicationId: editingInterview.candidate_id || '',
           interviewDate: date.toISOString().split('T')[0],
           interviewTime: date.toTimeString().slice(0, 5),
           duration: editingInterview.duration || 60,
@@ -51,7 +51,7 @@ const InterviewFormModal = ({
         })
       } else {
         reset({
-          candidateId: '',
+          applicationId: '', // ← Đổi từ candidateId
           interviewDate: new Date().toISOString().split('T')[0],
           interviewTime: '09:00',
           duration: 60,
@@ -68,13 +68,14 @@ const InterviewFormModal = ({
   const onFormSubmit = (data) => {
     const interviewDateTime = new Date(`${data.interviewDate}T${data.interviewTime}`)
     if (isNaN(interviewDateTime.getTime())) {
+      toast.error('Ngày giờ không hợp lệ')
       return
     }
 
     const submitData = {
-      candidateId: data.candidateId,
+      applicationId: data.applicationId, // ← Đổi từ candidateId
       interviewDate: interviewDateTime.toISOString(),
-      duration: data.duration,
+      duration: parseInt(data.duration),
       location: data.location || 'Google Meet',
       meetLink: data.meetLink || undefined,
       notes: data.notes || undefined,
@@ -122,11 +123,11 @@ const InterviewFormModal = ({
                 <div className="relative">
                   <FaUser className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-text/40 dark:text-gray-500" size={16} />
                   <select
-                    {...register('candidateId', {
+                    {...register('applicationId', { // ← Đổi từ candidateId
                       required: t('hr.interview.validation.candidateRequired') || 'Vui lòng chọn ứng viên'
                     })}
                     className={`w-full pl-10 pr-4 py-2.5 text-sm border rounded-lg bg-white dark:bg-gray-900 text-brand-secondary dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-primary/50 transition-all duration-200 ${
-                      errors.candidateId ? 'border-red-500' : 'border-brand-light/50 dark:border-gray-700'
+                      errors.applicationId ? 'border-red-500' : 'border-brand-light/50 dark:border-gray-700'
                     }`}
                   >
                     <option value="">{t('hr.interview.selectCandidate') || 'Chọn ứng viên...'}</option>
@@ -137,7 +138,7 @@ const InterviewFormModal = ({
                     ))}
                   </select>
                 </div>
-                {errors.candidateId && <p className="text-xs text-red-500 mt-1">{errors.candidateId.message}</p>}
+                {errors.applicationId && <p className="text-xs text-red-500 mt-1">{errors.applicationId.message}</p>}
               </div>
 
               {/* Date & Time */}

@@ -190,7 +190,6 @@ const Interviews = () => {
     try {
       let response
       if (editingInterview) {
-        // Cập nhật lịch
         response = await calendarApi.updateSchedule(editingInterview.id, {
           interviewDate: data.interviewDate,
           duration: data.duration,
@@ -202,8 +201,15 @@ const Interviews = () => {
           toast.success(t('hr.interview.updateSuccess') || 'Cập nhật lịch thành công')
         }
       } else {
-        // Tạo lịch mới
-        response = await calendarApi.createSchedule(data)
+        response = await calendarApi.createSchedule({
+          applicationId: data.applicationId,
+          interviewDate: data.interviewDate,
+          duration: data.duration,
+          location: data.location,
+          meetLink: data.meetLink,
+          notes: data.notes,
+          autoCreateCalendar: data.autoCreateCalendar
+        })
         if (response.success) {
           toast.success(t('hr.interview.createSuccess') || 'Tạo lịch thành công')
         }
@@ -217,7 +223,8 @@ const Interviews = () => {
         toast.error(response.message || t('common.error') || 'Có lỗi xảy ra')
       }
     } catch (error) {
-      toast.error(error.message || t('common.error') || 'Có lỗi xảy ra')
+      const errorMessage = error.response?.data?.message || error.message || t('common.error') || 'Có lỗi xảy ra'
+      toast.error(errorMessage)
     } finally {
       setIsSubmitting(false)
     }
