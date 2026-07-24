@@ -28,7 +28,7 @@ const calendarModel = {
     `
 
     const result = await pool.query(query, [
-      candidateId, // applicationId
+      candidateId,
       interviewDate,
       duration || 60,
       location || null,
@@ -47,7 +47,8 @@ const calendarModel = {
               a.position as position_applied,
               cp.name as candidate_name, 
               cp.email as candidate_email,
-              cp.phone as candidate_phone
+              cp.phone as candidate_phone,
+              cp.avatar
        FROM interview_schedules s
        LEFT JOIN applications a ON s.candidate_id = a.id
        LEFT JOIN candidate_profiles cp ON a.candidate_profile_id = cp.id
@@ -58,23 +59,140 @@ const calendarModel = {
     return result.rows
   },
 
-  // Lấy danh sách lịch phỏng vấn theo công ty
-  getSchedulesByCompany: async (companyId, limit = 20, offset = 0) => {
+  getScheduleStats: async (companyId) => {
     const result = await pool.query(
-      `SELECT s.*, 
-              a.position as position_applied,
-              cp.name as candidate_name, 
-              cp.email as candidate_email,
-              cp.phone as candidate_phone
-       FROM interview_schedules s
-       LEFT JOIN applications a ON s.candidate_id = a.id
-       LEFT JOIN candidate_profiles cp ON a.candidate_profile_id = cp.id
-       WHERE a.company_id = $1
-       ORDER BY s.interview_date ASC
-       LIMIT $2 OFFSET $3`,
-      [companyId, limit, offset]
+      `SELECT 
+      COUNT(*) as total,
+      COUNT(CASE WHEN s.status = 'scheduled' THEN 1 END) as scheduled,
+      COUNT(CASE WHEN s.status = 'confirmed' THEN 1 END) as confirmed,
+      COUNT(CASE WHEN s.status = 'completed' THEN 1 END) as completed,
+      COUNT(CASE WHEN s.status = 'cancelled' THEN 1 END) as cancelled,
+      COUNT(CASE WHEN s.status = 'no_show' THEN 1 END) as no_show,
+      COUNT(CASE WHEN s.interview_date::date = CURRENT_DATE THEN 1 END) as today,
+      COUNT(CASE WHEN s.interview_date > NOW() AND s.status = 'scheduled' THEN 1 END) as upcoming
+     FROM interview_schedules s
+     LEFT JOIN applications a ON s.candidate_id = a.id
+     WHERE a.company_id = $1`,
+      [companyId]
     )
-    return result.rows
+    return result.rows[0] || {
+      total: 0,
+      scheduled: 0,
+      confirmed: 0,
+      completed: 0,
+      cancelled: 0,
+      no_show: 0,
+      today: 0,
+      upcoming: 0
+    }
+  },
+
+  // Lấy danh sách lịch phỏng vấn theo công ty
+  getSchedulesByCompany: async (filters) => {
+    const {
+      companyId,
+      status,
+      keyword,
+      startDate,
+      endDate,
+      limit = 20,
+      offset = 0
+    } = filters
+
+    const conditions = []
+    const params = []
+    let paramIndex = 1
+
+    // Company ID
+    conditions.push(`a.company_id = $${paramIndex}`)
+    params.push(companyId)
+    paramIndex++
+
+    // Filter theo status
+    if (status) {
+      conditions.push(`s.status = $${paramIndex}`)
+      params.push(status)
+      paramIndex++
+    }
+
+    // Search theo keyword (tên ứng viên, email, vị trí)
+    if (keyword) {
+      conditions.push(`(
+        cp.name ILIKE $${paramIndex} OR 
+        cp.email ILIKE $${paramIndex} OR 
+        a.position ILIKE $${paramIndex}
+      )`)
+      params.push(`%${keyword}%`)
+      paramIndex++
+    }
+
+    // Filter theo ngày
+    if (startDate) {
+      conditions.push(`s.interview_date::date >= $${paramIndex}`)
+      params.push(startDate)
+      paramIndex++
+    }
+
+    if (endDate) {
+      conditions.push(`s.interview_date::date <= $${paramIndex}`)
+      params.push(endDate)
+      paramIndex++
+    }
+
+    const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : ''
+
+    // Đếm tổng số bản ghi
+    const countQuery = `
+      SELECT COUNT(*) as total
+      FROM interview_schedules s
+      LEFT JOIN applications a ON s.candidate_id = a.id
+      LEFT JOIN candidate_profiles cp ON a.candidate_profile_id = cp.id
+      ${whereClause}
+    `
+    const countResult = await pool.query(countQuery, params)
+    const total = parseInt(countResult.rows[0]?.total || 0)
+
+    // Lấy dữ liệu
+    const dataQuery = `
+      SELECT 
+        s.id,
+        s.candidate_id,
+        s.interview_date,
+        s.duration,
+        s.location,
+        s.meeting_link,
+        s.google_event_id,
+        s.status,
+        s.notes,
+        s.confirmed_by_candidate,
+        s.confirmed_at,
+        s.created_at,
+        s.updated_at,
+        a.position as position_applied,
+        cp.name as candidate_name,
+        cp.email as candidate_email,
+        cp.phone as candidate_phone,
+        cp.avatar
+      FROM interview_schedules s
+      LEFT JOIN applications a ON s.candidate_id = a.id
+      LEFT JOIN candidate_profiles cp ON a.candidate_profile_id = cp.id
+      ${whereClause}
+      ORDER BY s.interview_date ASC
+      LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
+    `
+
+    const dataParams = [...params, parseInt(limit), parseInt(offset)]
+    const result = await pool.query(dataQuery, dataParams)
+
+    return {
+      data: result.rows,
+      pagination: {
+        total,
+        limit: parseInt(limit),
+        offset: parseInt(offset),
+        totalPages: Math.ceil(total / limit)
+      }
+    }
   },
 
   // Lấy chi tiết lịch phỏng vấn
@@ -86,6 +204,7 @@ const calendarModel = {
               cp.name as candidate_name, 
               cp.email as candidate_email,
               cp.phone as candidate_phone,
+              cp.avatar,
               comp.name as company_name
        FROM interview_schedules s
        LEFT JOIN applications a ON s.candidate_id = a.id
@@ -171,7 +290,9 @@ const calendarModel = {
       `SELECT s.*, 
               a.position as position_applied,
               cp.name as candidate_name, 
-              cp.email as candidate_email
+              cp.email as candidate_email,
+              cp.phone as candidate_phone,
+              cp.avatar
        FROM interview_schedules s
        LEFT JOIN applications a ON s.candidate_id = a.id
        LEFT JOIN candidate_profiles cp ON a.candidate_profile_id = cp.id
@@ -191,7 +312,9 @@ const calendarModel = {
       `SELECT s.*, 
               a.position as position_applied,
               cp.name as candidate_name, 
-              cp.email as candidate_email
+              cp.email as candidate_email,
+              cp.phone as candidate_phone,
+              cp.avatar
        FROM interview_schedules s
        LEFT JOIN applications a ON s.candidate_id = a.id
        LEFT JOIN candidate_profiles cp ON a.candidate_profile_id = cp.id

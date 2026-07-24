@@ -5,7 +5,6 @@ import candidateProfileModel from '~/models/candidate/candidate-profile.model'
 import { EmailProvider } from '~/providers/email.provider'
 import notificationService from '~/services/notification/notification.service'
 
-// Hàm tạo Google Meet link
 function generateMeetLink() {
   const chars = 'abcdefghijklmnopqrstuvwxyz0123456789'
   const segments = []
@@ -20,10 +19,9 @@ function generateMeetLink() {
 }
 
 const calendarService = {
-  // Tạo lịch phỏng vấn
   createSchedule: async (data) => {
     const {
-      applicationId, // Thay vì candidateId
+      applicationId,
       interviewDate,
       duration,
       location,
@@ -32,7 +30,6 @@ const calendarService = {
       autoCreateCalendar = true
     } = data
 
-    // Lấy thông tin application và profile
     const application = await applicationModel.findByIdAdmin(applicationId)
     if (!application) {
       throw new Error('Không tìm thấy đơn ứng tuyển')
@@ -43,7 +40,6 @@ const calendarService = {
       throw new Error('Không tìm thấy hồ sơ ứng viên')
     }
 
-    // Kết hợp dữ liệu
     const candidate = {
       ...application,
       ...profile,
@@ -56,7 +52,7 @@ const calendarService = {
     const finalMeetLink = meetLink || generateMeetLink()
 
     const schedule = await calendarModel.createSchedule({
-      candidateId: applicationId, // Vẫn lưu applicationId vào candidate_id
+      candidateId: applicationId,
       interviewDate,
       duration,
       location: location || 'Google Meet',
@@ -92,13 +88,131 @@ const calendarService = {
     return schedule
   },
 
+  getSchedulesByCompany: async (filters) => {
+    return await calendarModel.getSchedulesByCompany(filters)
+  },
+
+  getScheduleStats: async (companyId) => {
+    return await calendarModel.getScheduleStats(companyId)
+  },
+
+  getSchedulesByCandidate: async (candidateId) => {
+    return await calendarModel.getSchedulesByCandidate(candidateId)
+  },
+
+  getScheduleById: async (id) => {
+    const schedule = await calendarModel.getScheduleById(id)
+    if (!schedule) {
+      throw new Error('Không tìm thấy lịch phỏng vấn')
+    }
+    return schedule
+  },
+
+  getUpcomingSchedules: async (companyId, limit = 5) => {
+    return await calendarModel.getUpcomingSchedules(companyId, limit)
+  },
+
+  getTodaySchedules: async (companyId) => {
+    return await calendarModel.getTodaySchedules(companyId)
+  },
+
+  getScheduleCount: async (candidateId) => {
+    return await calendarModel.getScheduleCount(candidateId)
+  },
+
+  confirmSchedule: async (id) => {
+    const schedule = await calendarModel.confirmSchedule(id)
+    if (!schedule) {
+      throw new Error('Không tìm thấy lịch phỏng vấn')
+    }
+    return schedule
+  },
+
+  updateStatus: async (id, status) => {
+    const validStatus = ['scheduled', 'confirmed', 'completed', 'cancelled', 'no_show']
+    if (!validStatus.includes(status)) {
+      throw new Error('Trạng thái không hợp lệ')
+    }
+    const schedule = await calendarModel.updateScheduleStatus(id, status)
+    if (!schedule) {
+      throw new Error('Không tìm thấy lịch phỏng vấn')
+    }
+    return schedule
+  },
+
+  updateSchedule: async (id, updateData) => {
+    const schedule = await calendarModel.getScheduleById(id)
+    if (!schedule) {
+      throw new Error('Không tìm thấy lịch phỏng vấn')
+    }
+
+    const allowedFields = ['interviewDate', 'duration', 'location', 'meetLink', 'notes']
+    const updateFields = {}
+
+    allowedFields.forEach(field => {
+      if (updateData[field] !== undefined) {
+        updateFields[field] = updateData[field]
+      }
+    })
+
+    const dbUpdate = {
+      interview_date: updateFields.interviewDate,
+      duration: updateFields.duration,
+      location: updateFields.location,
+      meeting_link: updateFields.meetLink,
+      notes: updateFields.notes
+    }
+
+    return schedule
+  },
+
+  cancelSchedule: async (id) => {
+    const schedule = await calendarModel.getScheduleById(id)
+    if (!schedule) {
+      throw new Error('Không tìm thấy lịch phỏng vấn')
+    }
+
+    if (schedule.google_event_id) {
+      try {
+        await deleteCalendarEvent(schedule.google_event_id)
+      } catch (error) {
+        console.error('Failed to delete Google Calendar event:', error)
+      }
+    }
+
+    const result = await calendarModel.updateScheduleStatus(id, 'cancelled')
+    return result
+  },
+
+  bulkDeleteSchedules: async (ids, companyId) => {
+    const deleted = []
+    for (const id of ids) {
+      try {
+        const schedule = await calendarModel.getScheduleById(id)
+        if (schedule && schedule.company_id === companyId) {
+          if (schedule.google_event_id) {
+            try {
+              await deleteCalendarEvent(schedule.google_event_id)
+            } catch (error) {
+              console.error('Failed to delete Google Calendar event:', error)
+            }
+          }
+          const result = await calendarModel.deleteSchedule(id)
+          deleted.push(result)
+        }
+      } catch (error) {
+        console.error(`Failed to delete schedule ${id}:`, error)
+      }
+    }
+    return deleted
+  },
+
   createGoogleCalendarEvent: async (scheduleId) => {
     const schedule = await calendarModel.getScheduleById(scheduleId)
     if (!schedule) {
       throw new Error('Không tìm thấy lịch phỏng vấn')
     }
 
-    // Lấy thông tin application và profile
     const application = await applicationModel.findByIdAdmin(schedule.candidate_id)
     if (!application) {
       throw new Error('Không tìm thấy đơn ứng tuyển')
@@ -131,7 +245,7 @@ Phỏng vấn vị trí: ${candidate.position_applied}
 Email: ${candidate.email}
 Điện thoại: ${candidate.phone || 'Không có'}
 
-🔗 Link tham gia: ${meetLink}
+Link tham gia: ${meetLink}
 
 Ghi chú: ${schedule.notes || 'Không có ghi chú'}
       `.trim(),
@@ -152,85 +266,10 @@ Ghi chú: ${schedule.notes || 'Không có ghi chú'}
       meetingLink: meetLink,
       eventId: result.eventId
     }
-  },
-
-  // Lấy danh sách lịch theo candidate
-  getSchedulesByCandidate: async (candidateId) => {
-    return await calendarModel.getSchedulesByCandidate(candidateId)
-  },
-
-  // Lấy danh sách lịch theo công ty
-  getSchedulesByCompany: async (companyId, limit = 20, offset = 0) => {
-    return await calendarModel.getSchedulesByCompany(companyId, limit, offset)
-  },
-
-  // Lấy chi tiết lịch
-  getScheduleById: async (id) => {
-    const schedule = await calendarModel.getScheduleById(id)
-    if (!schedule) {
-      throw new Error('Không tìm thấy lịch phỏng vấn')
-    }
-    return schedule
-  },
-
-  // Xác nhận lịch (ứng viên)
-  confirmSchedule: async (id) => {
-    const schedule = await calendarModel.confirmSchedule(id)
-    if (!schedule) {
-      throw new Error('Không tìm thấy lịch phỏng vấn')
-    }
-    return schedule
-  },
-
-  // Cập nhật trạng thái lịch
-  updateStatus: async (id, status) => {
-    const validStatus = ['scheduled', 'confirmed', 'completed', 'cancelled', 'no_show']
-    if (!validStatus.includes(status)) {
-      throw new Error('Trạng thái không hợp lệ')
-    }
-    const schedule = await calendarModel.updateScheduleStatus(id, status)
-    if (!schedule) {
-      throw new Error('Không tìm thấy lịch phỏng vấn')
-    }
-    return schedule
-  },
-
-  // Hủy lịch
-  cancelSchedule: async (id) => {
-    const schedule = await calendarModel.getScheduleById(id)
-    if (!schedule) {
-      throw new Error('Không tìm thấy lịch phỏng vấn')
-    }
-
-    if (schedule.google_event_id) {
-      try {
-        await deleteCalendarEvent(schedule.google_event_id)
-      } catch (error) {
-        console.error('Failed to delete Google Calendar event:', error)
-      }
-    }
-
-    const result = await calendarModel.updateScheduleStatus(id, 'cancelled')
-    return result
-  },
-
-  // Lấy lịch sắp tới
-  getUpcomingSchedules: async (companyId, limit = 5) => {
-    return await calendarModel.getUpcomingSchedules(companyId, limit)
-  },
-
-  // Lấy lịch hôm nay
-  getTodaySchedules: async (companyId) => {
-    return await calendarModel.getTodaySchedules(companyId)
-  },
-
-  // Lấy số lượng lịch
-  getScheduleCount: async (candidateId) => {
-    return await calendarModel.getScheduleCount(candidateId)
   }
 }
 
-// Gửi email xác nhận phỏng vấn (giữ nguyên)
+// Gửi email xác nhận phỏng vấn
 async function sendInterviewConfirmation(candidate, schedule, meetingLink) {
   const htmlContent = `
 <!DOCTYPE html>
@@ -366,7 +405,7 @@ async function sendInterviewConfirmation(candidate, schedule, meetingLink) {
   <div class="container">
     <!-- Header -->
     <div class="header">
-      <h1>📅 Lịch phỏng vấn</h1>
+      <h1>Lịch phỏng vấn</h1>
       <p>${candidate.position_applied}</p>
     </div>
     
@@ -378,7 +417,7 @@ async function sendInterviewConfirmation(candidate, schedule, meetingLink) {
       <!-- Thông tin chi tiết -->
       <div class="info">
         <div class="info-item">
-          <span class="label">📅 Thời gian:</span>
+          <span class="label">Thời gian:</span>
           <span class="value">${new Date(schedule.interview_date).toLocaleString('vi-VN', {
     weekday: 'long',
     day: '2-digit',
@@ -389,16 +428,16 @@ async function sendInterviewConfirmation(candidate, schedule, meetingLink) {
   })}</span>
         </div>
         <div class="info-item">
-          <span class="label">⏰ Thời lượng:</span>
+          <span class="label">Thời lượng:</span>
           <span class="value">${schedule.duration} phút</span>
         </div>
         <div class="info-item">
-          <span class="label">📍 Địa điểm:</span>
+          <span class="label">Địa điểm:</span>
           <span class="value">${schedule.location || 'Online Meeting'}</span>
         </div>
         ${schedule.notes ? `
         <div class="info-item">
-          <span class="label">📝 Ghi chú:</span>
+          <span class="label">Ghi chú:</span>
           <span class="value">${schedule.notes}</span>
         </div>` : ''}
       </div>
@@ -406,7 +445,7 @@ async function sendInterviewConfirmation(candidate, schedule, meetingLink) {
       <!-- Link tham gia -->
       ${meetingLink ? `
       <div style="margin: 20px 0;">
-        <p style="font-weight: 600; margin-bottom: 8px;">🔗 Link tham gia phỏng vấn:</p>
+        <p style="font-weight: 600; margin-bottom: 8px;">Link tham gia phỏng vấn:</p>
         <div class="meet-link-box">
           <a href="${meetingLink}" target="_blank">${meetingLink}</a>
         </div>
@@ -416,16 +455,16 @@ async function sendInterviewConfirmation(candidate, schedule, meetingLink) {
       <!-- Nút tham gia -->
       ${meetingLink ? `
       <div class="button-container">
-        <a href="${meetingLink}" class="button" target="_blank">🎥 Tham gia phỏng vấn</a>
+        <a href="${meetingLink}" class="button" target="_blank">Tham gia phỏng vấn</a>
       </div>
       ` : ''}
 
       <!-- Lưu ý -->
       <div class="note">
-        <strong>💡 Lưu ý:</strong> Vui lòng tham gia đúng giờ. Nếu có bất kỳ thay đổi, hãy liên hệ với chúng tôi.
+        <strong>Lưu ý:</strong> Vui lòng tham gia đúng giờ. Nếu có bất kỳ thay đổi, hãy liên hệ với chúng tôi.
       </div>
       
-      <p style="margin-top: 20px; color: #555;">Chúc bạn may mắn! 🍀</p>
+      <p style="margin-top: 20px; color: #555;">Chúc bạn may mắn!</p>
     </div>
     
     <!-- Footer -->
@@ -440,7 +479,7 @@ async function sendInterviewConfirmation(candidate, schedule, meetingLink) {
 
   await EmailProvider.sendEmail(
     candidate.email,
-    `📅 Lịch phỏng vấn - ${candidate.position_applied}`,
+    `Lịch phỏng vấn - ${candidate.position_applied}`,
     htmlContent
   )
 }
