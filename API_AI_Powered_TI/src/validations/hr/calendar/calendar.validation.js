@@ -4,7 +4,12 @@ export const createScheduleValidation = Joi.object({
   applicationId: Joi.string().uuid().required(),
   interviewDate: Joi.date().iso().required().min('now'),
   duration: Joi.number().min(15).max(180).default(60),
-  location: Joi.string().optional().allow(''),
+  interviewType: Joi.string().valid('online', 'offline').default('online'),
+  location: Joi.string().max(255).when('interviewType', {
+    is: 'offline',
+    then: Joi.required(),
+    otherwise: Joi.optional().allow('')
+  }),
   meetLink: Joi.string().uri().optional().allow(''),
   notes: Joi.string().max(500).optional().allow(''),
   autoCreateCalendar: Joi.boolean().default(true)
@@ -13,7 +18,12 @@ export const createScheduleValidation = Joi.object({
 export const updateScheduleValidation = Joi.object({
   interviewDate: Joi.date().iso().optional(),
   duration: Joi.number().min(15).max(180).optional(),
-  location: Joi.string().optional().allow(''),
+  interviewType: Joi.string().valid('online', 'offline').optional(),
+  location: Joi.string().max(255).when('interviewType', {
+    is: 'offline',
+    then: Joi.required(),
+    otherwise: Joi.optional().allow('')
+  }),
   meetLink: Joi.string().uri().optional().allow(''),
   notes: Joi.string().max(500).optional().allow('')
 })
