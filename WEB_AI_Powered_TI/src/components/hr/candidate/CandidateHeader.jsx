@@ -96,7 +96,7 @@ const CandidateHeader = ({
     <motion.div variants={itemVariants} className="flex flex-col md:flex-row md:items-center justify-between gap-4">
       <div>
         <h1 className="text-2xl font-bold text-brand-secondary dark:text-white">
-          {t('hr.candidates') || 'Quản lý ứng viên'}
+          {t('hr.applications') || 'Đơn ứng tuyển'}
         </h1>
         <p className="text-sm text-brand-text/60 dark:text-gray-400">
           {totalCount === 0 ? (
@@ -109,7 +109,7 @@ const CandidateHeader = ({
               <span className="font-bold text-brand-primary text-base">
                 {totalCount}
               </span>{' '}
-              <span>{t('hr.candidate.candidates') || 'ứng viên'}</span>
+              <span>{t('hr.candidate.applications') || 'đơn ứng tuyển'}</span>
             </>
           )}
         </p>
@@ -120,7 +120,7 @@ const CandidateHeader = ({
         <div className="relative">
           <input
             type="text"
-            placeholder={t('hr.search') || 'Tìm kiếm ứng viên... (Enter để tìm)'}
+            placeholder={t('hr.searchCandidate') || 'Tìm kiếm ứng viên... (Enter để tìm)'}
             value={searchValue}
             onChange={(e) => setSearchValue(e.target.value)}
             onKeyDown={handleSearchKeyDown}

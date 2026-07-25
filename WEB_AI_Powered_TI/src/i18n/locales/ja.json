@@ -453,6 +453,7 @@
       "status": "ステータス",
       "candidate": "候補者",
       "candidates": "候補者",
+      "applications": "応募",
       "noCandidates": "候補者がいません",
       "noCandidatesFound": "候補者が見つかりません",
       "clearFilters": "フィルターをクリア",
