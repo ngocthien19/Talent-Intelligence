@@ -1,3 +1,4 @@
+// src/models/hr/comparison/comparison.model.js
 import pool from '~/config/db.js'
 
 const comparisonModel = {
@@ -7,23 +8,41 @@ const comparisonModel = {
     const params = [...candidateIds, companyId]
 
     const query = `
-      SELECT c.id, c.name, c.email, c.phone, c.address,
-             c.position_applied, c.cover_letter,
-             c.overall_score, c.skills_match_score, c.culture_fit_score, c.retention_score,
-             c.status, c.created_at,
-             c.parsed_data, c.cv_url,
-             jd.title as job_title, jd.description as job_description,
-             jd.required_skills, jd.nice_to_have_skills,
-             comp.name as company_name,
-             a.result as analysis_result,
-             a.strengths, a.weaknesses, a.suggestions,
-             a.explanation as analysis_explanation
-      FROM candidates c
-      LEFT JOIN job_descriptions jd ON c.jd_id = jd.id
-      LEFT JOIN companies comp ON c.company_id = comp.id
-      LEFT JOIN analyses a ON c.id = a.candidate_id AND a.analysis_type = 'full_analysis'
-      WHERE c.id IN (${placeholders}) AND c.company_id = $${candidateIds.length + 1}
-      ORDER BY c.overall_score DESC
+      SELECT 
+        a.id,
+        a.id as candidate_id,
+        cp.name,
+        cp.email,
+        cp.phone,
+        cp.address,
+        cp.avatar,
+        a.position as position_applied,
+        a.cover_letter_text as cover_letter,
+        a.overall_score,
+        a.skills_match_score,
+        a.culture_fit_score,
+        a.retention_score,
+        a.status,
+        a.created_at,
+        cp.parsed_data,
+        cp.cv_url,
+        jd.title as job_title,
+        jd.description as job_description,
+        jd.required_skills,
+        jd.nice_to_have_skills,
+        comp.name as company_name,
+        an.result as analysis_result,
+        an.strengths,
+        an.weaknesses,
+        an.suggestions,
+        an.explanation as analysis_explanation
+      FROM applications a
+      LEFT JOIN candidate_profiles cp ON a.candidate_profile_id = cp.id
+      LEFT JOIN job_descriptions jd ON a.job_description_id = jd.id
+      LEFT JOIN companies comp ON a.company_id = comp.id
+      LEFT JOIN analyses an ON a.id = an.candidate_id AND an.analysis_type = 'full_analysis'
+      WHERE a.id IN (${placeholders}) AND a.company_id = $${candidateIds.length + 1}
+      ORDER BY a.overall_score DESC
     `
 
     const result = await pool.query(query, params)
@@ -33,20 +52,22 @@ const comparisonModel = {
   // Lấy thống kê kỹ năng của ứng viên
   getCandidateSkills: async (candidateId) => {
     const result = await pool.query(
-      `SELECT parsed_data->'skills' as skills
-       FROM candidates
-       WHERE id = $1`,
+      `SELECT cp.parsed_data->'skills' as skills
+       FROM applications a
+       LEFT JOIN candidate_profiles cp ON a.candidate_profile_id = cp.id
+       WHERE a.id = $1`,
       [candidateId]
     )
     return result.rows[0]?.skills || []
   },
 
-  // Lấy lịch sử kinh nghiệm (nếu có)
+  // Lấy lịch sử kinh nghiệm
   getCandidateExperience: async (candidateId) => {
     const result = await pool.query(
-      `SELECT parsed_data->'experience' as experience
-       FROM candidates
-       WHERE id = $1`,
+      `SELECT cp.parsed_data->'experience' as experience
+       FROM applications a
+       LEFT JOIN candidate_profiles cp ON a.candidate_profile_id = cp.id
+       WHERE a.id = $1`,
       [candidateId]
     )
     return result.rows[0]?.experience || null
