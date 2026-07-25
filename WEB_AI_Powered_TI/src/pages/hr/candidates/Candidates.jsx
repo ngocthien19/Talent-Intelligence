@@ -217,6 +217,7 @@ const Candidates = () => {
 
   // Handler so sánh
   const handleCompare = () => {
+  // 1. Kiểm tra số lượng
     if (selectedIds.length < 2) {
       toast.warning(t('hr.comparison.selectAtLeast') || 'Vui lòng chọn ít nhất 2 ứng viên để so sánh')
       return
@@ -225,6 +226,46 @@ const Candidates = () => {
       toast.warning(t('hr.comparison.maxFive') || 'Chỉ có thể so sánh tối đa 5 ứng viên')
       return
     }
+
+    // 2. KIỂM TRA TRẠNG THÁI: Chỉ cho phép so sánh ứng viên đã được phân tích
+    const validStatuses = ['analyzed', 'shortlisted', 'interviewed', 'offered', 'hired']
+
+    const invalidCandidates = selectedIds.filter(id => {
+      const c = candidates.find(c => c.id === id)
+      return !validStatuses.includes(c?.status)
+    })
+
+    if (invalidCandidates.length > 0) {
+      const names = invalidCandidates.map(id => {
+        const c = candidates.find(c => c.id === id)
+        return c?.name || 'Không xác định'
+      })
+
+      // Hiển thị cảnh báo với danh sách tên ứng viên chưa phân tích
+      toast.warning(
+        `Ứng viên "${names.join(', ')}" chưa được phân tích. Chỉ những ứng viên đã phân tích mới có thể so sánh.`
+      )
+      return
+    }
+
+    // 3. Kiểm tra có điểm số không (phòng trường hợp status đúng nhưng score null)
+    const noScoreCandidates = selectedIds.filter(id => {
+      const c = candidates.find(c => c.id === id)
+      return c?.overall_score === null || c?.overall_score === undefined
+    })
+
+    if (noScoreCandidates.length > 0) {
+      const names = noScoreCandidates.map(id => {
+        const c = candidates.find(c => c.id === id)
+        return c?.name || 'Không xác định'
+      })
+      toast.warning(
+        `Ứng viên "${names.join(', ')}" chưa có điểm số. Vui lòng chọn ứng viên đã được đánh giá.`
+      )
+      return
+    }
+
+    // 4. Mở modal so sánh
     setComparisonCandidateIds(selectedIds)
     setIsComparisonOpen(true)
   }
