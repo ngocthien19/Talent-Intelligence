@@ -1,3 +1,4 @@
+// src/components/hr/interviews/InterviewTable.jsx
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FaSpinner, FaTimes } from 'react-icons/fa'
@@ -31,13 +32,15 @@ const InterviewTable = ({
   })
   const [isProcessing, setIsProcessing] = useState(false)
 
-  const allSelected = interviews.length > 0 && interviews.every(i => selectedIds.includes(i.id))
+  const selectableInterviews = interviews.filter(i => i.status === 'scheduled')
+  const allSelected = selectableInterviews.length > 0 && selectableInterviews.every(i => selectedIds.includes(i.id))
   const selectedCount = selectedIds.length
 
+  // Modal xác nhận hủy 1 lịch
   const openDeleteConfirm = (id) => {
     setConfirmModalConfig({
-      title: t('hr.interview.deleteTitle') || 'Xóa lịch phỏng vấn',
-      message: t('hr.interview.deleteMessage') || 'Bạn có chắc chắn muốn xóa lịch phỏng vấn này? Hành động này không thể hoàn tác.',
+      title: t('hr.interview.cancelTitle') || 'Hủy lịch phỏng vấn',
+      message: t('hr.interview.cancelMessage') || 'Bạn có chắc chắn muốn hủy lịch phỏng vấn này? Hành động này không thể hoàn tác.',
       type: 'danger',
       confirmText: t('hr.interview.cancelSchedule') || 'Hủy lịch',
       onConfirm: () => handleConfirmDelete(id)
@@ -52,12 +55,23 @@ const InterviewTable = ({
     setIsConfirmModalOpen(false)
   }
 
+  // Modal xác nhận XÓA hàng loạt (dùng delete thay vì cancel)
   const openBulkDeleteConfirm = () => {
+    const messageTemplate = t('hr.interview.deleteBulkMessage') || 'Bạn có chắc chắn muốn xóa {count} lịch phỏng vấn đã chọn? Hành động này không thể hoàn tác.'
+
+    const parts = messageTemplate.split(/\{count\}/)
+
     setConfirmModalConfig({
       title: t('hr.interview.deleteBulkTitle') || 'Xóa hàng loạt lịch phỏng vấn',
-      message: t('hr.interview.deleteBulkMessage') || `Bạn có chắc chắn muốn xóa ${selectedCount} lịch phỏng vấn đã chọn? Hành động này không thể hoàn tác.`,
+      message: (
+        <>
+          {parts[0]}
+          <span className="font-bold text-red-600">{selectedCount}</span>
+          {parts[1] || ''}
+        </>
+      ),
       type: 'danger',
-      confirmText: t('hr.interview.cancelSchedule') || 'Hủy lịch',
+      confirmText: t('hr.interview.delete') || 'Xóa', // Dùng "Xóa" thay vì "Hủy lịch"
       onConfirm: handleConfirmBulkDelete
     })
     setIsConfirmModalOpen(true)
@@ -71,7 +85,7 @@ const InterviewTable = ({
   }
 
   const handleClearSelection = () => {
-    onSelectAll(false)
+    onSelectAll(false, [])
   }
 
   return (
@@ -121,8 +135,9 @@ const InterviewTable = ({
                   <input
                     type="checkbox"
                     checked={allSelected}
-                    onChange={(e) => onSelectAll(e.target.checked)}
-                    className="w-4 h-4 rounded border-brand-light/50 dark:border-gray-700 text-brand-primary focus:ring-brand-primary/50 transition-all cursor-pointer"
+                    onChange={(e) => onSelectAll(e.target.checked, selectableInterviews.map(i => i.id))}
+                    disabled={selectableInterviews.length === 0}
+                    className="w-4 h-4 rounded border-brand-light/50 dark:border-gray-700 text-brand-primary focus:ring-brand-primary/50 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                 </th>
                 <th className="px-3 py-3 text-center text-xs font-semibold text-brand-text/60 dark:text-gray-400 uppercase tracking-wider">

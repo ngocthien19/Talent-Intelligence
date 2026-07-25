@@ -608,6 +608,7 @@
       "viewCalendar": "Googleカレンダーで見る",
       "online": "オンライン",
       "offline": "対面",
+      "minutes": "分",
       "interviewType": "面接形式",
       "meetLinkHint": "Google Meetリンクを入力",
       "locationOfflinePlaceholder": "対面面接の住所を入力",
@@ -645,8 +646,8 @@
       "cancelSchedule": "スケジュールをキャンセル",
       "confirm": "確認",
       "update": "更新",
-      "deleteTitle": "面接スケジュールをキャンセル",
-      "deleteMessage": "この面接スケジュールをキャンセルしてもよろしいですか？この操作は取り消せません。",
+      "cancelTitle": "面接スケジュールをキャンセル",
+      "cancelMessage": "この面接スケジュールをキャンセルしてもよろしいですか？この操作は取り消せません。",
       "deleteBulkTitle": "面接スケジュール一括削除",
       "deleteBulkMessage": "選択した{count}件の面接スケジュールを削除してもよろしいですか？この操作は取り消せません。",
       "autoCreateCalendar": "Googleカレンダーイベントを自動作成",
@@ -683,7 +684,10 @@
         "candidateRequired": "応募者を選択してください",
         "dateRequired": "日付を選択してください",
         "timeRequired": "時間を選択してください",
-        "locationRequired": "対面面接の場所を入力してください"
+        "locationRequired": "対面面接の場所を入力してください",
+        "invalidDateTime": "無効な日時です",
+        "datePast": "面接日は今日より前の日付にできません",
+        "timePast": "面接時間は現在より少なくとも1時間後である必要があります"
       }
     }
   }

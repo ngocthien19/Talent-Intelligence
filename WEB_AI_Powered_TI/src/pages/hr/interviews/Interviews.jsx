@@ -148,9 +148,9 @@ const Interviews = () => {
     setPagination(prev => ({ ...prev, page }))
   }
 
-  const handleSelectAll = (checked) => {
+  const handleSelectAll = (checked, ids = []) => {
     if (checked) {
-      setSelectedIds(interviews.map(i => i.id))
+      setSelectedIds(ids)
     } else {
       setSelectedIds([])
     }
@@ -311,7 +311,6 @@ const Interviews = () => {
       <InterviewHeader
         totalCount={pagination.total}
         todayCount={stats?.today || stats?.scheduled || 0}
-        upcomingCount={(stats?.scheduled || 0) + (stats?.confirmed || 0)}
         onOpenCreateModal={handleCreate}
       />
 

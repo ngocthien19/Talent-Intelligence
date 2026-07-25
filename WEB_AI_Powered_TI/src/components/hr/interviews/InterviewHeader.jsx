@@ -17,7 +17,6 @@ const itemVariants = {
 const InterviewHeader = ({
   totalCount,
   todayCount,
-  upcomingCount,
   onOpenCreateModal
 }) => {
   const { t } = useLanguage()
@@ -40,11 +39,6 @@ const InterviewHeader = ({
           {todayCount > 0 && (
             <span className="text-xs px-2 py-0.5 bg-brand-primary/10 text-brand-primary rounded-full font-medium">
               {todayCount} {t('hr.interview.today') || 'hôm nay'}
-            </span>
-          )}
-          {upcomingCount > 0 && (
-            <span className="text-xs px-2 py-0.5 bg-blue-100 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 rounded-full font-medium">
-              {upcomingCount} {t('hr.interview.upcoming') || 'sắp tới'}
             </span>
           )}
         </div>

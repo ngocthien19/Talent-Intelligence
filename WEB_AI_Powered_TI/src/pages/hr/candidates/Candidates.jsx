@@ -150,7 +150,6 @@ const Candidates = () => {
       fetchCandidates()
     }, 300)
     return () => clearTimeout(timer)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters.keyword, filters.page, filters.limit, filters.sortBy, filters.sortOrder])
 
   // Update URL params
