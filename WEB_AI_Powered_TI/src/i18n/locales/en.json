@@ -460,6 +460,7 @@
       "status": "Status",
       "candidate": "candidate",
       "candidates": "candidates",
+      "applications": "applications",
       "noCandidates": "No candidates yet",
       "noCandidatesFound": "No candidates found",
       "clearFilters": "Clear filters",

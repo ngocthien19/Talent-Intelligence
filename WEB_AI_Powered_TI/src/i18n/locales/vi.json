@@ -460,6 +460,7 @@
       "status": "Trạng thái",
       "candidate": "ứng viên",
       "candidates": "ứng viên",
+      "applications": "đơn ứng tuyển",
       "noCandidates": "Chưa có ứng viên nào",
       "noCandidatesFound": "Không tìm thấy ứng viên",
       "clearFilters": "Xóa bộ lọc",

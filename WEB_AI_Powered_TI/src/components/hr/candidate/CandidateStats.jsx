@@ -89,7 +89,7 @@ const CandidateStats = ({ widgets }) => {
         return (
           <div
             key={widget.id || index}
-            className="bg-white dark:bg-gray-800 rounded-xl shadow-custom p-4 border border-brand-light/30 dark:border-gray-700/50 hover:shadow-glow hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300 cursor-pointer"
+            className="bg-white dark:bg-gray-800 rounded-xl shadow-custom p-4 border border-brand-light/30 dark:border-gray-700/50 hover:shadow-glow hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300"
           >
             <div className="flex items-center justify-between">
               <div className={`p-2 rounded-xl ${colorClass}`}>

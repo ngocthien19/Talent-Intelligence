@@ -108,6 +108,7 @@ const HRJobs = () => {
         employmentType: customFilters.employmentType || undefined,
         isActive: customFilters.isActive !== '' ? customFilters.isActive === 'true' : undefined,
         categoryId: customFilters.categoryId || undefined,
+        location: customFilters.location || undefined,
         sortBy: customFilters.sortBy || 'created_at',
         sortOrder: customFilters.sortOrder || 'DESC',
         limit: customFilters.limit || 20,
