@@ -76,8 +76,8 @@ router.delete(
 )
 
 // Xóa hàng loạt (bulk)
-router.delete(
-  '/categories/bulk',
+router.post(
+  '/categories/bulk-delete',
   validate(deleteBulkValidation, 'body'),
   categoryController.deleteBulk
 )
