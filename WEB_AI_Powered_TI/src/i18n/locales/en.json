@@ -610,6 +610,26 @@
       "quickActions": "Quick Actions",
       "viewCandidates": "View Candidates"
     },
+    "comparison": {
+      "title": "Compare Candidates",
+      "candidates": "candidates",
+      "compare": "Compare",
+      "loading": "Analyzing comparison...",
+      "bestMatch": "Best Match",
+      "score": "Score",
+      "total": "Total",
+      "highest": "Highest",
+      "average": "Average",
+      "criteria": "Criteria",
+      "overallScore": "Overall Score",
+      "skills": "Skills",
+      "cultureFit": "Culture Fit",
+      "retention": "Retention",
+      "status": "Status",
+      "recommendation": "Recommendation",
+      "selectAtLeast": "Please select at least 2 candidates to compare",
+      "maxFive": "You can compare up to 5 candidates"
+    },
     "interview": {
       "calendarLink": "Google Calendar",
       "viewCalendar": "View on Google Calendar",
