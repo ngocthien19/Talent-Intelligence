@@ -8,7 +8,7 @@ import {
   FaHome,
   FaUsers,
   FaBriefcase,
-  FaFileAlt,
+  FaFolder,
   FaChartBar,
   FaCalendarAlt,
   FaSearch,
@@ -47,11 +47,11 @@ const HRSidebar = () => {
     { path: '/hr/dashboard', icon: FaHome, label: 'hr.dashboard', defaultLabel: 'Dashboard' },
     { path: '/hr/applications', icon: FaUsers, label: 'hr.applications', defaultLabel: 'Đơn ứng tuyển' },
     { path: '/hr/jobs', icon: FaBriefcase, label: 'hr.jobs', defaultLabel: 'Việc làm' },
+    { path: '/hr/categories', icon: FaFolder, label: 'hr.categories', defaultLabel: 'Danh mục' },
     { path: '/hr/interviews', icon: FaCalendarAlt, label: 'hr.interviews', defaultLabel: 'Lịch phỏng vấn' },
     { path: '/hr/mock-interview', icon: FaUserCog, label: 'hr.mockInterview', defaultLabel: 'Mock Interview' },
     { path: '/hr/search', icon: FaSearch, label: 'hr.searchCandidate', defaultLabel: 'Tìm kiếm' },
-    { path: '/hr/analytics', icon: FaChartBar, label: 'hr.analytics', defaultLabel: 'Phân tích' },
-    { path: '/hr/reports', icon: FaFileInvoice, label: 'hr.reports', defaultLabel: 'Báo cáo' }
+    { path: '/hr/analytics', icon: FaChartBar, label: 'hr.analytics', defaultLabel: 'Phân tích' }
   ]
 
   // Listen for toggle event from header
