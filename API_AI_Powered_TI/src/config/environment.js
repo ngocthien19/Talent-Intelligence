@@ -45,6 +45,7 @@ export const env = {
 
   // Google Service Account
   GOOGLE_SERVICE_ACCOUNT_KEY: process.env.GOOGLE_SERVICE_ACCOUNT_KEY || './service-account-key.json',
+  GOOGLE_CALENDAR_ID: process.env.GOOGLE_CALENDAR_ID,
 
   // Frontend
   FRONTEND_URL: process.env.FRONTEND_URL || 'http://localhost:5173'
