@@ -30,6 +30,23 @@ const jobDescriptionService = {
     return result
   },
 
+  getStats: async (companyId) => {
+    const query = `
+    SELECT 
+      COUNT(*) as total,
+      COUNT(CASE WHEN is_active = true THEN 1 END) as active,
+      COUNT(CASE WHEN is_active = false THEN 1 END) as inactive
+    FROM job_descriptions
+    WHERE company_id = $1
+  `
+    const result = await pool.query(query, [companyId])
+    return result.rows[0] || {
+      total: 0,
+      active: 0,
+      inactive: 0
+    }
+  },
+
   getList: async (companyId, filters) => {
     return await jobDescriptionModel.getList({
       companyId,
@@ -248,7 +265,7 @@ async function sendJobAlertEmail(candidate, job, data, companyName, matchedSkill
 <body>
   <div class="container">
     <div class="header">
-      <h1>💼 Cơ hội việc làm mới</h1>
+      <h1>Cơ hội việc làm mới</h1>
       <p>Dành riêng cho bạn</p>
     </div>
     
@@ -258,32 +275,32 @@ async function sendJobAlertEmail(candidate, job, data, companyName, matchedSkill
       
       <div class="job-info">
         <div class="job-info-item">
-          <span class="label">📌 Vị trí:</span>
+          <span class="label">Vị trí:</span>
           <span class="value"><strong>${data.title}</strong></span>
         </div>
         <div class="job-info-item">
-          <span class="label">🏢 Công ty:</span>
+          <span class="label">Công ty:</span>
           <span class="value">${companyName}</span>
         </div>
         ${data.location ? `
         <div class="job-info-item">
-          <span class="label">📍 Địa điểm:</span>
+          <span class="label">Địa điểm:</span>
           <span class="value">${data.location}</span>
         </div>` : ''}
         ${data.employmentType ? `
         <div class="job-info-item">
-          <span class="label">📋 Loại hình:</span>
+          <span class="label">Loại hình:</span>
           <span class="value">${data.employmentType}</span>
         </div>` : ''}
         ${data.experienceLevel ? `
         <div class="job-info-item">
-          <span class="label">⭐ Cấp bậc:</span>
+          <span class="label">Cấp bậc:</span>
           <span class="value">${data.experienceLevel}</span>
         </div>` : ''}
       </div>
 
       <div class="match-box">
-        <p style="margin: 0 0 5px; font-weight: 600; color: #2e7d32;">✅ Kỹ năng của bạn phù hợp</p>
+        <p style="margin: 0 0 5px; font-weight: 600; color: #2e7d32;">Kỹ năng của bạn phù hợp</p>
         <p style="margin: 0;">
           Bạn có <span class="match-count">${matchCount}/${totalRequired}</span> kỹ năng phù hợp với vị trí này:
         </p>
@@ -300,7 +317,7 @@ async function sendJobAlertEmail(candidate, job, data, companyName, matchedSkill
       </p>
       
       <p style="margin-top: 20px; color: #888; font-size: 14px;">
-        💡 Đừng bỏ lỡ cơ hội này! Ứng tuyển ngay hôm nay.
+        Đừng bỏ lỡ cơ hội này! Ứng tuyển ngay hôm nay.
       </p>
     </div>
     
@@ -315,7 +332,7 @@ async function sendJobAlertEmail(candidate, job, data, companyName, matchedSkill
 
   await EmailProvider.sendEmail(
     candidate.email,
-    `💼 Cơ hội việc làm mới: ${data.title} tại ${companyName}`,
+    `Cơ hội việc làm mới: ${data.title} tại ${companyName}`,
     htmlContent
   )
 }

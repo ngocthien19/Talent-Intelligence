@@ -32,6 +32,7 @@ const jobDescriptionController = {
         employmentType,
         isActive,
         categoryId,
+        location,
         sortBy,
         sortOrder,
         limit = 20,
@@ -46,6 +47,7 @@ const jobDescriptionController = {
         employmentType,
         isActive: isActive !== undefined ? isActive === 'true' : undefined,
         categoryId,
+        location,
         sortBy,
         sortOrder,
         limit: parseInt(limit),
@@ -56,6 +58,31 @@ const jobDescriptionController = {
         success: true,
         data: result.data,
         pagination: result.pagination
+      })
+    } catch (error) {
+      return res.status(500).json({
+        success: false,
+        message: error.message
+      })
+    }
+  },
+
+  getStats: async (req, res) => {
+    try {
+      const companyId = req.user.companyId
+
+      if (!companyId) {
+        return res.status(400).json({
+          success: false,
+          message: 'Không tìm thấy company ID'
+        })
+      }
+
+      const stats = await jobDescriptionService.getStats(companyId)
+
+      return res.status(200).json({
+        success: true,
+        data: stats
       })
     } catch (error) {
       return res.status(500).json({

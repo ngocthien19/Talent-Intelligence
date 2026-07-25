@@ -24,6 +24,8 @@ router.get(
   jobDescriptionController.getList
 )
 
+router.get('/jobs/stats', jobDescriptionController.getStats)
+
 router.get(
   '/jobs/:id/detail',
   validate(idValidation, 'params'),
