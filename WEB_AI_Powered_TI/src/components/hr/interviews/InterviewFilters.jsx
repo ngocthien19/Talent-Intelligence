@@ -101,7 +101,7 @@ const InterviewFilters = ({
           {/* Status */}
           <div className="min-w-0 flex flex-col">
             <label className="text-xs font-medium text-brand-text/60 dark:text-gray-400 block mb-1.5">
-              {t('hr.interview.status') || 'Trạng thái'}
+              {t('hr.interview.statusLabel') || 'Trạng thái'}
             </label>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>

@@ -58,7 +58,6 @@ const Interviews = () => {
         limit: 10,
         ...filters
       }
-      // Lọc bỏ các giá trị rỗng
       Object.keys(params).forEach(key => {
         if (params[key] === '' || params[key] === null || params[key] === undefined) {
           delete params[key]
@@ -104,7 +103,6 @@ const Interviews = () => {
         page: 1
       })
       if (response.success) {
-        // Map candidates để lấy id, name, position
         const mappedCandidates = (response.data || []).map(c => ({
           id: c.id,
           name: c.name || c.candidate_name || 'Ứng viên',
@@ -193,6 +191,7 @@ const Interviews = () => {
         response = await calendarApi.updateSchedule(editingInterview.id, {
           interviewDate: data.interviewDate,
           duration: data.duration,
+          interviewType: data.interviewType,
           location: data.location,
           meetLink: data.meetLink,
           notes: data.notes
@@ -205,6 +204,7 @@ const Interviews = () => {
           applicationId: data.applicationId,
           interviewDate: data.interviewDate,
           duration: data.duration,
+          interviewType: data.interviewType,
           location: data.location,
           meetLink: data.meetLink,
           notes: data.notes,
@@ -330,7 +330,6 @@ const Interviews = () => {
         onView={handleView}
         onEdit={handleEdit}
         onDelete={handleDelete}
-        onConfirm={handleConfirm}
         onUpdateStatus={handleUpdateStatus}
         onPageChange={handlePageChange}
         isLoading={isLoading}

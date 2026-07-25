@@ -1,8 +1,15 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useForm } from 'react-hook-form'
-import { FaTimes, FaCalendarAlt, FaClock, FaMapMarkerAlt, FaLink, FaUser } from 'react-icons/fa'
+import { toast } from 'react-toastify'
+import { FaTimes, FaCalendarAlt, FaClock, FaMapMarkerAlt, FaLink, FaUser, FaVideo, FaBuilding } from 'react-icons/fa'
 import { useLanguage } from '~/hooks/useLanguage'
+
+const pad = (n) => String(n).padStart(2, '0')
+const toLocalDateParts = (d) => ({
+  date: `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`,
+  time: `${pad(d.getHours())}:${pad(d.getMinutes())}`
+})
 
 const InterviewFormModal = ({
   isOpen,
@@ -13,13 +20,12 @@ const InterviewFormModal = ({
   isSubmitting = false
 }) => {
   const { t } = useLanguage()
+  const [interviewType, setInterviewType] = useState('online')
 
   const {
     register,
     handleSubmit,
     formState: { errors },
-    setValue,
-    watch,
     reset,
     clearErrors
   } = useForm({
@@ -39,10 +45,15 @@ const InterviewFormModal = ({
     if (isOpen) {
       if (editingInterview) {
         const date = new Date(editingInterview.interview_date)
+        const { date: localDate, time: localTime } = toLocalDateParts(date)
+
+        const inferredType = editingInterview.meeting_link ? 'online' : 'offline'
+        setInterviewType(inferredType)
+
         reset({
           applicationId: editingInterview.candidate_id || '',
-          interviewDate: date.toISOString().split('T')[0],
-          interviewTime: date.toTimeString().slice(0, 5),
+          interviewDate: localDate,
+          interviewTime: localTime,
           duration: editingInterview.duration || 60,
           location: editingInterview.location || '',
           meetLink: editingInterview.meeting_link || '',
@@ -50,9 +61,11 @@ const InterviewFormModal = ({
           autoCreateCalendar: true
         })
       } else {
+        const { date: localDate } = toLocalDateParts(new Date())
+        setInterviewType('online')
         reset({
-          applicationId: '', // ← Đổi từ candidateId
-          interviewDate: new Date().toISOString().split('T')[0],
+          applicationId: '',
+          interviewDate: localDate,
           interviewTime: '09:00',
           duration: 60,
           location: '',
@@ -72,12 +85,18 @@ const InterviewFormModal = ({
       return
     }
 
+    if (interviewType === 'offline' && !data.location) {
+      toast.error(t('hr.interview.validation.locationRequired') || 'Vui lòng nhập địa điểm phỏng vấn trực tiếp')
+      return
+    }
+
     const submitData = {
-      applicationId: data.applicationId, // ← Đổi từ candidateId
+      applicationId: data.applicationId,
       interviewDate: interviewDateTime.toISOString(),
       duration: parseInt(data.duration),
-      location: data.location || 'Google Meet',
-      meetLink: data.meetLink || undefined,
+      interviewType,
+      location: interviewType === 'online' ? (data.location || 'Google Meet') : data.location,
+      meetLink: interviewType === 'online' ? (data.meetLink || undefined) : undefined,
       notes: data.notes || undefined,
       autoCreateCalendar: data.autoCreateCalendar
     }
@@ -123,7 +142,7 @@ const InterviewFormModal = ({
                 <div className="relative">
                   <FaUser className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-text/40 dark:text-gray-500" size={16} />
                   <select
-                    {...register('applicationId', { // ← Đổi từ candidateId
+                    {...register('applicationId', {
                       required: t('hr.interview.validation.candidateRequired') || 'Vui lòng chọn ứng viên'
                     })}
                     className={`w-full pl-10 pr-4 py-2.5 text-sm border rounded-lg bg-white dark:bg-gray-900 text-brand-secondary dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-primary/50 transition-all duration-200 ${
@@ -154,7 +173,7 @@ const InterviewFormModal = ({
                         required: t('hr.interview.validation.dateRequired') || 'Vui lòng chọn ngày'
                       })}
                       type="date"
-                      min={new Date().toISOString().split('T')[0]}
+                      min={toLocalDateParts(new Date()).date}
                       className={`w-full pl-10 pr-4 py-2.5 text-sm border rounded-lg bg-white dark:bg-gray-900 text-brand-secondary dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-primary/50 transition-all duration-200 ${
                         errors.interviewDate ? 'border-red-500' : 'border-brand-light/50 dark:border-gray-700'
                       }`}
@@ -201,24 +220,71 @@ const InterviewFormModal = ({
                 </select>
               </div>
 
-              {/* Location */}
+              {/* Interview Type Toggle */}
               <div>
+                <label className="text-sm font-medium text-brand-secondary dark:text-white block mb-2">
+                  {t('hr.interview.interviewType') || 'Hình thức phỏng vấn'}
+                </label>
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setInterviewType('online')}
+                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg border transition-all duration-200 cursor-pointer ${
+                      interviewType === 'online'
+                        ? 'bg-brand-primary/10 border-brand-primary text-brand-primary'
+                        : 'border-brand-light/50 dark:border-gray-700 text-brand-text/60 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
+                    }`}
+                  >
+                    <FaVideo size={14} />
+                    {t('hr.interview.online') || 'Online (Google Meet)'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setInterviewType('offline')}
+                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg border transition-all duration-200 cursor-pointer ${
+                      interviewType === 'offline'
+                        ? 'bg-brand-primary/10 border-brand-primary text-brand-primary'
+                        : 'border-brand-light/50 dark:border-gray-700 text-brand-text/60 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
+                    }`}
+                  >
+                    <FaBuilding size={14} />
+                    {t('hr.interview.offline') || 'Trực tiếp'}
+                  </button>
+                </div>
+              </div>
+
+              {/*
+                QUAN TRỌNG: cả 2 khối location & meetLink LUÔN NẰM TRONG DOM (không unmount bằng ternary),
+                chỉ ẩn/hiện bằng class `hidden`. Nếu unmount hẳn (như bản cũ dùng if/else) thì mỗi lần
+                chuyển tab online/offline, React hủy input đó và giá trị người dùng đã gõ sẽ mất khi mount lại.
+                Input bị `hidden` sẽ tự động được trình duyệt bỏ qua khi validate `required`, nên không ảnh hưởng submit.
+              */}
+
+              {/* Location */}
+              <div className={interviewType === 'offline' ? '' : 'hidden'}>
                 <label className="text-sm font-medium text-brand-secondary dark:text-white block mb-1.5">
-                  {t('hr.interview.location') || 'Địa điểm'}
+                  {t('hr.interview.location') || 'Địa điểm'} <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
                   <FaMapMarkerAlt className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-text/40 dark:text-gray-500" size={16} />
                   <input
-                    {...register('location')}
+                    {...register('location', {
+                      required: interviewType === 'offline'
+                        ? (t('hr.interview.validation.locationRequired') || 'Vui lòng nhập địa điểm')
+                        : false
+                    })}
                     type="text"
-                    className="w-full pl-10 pr-4 py-2.5 text-sm border border-brand-light/50 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-brand-secondary dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-primary/50 transition-all duration-200"
-                    placeholder={t('hr.interview.locationPlaceholder') || 'Nhập địa điểm hoặc để trống (Google Meet)'}
+                    className={`w-full pl-10 pr-4 py-2.5 text-sm border rounded-lg bg-white dark:bg-gray-900 text-brand-secondary dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-primary/50 transition-all duration-200 ${
+                      errors.location ? 'border-red-500' : 'border-brand-light/50 dark:border-gray-700'
+                    }`}
+                    placeholder={t('hr.interview.locationOfflinePlaceholder') || 'Nhập địa chỉ phỏng vấn trực tiếp'}
                   />
                 </div>
+                {errors.location && <p className="text-xs text-red-500 mt-1">{errors.location.message}</p>}
               </div>
 
               {/* Meet Link */}
-              <div>
+              <div className={interviewType === 'online' ? '' : 'hidden'}>
                 <label className="text-sm font-medium text-brand-secondary dark:text-white block mb-1.5">
                   {t('hr.interview.meetLink') || 'Link tham gia'}
                 </label>
@@ -228,9 +294,12 @@ const InterviewFormModal = ({
                     {...register('meetLink')}
                     type="url"
                     className="w-full pl-10 pr-4 py-2.5 text-sm border border-brand-light/50 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-brand-secondary dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-primary/50 transition-all duration-200"
-                    placeholder={t('hr.interview.meetLinkPlaceholder') || 'https://meet.google.com/xxx-xxxx-xxx'}
+                    placeholder={t('hr.interview.meetLinkPlaceholder') || 'Để trống sẽ tự động tạo link Google Meet'}
                   />
                 </div>
+                <p className="text-xs text-brand-text/50 dark:text-gray-500 mt-1">
+                  {t('hr.interview.meetLinkHint') || 'Để trống, hệ thống sẽ tự tạo link Google Meet'}
+                </p>
               </div>
 
               {/* Notes */}
@@ -246,8 +315,8 @@ const InterviewFormModal = ({
                 />
               </div>
 
-              {/* Auto create calendar */}
-              <div className="flex items-center gap-3 pt-2">
+              {/* Auto create calendar - chỉ hiện khi online, vì offline không cần Meet event */}
+              <div className={`flex items-center gap-3 pt-2 ${interviewType === 'online' ? '' : 'hidden'}`}>
                 <input
                   {...register('autoCreateCalendar')}
                   type="checkbox"

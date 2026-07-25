@@ -83,6 +83,13 @@ export const calendarApi = {
     return response.data
   },
 
+  getCalendarLink: async (id) => {
+    const response = await authorizedAxiosInstance.get(
+      `${API_URL}/schedules/${id}/calendar-link`
+    )
+    return response.data
+  },
+
   createCalendarEvent: async (id) => {
     const response = await authorizedAxiosInstance.post(
       `${API_URL}/schedules/${id}/calendar`
