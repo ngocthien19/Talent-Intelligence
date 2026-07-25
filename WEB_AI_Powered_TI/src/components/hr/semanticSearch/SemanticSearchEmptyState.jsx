@@ -6,11 +6,11 @@ const SemanticSearchEmptyState = ({ hasSearched, onReset }) => {
   const { t } = useLanguage()
 
   const suggestionKeywords = [
-    { icon: FaBriefcase, label: 'Marketing' },
-    { icon: FaUserTie, label: 'Quản lý' },
-    { icon: FaChartLine, label: 'Tài chính' },
-    { icon: FaLaptopCode, label: 'Công nghệ' },
-    { icon: FaPencilRuler, label: 'Thiết kế' }
+    { icon: FaBriefcase, labelKey: 'hr.search.suggestion.marketing' },
+    { icon: FaUserTie, labelKey: 'hr.search.suggestion.management' },
+    { icon: FaChartLine, labelKey: 'hr.search.suggestion.finance' },
+    { icon: FaLaptopCode, labelKey: 'hr.search.suggestion.technology' },
+    { icon: FaPencilRuler, labelKey: 'hr.search.suggestion.design' }
   ]
 
   if (hasSearched) {
@@ -63,7 +63,7 @@ const SemanticSearchEmptyState = ({ hasSearched, onReset }) => {
               className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs bg-brand-light/20 dark:bg-gray-700/30 rounded-full text-brand-text/60 dark:text-gray-400"
             >
               <Icon size={12} />
-              {item.label}
+              {t(item.labelKey)}
             </span>
           )
         })}

@@ -518,6 +518,7 @@
       }
     },
     "job": {
+      "totalJobs": "Tổng công việc",
       "noResults": "Không tìm thấy công việc nào",
       "viewDetail": "Xem chi tiết",
       "add": "Thêm việc làm",
@@ -666,6 +667,13 @@
         "startDateAfterEnd": "Ngày bắt đầu phải nhỏ hơn ngày kết thúc",
         "endDateFuture": "Ngày kết thúc không được vượt quá ngày hiện tại",
         "startDateFuture": "Ngày bắt đầu không được vượt quá ngày hiện tại"
+      },
+      "suggestion": {
+        "marketing": "Marketing",
+        "management": "Quản lý",
+        "finance": "Tài chính",
+        "technology": "Công nghệ",
+        "design": "Thiết kế"
       }
     },
     "category": {

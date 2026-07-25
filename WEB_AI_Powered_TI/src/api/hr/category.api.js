@@ -69,9 +69,9 @@ export const categoryApi = {
 
   // Xóa hàng loạt (bulk)
   deleteBulk: async (ids) => {
-    const response = await authorizedAxiosInstance.delete(
-      `${DEV_API_URL}/api/hr/categories/bulk`,
-      { data: { ids } }
+    const response = await authorizedAxiosInstance.post(
+      `${DEV_API_URL}/api/hr/categories/bulk-delete`,
+      { ids }
     )
     return response.data
   },
