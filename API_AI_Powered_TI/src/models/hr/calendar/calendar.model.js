@@ -87,6 +87,16 @@ const calendarModel = {
     }
   },
 
+  getCalendarLink: async (id) => {
+    const result = await pool.query(
+      `SELECT google_event_id, meeting_link 
+       FROM interview_schedules 
+       WHERE id = $1`,
+      [id]
+    )
+    return result.rows[0]
+  },
+
   // Lấy danh sách lịch phỏng vấn theo công ty
   getSchedulesByCompany: async (filters) => {
     const {

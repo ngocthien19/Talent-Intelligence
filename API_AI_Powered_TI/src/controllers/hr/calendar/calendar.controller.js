@@ -102,6 +102,23 @@ const calendarController = {
     }
   },
 
+  getCalendarLink: async (req, res) => {
+    try {
+      const { id } = req.params
+      const result = await calendarService.getCalendarLink(id)
+
+      return res.status(200).json({
+        success: true,
+        data: result
+      })
+    } catch (error) {
+      return res.status(404).json({
+        success: false,
+        message: error.message
+      })
+    }
+  },
+
   getSchedulesByCandidate: async (req, res) => {
     try {
       const { candidateId } = req.params

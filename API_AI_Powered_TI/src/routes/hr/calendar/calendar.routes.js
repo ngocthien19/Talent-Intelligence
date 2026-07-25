@@ -100,4 +100,10 @@ router.post(
   calendarController.createCalendarEvent
 )
 
+router.get(
+  '/schedules/:id/calendar-link',
+  validate(idValidation, 'params'),
+  calendarController.getCalendarLink
+)
+
 export default router
