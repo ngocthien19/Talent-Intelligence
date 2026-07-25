@@ -37,7 +37,8 @@ const JobRow = ({
       }}
       className="hover:bg-brand-light/5 dark:hover:bg-gray-800/30 transition-colors duration-150"
     >
-      <td className="px-3 py-3">
+      {/* Checkbox - Căn giữa */}
+      <td className="px-3 py-3 text-center">
         <input
           type="checkbox"
           checked={isSelected}
@@ -45,7 +46,9 @@ const JobRow = ({
           className="w-4 h-4 rounded border-brand-light/50 dark:border-gray-700 text-brand-primary focus:ring-brand-primary/50 transition-all duration-200 cursor-pointer hover:scale-110"
         />
       </td>
-      <td className="px-3 py-3">
+
+      {/* Title - Căn trái */}
+      <td className="px-3 py-3 text-left">
         <div>
           <p className="font-medium text-brand-secondary dark:text-white truncate max-w-[200px] transition-colors duration-200 hover:text-brand-primary">
             {job.title}
@@ -57,19 +60,25 @@ const JobRow = ({
           )}
         </div>
       </td>
-      <td className="px-3 py-3">
+
+      {/* Experience Level - Căn giữa */}
+      <td className="px-3 py-3 text-center">
         <p className="text-brand-text dark:text-gray-300">
           {job.experience_level || '--'}
         </p>
       </td>
-      <td className="px-3 py-3">
+
+      {/* Employment Type - Căn giữa */}
+      <td className="px-3 py-3 text-center">
         <p className="text-brand-text dark:text-gray-300">
           {job.employment_type || '--'}
         </p>
       </td>
-      <td className="px-3 py-3">
+
+      {/* Location - Căn giữa */}
+      <td className="px-3 py-3 text-center">
         {job.location ? (
-          <div className="flex items-center gap-1 text-brand-text/60 dark:text-gray-400">
+          <div className="flex items-center justify-center gap-1 text-brand-text/60 dark:text-gray-400">
             <FaMapMarkerAlt size={12} />
             <span className="text-sm">{job.location}</span>
           </div>
@@ -77,17 +86,23 @@ const JobRow = ({
           <span className="text-sm text-brand-text/40 dark:text-gray-500">--</span>
         )}
       </td>
-      <td className="px-3 py-3">
+
+      {/* Status - Căn giữa */}
+      <td className="px-3 py-3 text-center">
         <JobStatusBadge isActive={job.is_active} />
       </td>
-      <td className="px-3 py-3">
+
+      {/* Created At - Căn giữa */}
+      <td className="px-3 py-3 text-center">
         <p className="text-xs text-brand-text/60 dark:text-gray-400">
           {job.created_at ? formatDate(new Date(job.created_at)) : '--'}
         </p>
       </td>
-      <td className="px-3 py-3 text-right">
-        <div className="flex items-center justify-end gap-1">
-          {/* View Detail - Tooltip */}
+
+      {/* Actions - Căn giữa */}
+      <td className="px-3 py-3 text-center">
+        <div className="flex items-center justify-center gap-1">
+          {/* View Detail */}
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -104,7 +119,7 @@ const JobRow = ({
             </Tooltip>
           </TooltipProvider>
 
-          {/* Edit - Tooltip - Màu cam */}
+          {/* Edit */}
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -121,7 +136,7 @@ const JobRow = ({
             </Tooltip>
           </TooltipProvider>
 
-          {/* Delete - Tooltip */}
+          {/* Delete */}
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>

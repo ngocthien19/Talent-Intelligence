@@ -615,6 +615,7 @@
       "viewCalendar": "View on Google Calendar",
       "online": "Online",
       "offline": "Offline",
+      "minutes": "minutes",
       "interviewType": "Interview Type",
       "meetLinkHint": "Enter Google Meet link",
       "locationOfflinePlaceholder": "Enter offline interview address",
@@ -652,8 +653,8 @@
       "cancelSchedule": "Cancel schedule",
       "confirm": "Confirm",
       "update": "Update",
-      "deleteTitle": "Cancel Interview Schedule",
-      "deleteMessage": "Are you sure you want to cancel this interview schedule? This action cannot be undone.",
+      "cancelTitle": "Cancel Interview Schedule",
+      "cancelMessage": "Are you sure you want to cancel this interview schedule? This action cannot be undone.",
       "deleteBulkTitle": "Bulk Delete Interview Schedules",
       "deleteBulkMessage": "Are you sure you want to delete {count} selected interview schedules? This action cannot be undone.",
       "autoCreateCalendar": "Auto create Google Calendar event",
@@ -690,7 +691,10 @@
         "candidateRequired": "Please select a candidate",
         "dateRequired": "Please select a date",
         "timeRequired": "Please select a time",
-        "locationRequired": "Please enter the offline interview location"
+        "locationRequired": "Please enter the offline interview location",
+        "invalidDateTime": "Invalid date time",
+        "datePast": "Interview date cannot be earlier than today",
+        "timePast": "Interview time must be at least 1 hour from now"
       }
     }
   }

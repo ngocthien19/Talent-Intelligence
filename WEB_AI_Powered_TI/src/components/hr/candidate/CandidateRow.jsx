@@ -57,7 +57,8 @@ const CandidateRow = ({
       }}
       className="hover:bg-brand-light/5 dark:hover:bg-gray-800/30 transition-colors duration-150"
     >
-      <td className="px-3 py-3">
+      {/* Checkbox - Căn giữa */}
+      <td className="px-3 py-3 text-center">
         <input
           type="checkbox"
           checked={isSelected}
@@ -65,7 +66,9 @@ const CandidateRow = ({
           className="w-4 h-4 rounded border-brand-light/50 dark:border-gray-700 text-brand-primary focus:ring-brand-primary/50 transition-all duration-200 cursor-pointer hover:scale-110"
         />
       </td>
-      <td className="px-3 py-3">
+
+      {/* Name - Căn trái */}
+      <td className="px-3 py-3 text-left">
         <div className="flex items-center gap-2">
           {candidate.avatar ? (
             <img
@@ -88,7 +91,9 @@ const CandidateRow = ({
           </div>
         </div>
       </td>
-      <td className="px-3 py-3">
+
+      {/* Position - Căn trái */}
+      <td className="px-3 py-3 text-left">
         <p className="text-brand-text dark:text-gray-300 truncate max-w-[120px]">
           {candidate.position_applied || candidate.job_title || t('hr.candidate.unknown') || 'Chưa xác định'}
         </p>
@@ -98,9 +103,11 @@ const CandidateRow = ({
           </p>
         )}
       </td>
-      <td className="px-3 py-3">
+
+      {/* Score - Căn giữa */}
+      <td className="px-3 py-3 text-center">
         {candidate.overall_score !== null && candidate.overall_score !== undefined ? (
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center justify-center gap-1.5">
             <span className={`text-sm font-bold ${getScoreColor(candidate.overall_score)}`}>
               {formatCompactNumber(candidate.overall_score)}
             </span>
@@ -124,8 +131,10 @@ const CandidateRow = ({
           </span>
         )}
       </td>
-      <td className="px-3 py-3">
-        <div className="relative">
+
+      {/* Status - Căn giữa */}
+      <td className="px-3 py-3 text-center">
+        <div className="relative inline-block">
           <button
             onClick={() => setIsStatusOpen(!isStatusOpen)}
             className="flex items-center gap-1 hover:opacity-80 transition-all duration-200 cursor-pointer group"
@@ -143,7 +152,7 @@ const CandidateRow = ({
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: -8, scale: 0.95 }}
                 transition={{ duration: 0.15, ease: [0.25, 0.46, 0.45, 0.94] }}
-                className="absolute left-0 top-full mt-1 z-10 min-w-[160px] bg-white dark:bg-gray-900 rounded-lg shadow-xl border border-brand-light/50 dark:border-gray-700 overflow-hidden"
+                className="absolute left-1/2 -translate-x-1/2 top-full mt-1 z-10 min-w-[160px] bg-white dark:bg-gray-900 rounded-lg shadow-xl border border-brand-light/50 dark:border-gray-700 overflow-hidden"
               >
                 {STATUS_OPTIONS.map((opt) => (
                   <button
@@ -169,14 +178,18 @@ const CandidateRow = ({
           </AnimatePresence>
         </div>
       </td>
-      <td className="px-3 py-3">
+
+      {/* Date - Căn giữa */}
+      <td className="px-3 py-3 text-center">
         <p className="text-xs text-brand-text/60 dark:text-gray-400">
           {candidate.created_at ? getDaysAgo(candidate.created_at) : '--'}
         </p>
       </td>
-      <td className="px-3 py-3 text-right">
-        <div className="flex items-center justify-end gap-1">
-          {/* View Detail - Tooltip */}
+
+      {/* Actions - Căn giữa */}
+      <td className="px-3 py-3 text-center">
+        <div className="flex items-center justify-center gap-1">
+          {/* View Detail */}
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -193,7 +206,7 @@ const CandidateRow = ({
             </Tooltip>
           </TooltipProvider>
 
-          {/* Delete - Tooltip */}
+          {/* Delete */}
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>

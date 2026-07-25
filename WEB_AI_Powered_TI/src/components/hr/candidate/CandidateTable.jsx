@@ -39,10 +39,8 @@ const CandidateTable = ({
   // Mở modal xác nhận xóa 1 ứng viên (bấm icon xóa trên từng dòng)
   const openSingleDeleteConfirm = (id, candidateName) => {
     const displayName = candidateName || 'ứng viên'
-    // Lấy message template từ ngôn ngữ và thay thế {name}
     const messageTemplate = t('hr.candidate.deleteMessage') || 'Bạn có chắc chắn muốn xóa ứng viên {name}? Hành động này không thể hoàn tác.'
 
-    // Tách message thành các phần để highlight
     const parts = messageTemplate.split(/\{name\}/)
 
     setConfirmModalConfig({
@@ -61,7 +59,6 @@ const CandidateTable = ({
     setIsConfirmModalOpen(true)
   }
 
-  // Xác nhận xóa 1 ứng viên
   const handleConfirmSingleDelete = async (id) => {
     setIsDeleting(true)
     await onDelete(id)
@@ -73,7 +70,6 @@ const CandidateTable = ({
   const openDeleteConfirm = () => {
     const messageTemplate = t('hr.candidate.deleteBulkMessage') || 'Bạn có chắc chắn muốn xóa {count} ứng viên đã chọn? Hành động này không thể hoàn tác.'
 
-    // Tách message thành các phần để highlight
     const parts = messageTemplate.split(/\{count\}/)
 
     setConfirmModalConfig({
@@ -92,7 +88,6 @@ const CandidateTable = ({
     setIsConfirmModalOpen(true)
   }
 
-  // Xác nhận xóa hàng loạt
   const handleConfirmDeleteBulk = async () => {
     setIsDeleting(true)
     await onDeleteBulk(selectedIds)
@@ -100,12 +95,10 @@ const CandidateTable = ({
     setIsConfirmModalOpen(false)
   }
 
-  // Xóa chọn
   const handleClearSelection = () => {
     onSelectAll(false)
   }
 
-  // Hàm lấy icon sort - chỉ để hiển thị, không có action click
   const getSortIcon = (field) => {
     if (currentSortBy !== field) return null
     return currentSortOrder === 'DESC' ? '↓' : '↑'
@@ -125,13 +118,11 @@ const CandidateTable = ({
               className="border-b border-brand-light/30 dark:border-gray-700/50 bg-brand-light/10 dark:bg-gray-800/50 px-4 py-2.5 overflow-hidden"
             >
               <div className="flex flex-wrap items-center justify-between gap-2">
-                {/* Left side - Bulk actions */}
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="text-xs font-medium text-brand-text/60 dark:text-gray-400 mr-1">
                     {t('hr.candidate.bulkActions') || 'Thao tác hàng loạt:'}
                   </span>
 
-                  {/* Delete bulk button */}
                   <button
                     onClick={openDeleteConfirm}
                     className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/50 transition-all duration-200 cursor-pointer hover:scale-[1.02] active:scale-95"
@@ -141,7 +132,6 @@ const CandidateTable = ({
                   </button>
                 </div>
 
-                {/* Right side - Selection info */}
                 <div className="flex items-center gap-3">
                   <span className="text-xs text-brand-text/60 dark:text-gray-400">
                     {t('hr.candidate.selected') || 'Đã chọn'}{' '}
@@ -165,7 +155,7 @@ const CandidateTable = ({
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-gray-50/50 dark:bg-gray-900/50 border-b border-brand-light/30 dark:border-gray-700/50">
-                <th className="w-10 px-3 py-3">
+                <th className="w-10 px-3 py-3 text-center">
                   <input
                     type="checkbox"
                     checked={allSelected}
@@ -174,29 +164,21 @@ const CandidateTable = ({
                   />
                 </th>
                 <th className="px-3 py-3 text-left text-xs font-semibold text-brand-text/60 dark:text-gray-400 uppercase tracking-wider">
-                  <div className="flex items-center gap-1">
-                    {t('hr.candidate.name') || 'Tên'}
-                  </div>
+                  {t('hr.candidate.name') || 'Tên'}
                 </th>
                 <th className="px-3 py-3 text-left text-xs font-semibold text-brand-text/60 dark:text-gray-400 uppercase tracking-wider">
                   {t('hr.candidate.position') || 'Vị trí'}
                 </th>
-                <th className="px-3 py-3 text-left text-xs font-semibold text-brand-text/60 dark:text-gray-400 uppercase tracking-wider">
-                  <div className="flex items-center gap-1">
-                    {t('hr.candidate.score') || 'Điểm'}
-                  </div>
+                <th className="px-3 py-3 text-center text-xs font-semibold text-brand-text/60 dark:text-gray-400 uppercase tracking-wider">
+                  {t('hr.candidate.score') || 'Điểm'}
                 </th>
-                <th className="px-3 py-3 text-left text-xs font-semibold text-brand-text/60 dark:text-gray-400 uppercase tracking-wider">
-                  <div className="flex items-center gap-1">
-                    {t('hr.candidate.status') || 'Trạng thái'}
-                  </div>
+                <th className="px-3 py-3 text-center text-xs font-semibold text-brand-text/60 dark:text-gray-400 uppercase tracking-wider">
+                  {t('hr.candidate.status') || 'Trạng thái'}
                 </th>
-                <th className="px-3 py-3 text-left text-xs font-semibold text-brand-text/60 dark:text-gray-400 uppercase tracking-wider">
-                  <div className="flex items-center gap-1">
-                    {t('hr.candidate.date') || 'Ngày ứng tuyển'}
-                  </div>
+                <th className="px-3 py-3 text-center text-xs font-semibold text-brand-text/60 dark:text-gray-400 uppercase tracking-wider">
+                  {t('hr.candidate.date') || 'Ngày ứng tuyển'}
                 </th>
-                <th className="px-3 py-3 text-right text-xs font-semibold text-brand-text/60 dark:text-gray-400 uppercase tracking-wider">
+                <th className="px-3 py-3 text-center text-xs font-semibold text-brand-text/60 dark:text-gray-400 uppercase tracking-wider">
                   {t('hr.candidate.actions') || 'Thao tác'}
                 </th>
               </tr>
@@ -254,7 +236,6 @@ const CandidateTable = ({
         )}
       </div>
 
-      {/* Confirm Modal  */}
       <ConfirmModal
         isOpen={isConfirmModalOpen}
         onClose={() => setIsConfirmModalOpen(false)}

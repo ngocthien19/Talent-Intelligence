@@ -615,6 +615,7 @@
       "viewCalendar": "Xem trên Google Calendar",
       "online": "Trực tuyến",
       "offline": "Trực tiếp",
+      "minutes": "phút",
       "interviewType": "Hình thức phỏng vấn",
       "meetLinkHint": "Nhập link Google Meet",
       "locationOfflinePlaceholder": "Nhập địa chỉ phỏng vấn trực tiếp",
@@ -652,8 +653,8 @@
       "cancelSchedule": "Hủy lịch",
       "confirm": "Xác nhận",
       "update": "Cập nhật",
-      "deleteTitle": "Hủy lịch phỏng vấn",
-      "deleteMessage": "Bạn có chắc chắn muốn hủy lịch phỏng vấn này? Hành động này không thể hoàn tác.",
+      "cancelTitle": "Hủy lịch phỏng vấn",
+      "cancelMessage": "Bạn có chắc chắn muốn hủy lịch phỏng vấn này? Hành động này không thể hoàn tác.",
       "deleteBulkTitle": "Xóa hàng loạt lịch phỏng vấn",
       "deleteBulkMessage": "Bạn có chắc chắn muốn xóa {count} lịch phỏng vấn đã chọn? Hành động này không thể hoàn tác.",
       "autoCreateCalendar": "Tự động tạo sự kiện Google Calendar",
@@ -690,7 +691,11 @@
         "candidateRequired": "Vui lòng chọn ứng viên",
         "dateRequired": "Vui lòng chọn ngày",
         "timeRequired": "Vui lòng chọn giờ",
-        "locationRequired": "Vui lòng nhập địa điểm phỏng vấn trực tiếp"
+        "locationRequired": "Vui lòng nhập địa điểm phỏng vấn trực tiếp",
+        "invalidDateTime": "Ngày giờ không hợp lệ",
+        "datePast": "Ngày phỏng vấn không được nhỏ hơn ngày hiện tại",
+        "timePast": "Giờ phỏng vấn phải sau hiện tại ít nhất 1 giờ"
+
       }
     }
   }

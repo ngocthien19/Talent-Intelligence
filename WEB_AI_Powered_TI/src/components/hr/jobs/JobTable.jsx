@@ -1,4 +1,3 @@
-// src/components/hr/jobs/JobTable.jsx
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FaSpinner, FaTrash, FaCheck, FaPause, FaTimes } from 'react-icons/fa'
@@ -41,7 +40,6 @@ const JobTable = ({
     const displayTitle = jobTitle || 'công việc'
     const messageTemplate = t('hr.job.deleteMessage') || 'Bạn có chắc chắn muốn xóa công việc "{title}"? Hành động này không thể hoàn tác.'
 
-    // Tách message thành các phần để highlight
     const parts = messageTemplate.split(/\{title\}/)
 
     setConfirmModalConfig({
@@ -70,8 +68,6 @@ const JobTable = ({
   // Mở modal xác nhận xóa hàng loạt
   const openDeleteBulkConfirm = () => {
     const messageTemplate = t('hr.job.deleteBulkMessage') || 'Bạn có chắc chắn muốn xóa {count} công việc đã chọn? Hành động này không thể hoàn tác.'
-
-    // Tách message thành các phần để highlight
     const parts = messageTemplate.split(/\{count\}/)
 
     setConfirmModalConfig({
@@ -100,8 +96,6 @@ const JobTable = ({
   // Mở modal xác nhận kích hoạt hàng loạt
   const openActivateBulkConfirm = () => {
     const messageTemplate = t('hr.job.activateBulkMessage') || 'Bạn có chắc chắn muốn kích hoạt {count} công việc đã chọn?'
-
-    // Tách message thành các phần để highlight
     const parts = messageTemplate.split(/\{count\}/)
 
     setConfirmModalConfig({
@@ -130,8 +124,6 @@ const JobTable = ({
   // Mở modal xác nhận tạm dừng hàng loạt
   const openDeactivateBulkConfirm = () => {
     const messageTemplate = t('hr.job.deactivateBulkMessage') || 'Bạn có chắc chắn muốn tạm dừng {count} công việc đã chọn?'
-
-    // Tách message thành các phần để highlight
     const parts = messageTemplate.split(/\{count\}/)
 
     setConfirmModalConfig({
@@ -157,7 +149,6 @@ const JobTable = ({
     setIsConfirmModalOpen(false)
   }
 
-  // Xóa chọn
   const handleClearSelection = () => {
     onSelectAll(false)
   }
@@ -176,13 +167,11 @@ const JobTable = ({
               className="border-b border-brand-light/30 dark:border-gray-700/50 bg-brand-light/10 dark:bg-gray-800/50 px-4 py-2.5 overflow-hidden"
             >
               <div className="flex flex-wrap items-center justify-between gap-2">
-                {/* Left side - Bulk actions */}
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="text-xs font-medium text-brand-text/60 dark:text-gray-400 mr-1">
                     {t('hr.job.bulkActions') || 'Thao tác hàng loạt:'}
                   </span>
 
-                  {/* Activate button */}
                   <button
                     onClick={openActivateBulkConfirm}
                     className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-emerald-600 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-lg hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-all duration-200 cursor-pointer hover:scale-[1.02] active:scale-95"
@@ -191,7 +180,6 @@ const JobTable = ({
                     {t('hr.job.activate') || 'Kích hoạt'}
                   </button>
 
-                  {/* Deactivate button */}
                   <button
                     onClick={openDeactivateBulkConfirm}
                     className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-yellow-600 bg-yellow-50 dark:bg-yellow-950/30 border border-yellow-200 dark:border-yellow-800 rounded-lg hover:bg-yellow-100 dark:hover:bg-yellow-900/50 transition-all duration-200 cursor-pointer hover:scale-[1.02] active:scale-95"
@@ -200,7 +188,6 @@ const JobTable = ({
                     {t('hr.job.deactivate') || 'Tạm dừng'}
                   </button>
 
-                  {/* Delete button */}
                   <button
                     onClick={openDeleteBulkConfirm}
                     className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/50 transition-all duration-200 cursor-pointer hover:scale-[1.02] active:scale-95"
@@ -210,7 +197,6 @@ const JobTable = ({
                   </button>
                 </div>
 
-                {/* Right side - Selection info */}
                 <div className="flex items-center gap-3">
                   <span className="text-xs text-brand-text/60 dark:text-gray-400">
                     {t('hr.job.selected') || 'Đã chọn'}{' '}
@@ -234,7 +220,7 @@ const JobTable = ({
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-gray-50/50 dark:bg-gray-900/50 border-b border-brand-light/30 dark:border-gray-700/50">
-                <th className="w-10 px-3 py-3">
+                <th className="w-10 px-3 py-3 text-center">
                   <input
                     type="checkbox"
                     checked={allSelected}
@@ -245,22 +231,22 @@ const JobTable = ({
                 <th className="px-3 py-3 text-left text-xs font-semibold text-brand-text/60 dark:text-gray-400 uppercase tracking-wider">
                   {t('hr.job.title') || 'Tiêu đề'}
                 </th>
-                <th className="px-3 py-3 text-left text-xs font-semibold text-brand-text/60 dark:text-gray-400 uppercase tracking-wider">
+                <th className="px-3 py-3 text-center text-xs font-semibold text-brand-text/60 dark:text-gray-400 uppercase tracking-wider">
                   {t('hr.job.experienceLevel') || 'Cấp bậc'}
                 </th>
-                <th className="px-3 py-3 text-left text-xs font-semibold text-brand-text/60 dark:text-gray-400 uppercase tracking-wider">
+                <th className="px-3 py-3 text-center text-xs font-semibold text-brand-text/60 dark:text-gray-400 uppercase tracking-wider">
                   {t('hr.job.employmentType') || 'Loại hình'}
                 </th>
-                <th className="px-3 py-3 text-left text-xs font-semibold text-brand-text/60 dark:text-gray-400 uppercase tracking-wider">
+                <th className="px-3 py-3 text-center text-xs font-semibold text-brand-text/60 dark:text-gray-400 uppercase tracking-wider">
                   {t('hr.job.location') || 'Địa điểm'}
                 </th>
-                <th className="px-3 py-3 text-left text-xs font-semibold text-brand-text/60 dark:text-gray-400 uppercase tracking-wider">
+                <th className="px-3 py-3 text-center text-xs font-semibold text-brand-text/60 dark:text-gray-400 uppercase tracking-wider">
                   {t('hr.job.status') || 'Trạng thái'}
                 </th>
-                <th className="px-3 py-3 text-left text-xs font-semibold text-brand-text/60 dark:text-gray-400 uppercase tracking-wider">
+                <th className="px-3 py-3 text-center text-xs font-semibold text-brand-text/60 dark:text-gray-400 uppercase tracking-wider">
                   {t('hr.job.createdAt') || 'Ngày tạo'}
                 </th>
-                <th className="px-3 py-3 text-right text-xs font-semibold text-brand-text/60 dark:text-gray-400 uppercase tracking-wider">
+                <th className="px-3 py-3 text-center text-xs font-semibold text-brand-text/60 dark:text-gray-400 uppercase tracking-wider">
                   {t('hr.job.actions') || 'Thao tác'}
                 </th>
               </tr>
@@ -318,7 +304,6 @@ const JobTable = ({
         )}
       </div>
 
-      {/* Confirm Modal */}
       <ConfirmModal
         isOpen={isConfirmModalOpen}
         onClose={() => setIsConfirmModalOpen(false)}
