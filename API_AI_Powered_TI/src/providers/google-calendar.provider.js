@@ -51,7 +51,7 @@ export const createCalendarEvent = async (eventData) => {
     }
 
     if (meetLink) {
-      event.description = `${description || ''}\n\n🔗 Link tham gia: ${meetLink}`
+      event.description = `${description || ''}\n\n Link tham gia: ${meetLink}`
     }
 
     const response = await calendar.events.insert({
@@ -74,6 +74,20 @@ export const createCalendarEvent = async (eventData) => {
   }
 }
 
+// THÊM MỚI: Lấy chi tiết sự kiện Google Calendar
+export const getCalendarEvent = async (eventId) => {
+  try {
+    const response = await calendar.events.get({
+      calendarId: 'primary',
+      eventId: eventId
+    })
+    return response.data
+  } catch (error) {
+    console.error('Error getting calendar event:', error)
+    return null
+  }
+}
+
 export const deleteCalendarEvent = async (eventId) => {
   try {
     await calendar.events.delete({
@@ -86,9 +100,55 @@ export const deleteCalendarEvent = async (eventId) => {
   }
 }
 
+// THÊM MỚI: Cập nhật sự kiện Google Calendar
+export const updateCalendarEvent = async (eventId, eventData) => {
+  try {
+    const {
+      summary,
+      description,
+      startDateTime,
+      endDateTime,
+      location,
+      timeZone = 'Asia/Ho_Chi_Minh'
+    } = eventData
+
+    const event = {
+      summary,
+      description,
+      start: {
+        dateTime: startDateTime,
+        timeZone
+      },
+      end: {
+        dateTime: endDateTime,
+        timeZone
+      },
+      location: location || 'Online Meeting'
+    }
+
+    const response = await calendar.events.update({
+      calendarId: 'primary',
+      eventId: eventId,
+      resource: event,
+      sendUpdates: 'all'
+    })
+
+    return {
+      success: true,
+      eventId: response.data.id,
+      htmlLink: response.data.htmlLink,
+      event: response.data
+    }
+  } catch (error) {
+    throw new Error(`Cập nhật sự kiện thất bại: ${error.message}`)
+  }
+}
+
 export default {
   getCalendarClient,
   getAuthClient,
   createCalendarEvent,
+  getCalendarEvent,
+  updateCalendarEvent,
   deleteCalendarEvent
 }

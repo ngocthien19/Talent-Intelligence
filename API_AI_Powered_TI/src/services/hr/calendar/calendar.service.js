@@ -1,5 +1,5 @@
 import calendarModel from '~/models/hr/calendar/calendar.model'
-import { createCalendarEvent, deleteCalendarEvent } from '~/providers/google-calendar.provider'
+import { createCalendarEvent, deleteCalendarEvent, getCalendarEvent } from '~/providers/google-calendar.provider'
 import applicationModel from '~/models/candidate/application.model'
 import candidateProfileModel from '~/models/candidate/candidate-profile.model'
 import { EmailProvider } from '~/providers/email.provider'
@@ -68,7 +68,7 @@ const calendarService = {
       try {
         await calendarService.createGoogleCalendarEvent(schedule.id)
       } catch (error) {
-        console.error('Failed to create Google Calendar event:', error)
+        // console.error('Failed to create Google Calendar event:', error)
       }
     }
 
@@ -130,6 +130,37 @@ const calendarService = {
       throw new Error('Không tìm thấy lịch phỏng vấn')
     }
     return schedule
+  },
+
+  getCalendarLink: async (id) => {
+    // Lấy thông tin từ database
+    const schedule = await calendarModel.getCalendarLink(id)
+    if (!schedule) {
+      throw new Error('Không tìm thấy lịch phỏng vấn')
+    }
+
+    if (schedule.google_event_id) {
+      try {
+        const event = await getCalendarEvent(schedule.google_event_id)
+        if (event) {
+          return {
+            calendarLink: event.htmlLink,
+            meetingLink: schedule.meeting_link,
+            eventId: schedule.google_event_id,
+            hasCalendarEvent: true
+          }
+        }
+      } catch (error) {
+        // console.error('Error fetching calendar event:', error)
+      }
+    }
+
+    return {
+      calendarLink: null,
+      meetingLink: schedule.meeting_link,
+      eventId: schedule.google_event_id,
+      hasCalendarEvent: false
+    }
   },
 
   updateStatus: async (id, status) => {
