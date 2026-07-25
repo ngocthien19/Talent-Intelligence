@@ -9,6 +9,7 @@ import { jobApi } from '~/api/hr/job.api'
 import JobHeader from '~/components/hr/jobs/JobHeader'
 import JobFilters from '~/components/hr/jobs/JobFilters'
 import JobTable from '~/components/hr/jobs/JobTable'
+import JobStats from '~/components/hr/jobs/JobStats'
 import JobEmptyState from '~/components/hr/jobs/JobEmptyState'
 import JobFormModal from '~/components/hr/jobs/JobFormModal'
 
@@ -29,6 +30,7 @@ const DEFAULT_FILTERS = {
   employmentType: '',
   isActive: '',
   categoryId: '',
+  location,
   sortBy: 'created_at',
   sortOrder: 'DESC',
   page: 1,
@@ -42,6 +44,7 @@ const HRJobs = () => {
 
   // State
   const [isLoading, setIsLoading] = useState(true)
+  const [stats, setStats] = useState(null)
   const [isTableLoading, setIsTableLoading] = useState(false)
   const [jobs, setJobs] = useState([])
   const [categories, setCategories] = useState([])
@@ -64,11 +67,23 @@ const HRJobs = () => {
     employmentType: searchParams.get('employmentType') || '',
     isActive: searchParams.get('isActive') || '',
     categoryId: searchParams.get('categoryId') || '',
+    location: searchParams.get('location') || '',
     sortBy: searchParams.get('sortBy') || 'created_at',
     sortOrder: searchParams.get('sortOrder') || 'DESC',
     page: parseInt(searchParams.get('page')) || 1,
     limit: parseInt(searchParams.get('limit')) || 20
   })
+
+  const fetchStats = useCallback(async () => {
+    try {
+      const response = await jobApi.getJobStats()
+      if (response.success) {
+        setStats(response.data)
+      }
+    } catch (err) {
+      console.error('Failed to fetch stats:', err)
+    }
+  }, [])
 
   // Fetch categories
   const fetchCategories = useCallback(async () => {
@@ -132,9 +147,9 @@ const HRJobs = () => {
   // Fetch all data
   const fetchAll = useCallback(async () => {
     setIsLoading(true)
-    await Promise.all([fetchCategories(), fetchJobsWithParams(filters)])
+    await Promise.all([fetchCategories(), fetchStats(), fetchJobsWithParams(filters)])
     setIsLoading(false)
-  }, [fetchCategories, fetchJobsWithParams, filters])
+  }, [fetchCategories, fetchStats, fetchJobsWithParams, filters])
 
   // Initial load
   useEffect(() => {
@@ -337,6 +352,8 @@ const HRJobs = () => {
           totalCount={pagination.total}
           onOpenCreateModal={handleOpenCreateModal}
         />
+
+        <JobStats stats={stats} />
 
         {/* Filters */}
         <JobFilters

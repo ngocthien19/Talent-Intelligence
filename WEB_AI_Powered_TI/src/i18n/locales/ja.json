@@ -511,6 +511,7 @@
       }
     },
     "job": {
+      "totalJobs": "総求人数",
       "noResults": "求人が見つかりません",
       "viewDetail": "詳細を見る",
       "add": "求人を追加",
@@ -659,6 +660,13 @@
         "startDateAfterEnd": "開始日は終了日より前である必要があります",
         "endDateFuture": "終了日は今日より後にはできません",
         "startDateFuture": "開始日は今日より後にはできません"
+      },
+      "suggestion": {
+        "marketing": "マーケティング",
+        "management": "経営管理",
+        "finance": "金融",
+        "technology": "テクノロジー",
+        "design": "デザイン"
       }
     },
     "category": {

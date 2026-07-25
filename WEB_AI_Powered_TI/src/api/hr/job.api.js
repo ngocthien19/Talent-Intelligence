@@ -103,5 +103,12 @@ export const jobApi = {
       `${DEV_API_URL}/api/hr/jobs/${id}/candidates?${queryParams.toString()}`
     )
     return response.data
+  },
+
+  getJobStats: async () => {
+    const response = await authorizedAxiosInstance.get(
+      `${DEV_API_URL}/api/hr/jobs/stats`
+    )
+    return response.data
   }
 }

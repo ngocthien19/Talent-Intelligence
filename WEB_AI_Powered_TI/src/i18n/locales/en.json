@@ -518,6 +518,7 @@
       }
     },
     "job": {
+      "totalJobs": "Total Jobs",
       "noResults": "No jobs found",
       "viewDetail": "View Details",
       "add": "Add Job",
@@ -666,6 +667,13 @@
         "startDateAfterEnd": "Start date must be before end date",
         "endDateFuture": "End date cannot exceed today",
         "startDateFuture": "Start date cannot exceed today"
+      },
+      "suggestion": {
+        "marketing": "Marketing",
+        "management": "Management",
+        "finance": "Finance",
+        "technology": "Technology",
+        "design": "Design"
       }
     },
     "category": {
