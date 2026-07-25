@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   FaTimes,
@@ -10,19 +11,51 @@ import {
   FaLink,
   FaBriefcase,
   FaFileAlt,
+  FaTimesCircle,
   FaCheckCircle,
-  FaTimesCircle
+  FaGoogle,
+  FaSpinner
 } from 'react-icons/fa'
 import { useLanguage } from '~/hooks/useLanguage'
+import { calendarApi } from '~/api/hr/calendar.api'
 import InterviewStatusBadge from './InterviewStatusBadge'
 import { formatDate } from '~/utils/format'
 
-const InterviewDetailModal = ({ isOpen, onClose, interview, onConfirm, onUpdateStatus }) => {
+const InterviewDetailModal = ({ isOpen, onClose, interview, onUpdateStatus }) => {
   const { t } = useLanguage()
+  const [calendarLink, setCalendarLink] = useState(null)
+  const [isLoadingLink, setIsLoadingLink] = useState(false)
 
   if (!isOpen || !interview) return null
 
   const interviewDate = new Date(interview.interview_date)
+
+  // Lấy avatar URL
+  const avatarUrl = interview?.avatar?.secure_url || null
+
+  // Fetch calendar link khi mở modal
+  useEffect(() => {
+    if (isOpen && interview?.id) {
+      fetchCalendarLink()
+    }
+  }, [isOpen, interview?.id])
+
+  const fetchCalendarLink = async () => {
+    // Nếu không có google_event_id thì không cần gọi
+    if (!interview.google_event_id) return
+
+    setIsLoadingLink(true)
+    try {
+      const response = await calendarApi.getCalendarLink(interview.id)
+      if (response.success) {
+        setCalendarLink(response.data)
+      }
+    } catch (error) {
+      console.error('Error fetching calendar link:', error)
+    } finally {
+      setIsLoadingLink(false)
+    }
+  }
 
   const DetailItem = ({ icon: Icon, label, value, className = '' }) => (
     <div className={`flex items-start gap-3 py-2 ${className}`}>
@@ -34,16 +67,19 @@ const InterviewDetailModal = ({ isOpen, onClose, interview, onConfirm, onUpdateS
     </div>
   )
 
-  // Handlers
-  const handleConfirm = () => {
-    if (onConfirm) onConfirm(interview.id)
-    onClose()
-  }
-
   const handleCancel = () => {
     if (onUpdateStatus) onUpdateStatus(interview.id, 'cancelled')
     onClose()
   }
+
+  const handleComplete = () => {
+    if (onUpdateStatus) onUpdateStatus(interview.id, 'completed')
+    onClose()
+  }
+
+  // Kiểm tra trạng thái có thể thao tác
+  const canCancel = interview.status === 'scheduled'
+  const canComplete = interview.status === 'confirmed'
 
   return (
     <AnimatePresence>
@@ -93,11 +129,10 @@ const InterviewDetailModal = ({ isOpen, onClose, interview, onConfirm, onUpdateS
                     {t('hr.interview.candidateInfo') || 'Thông tin ứng viên'}
                   </p>
                   <div className="flex items-center gap-2">
-                    {/* Avatar - ưu tiên ảnh nếu có */}
-                    {interview.avatar ? (
+                    {avatarUrl ? (
                       <img
-                        src={interview.avatar}
-                        alt={interview.candidate_name}
+                        src={avatarUrl}
+                        alt={interview.candidate_name || 'Avatar'}
                         className="w-10 h-10 rounded-full object-cover border-2 border-brand-light/30 dark:border-gray-700 flex-shrink-0"
                         onError={(e) => {
                           e.target.style.display = 'none'
@@ -107,7 +142,7 @@ const InterviewDetailModal = ({ isOpen, onClose, interview, onConfirm, onUpdateS
                         }}
                       />
                     ) : null}
-                    <div className={`w-10 h-10 rounded-full bg-gradient-brand flex items-center justify-center text-white font-semibold text-sm flex-shrink-0 fallback-avatar ${interview.avatar ? 'hidden' : ''}`}>
+                    <div className={`w-10 h-10 rounded-full bg-gradient-brand flex items-center justify-center text-white font-semibold text-sm flex-shrink-0 fallback-avatar ${avatarUrl ? 'hidden' : ''}`}>
                       {interview.candidate_name?.charAt(0)?.toUpperCase() || 'U'}
                     </div>
                     <div>
@@ -183,6 +218,30 @@ const InterviewDetailModal = ({ isOpen, onClose, interview, onConfirm, onUpdateS
                       }
                     />
                   )}
+
+                  {/* Google Calendar Link */}
+                  {calendarLink?.hasCalendarEvent && (
+                    <DetailItem
+                      icon={FaGoogle}
+                      label={t('hr.interview.calendarLink') || 'Google Calendar'}
+                      value={
+                        isLoadingLink ? (
+                          <FaSpinner className="animate-spin text-brand-primary" size={14} />
+                        ) : (
+                          <a
+                            href={calendarLink.calendarLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-brand-primary hover:underline break-all flex items-center gap-1"
+                          >
+                            <FaGoogle size={14} />
+                            {t('hr.interview.viewCalendar') || 'Xem trên Google Calendar'}
+                          </a>
+                        )
+                      }
+                    />
+                  )}
+
                   <DetailItem
                     icon={FaFileAlt}
                     label={t('hr.interview.notes') || 'Ghi chú'}
@@ -192,44 +251,34 @@ const InterviewDetailModal = ({ isOpen, onClose, interview, onConfirm, onUpdateS
               </div>
 
               {/* Actions */}
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-brand-light/50 dark:border-gray-700">
-                {interview.status === 'scheduled' && (
+              {(canCancel || canComplete) && (
+                <div className="flex items-center justify-end gap-3 pt-4 border-t border-brand-light/50 dark:border-gray-700">
+                  {canCancel && (
+                    <button
+                      onClick={handleCancel}
+                      className="px-4 py-2 text-sm font-medium border border-red-500 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition-all duration-200 cursor-pointer hover:scale-[1.02] active:scale-95"
+                    >
+                      <FaTimesCircle className="inline mr-2" size={14} />
+                      {t('hr.interview.cancelSchedule') || 'Hủy lịch'}
+                    </button>
+                  )}
+                  {canComplete && (
+                    <button
+                      onClick={handleComplete}
+                      className="px-4 py-2 text-sm font-medium bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all duration-200 cursor-pointer hover:scale-[1.02] active:scale-95"
+                    >
+                      <FaCheckCircle className="inline mr-2" size={14} />
+                      {t('hr.interview.markComplete') || 'Đánh dấu hoàn thành'}
+                    </button>
+                  )}
                   <button
-                    onClick={handleConfirm}
-                    className="px-4 py-2 text-sm font-medium bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-all duration-200 cursor-pointer hover:scale-[1.02] active:scale-95"
+                    onClick={onClose}
+                    className="px-4 py-2 text-sm font-medium text-brand-text/60 dark:text-gray-400 hover:text-brand-secondary dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-all duration-200 cursor-pointer"
                   >
-                    <FaCheckCircle className="inline mr-2" size={14} />
-                    {t('hr.interview.confirm') || 'Xác nhận'}
+                    {t('common.close') || 'Đóng'}
                   </button>
-                )}
-                {interview.status === 'scheduled' && (
-                  <button
-                    onClick={handleCancel}
-                    className="px-4 py-2 text-sm font-medium border border-red-500 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition-all duration-200 cursor-pointer hover:scale-[1.02] active:scale-95"
-                  >
-                    <FaTimesCircle className="inline mr-2" size={14} />
-                    {t('hr.interview.cancel') || 'Hủy'}
-                  </button>
-                )}
-                {interview.status === 'confirmed' && (
-                  <button
-                    onClick={() => {
-                      if (onUpdateStatus) onUpdateStatus(interview.id, 'completed')
-                      onClose()
-                    }}
-                    className="px-4 py-2 text-sm font-medium bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all duration-200 cursor-pointer hover:scale-[1.02] active:scale-95"
-                  >
-                    <FaCheckCircle className="inline mr-2" size={14} />
-                    {t('hr.interview.markComplete') || 'Đánh dấu hoàn thành'}
-                  </button>
-                )}
-                <button
-                  onClick={onClose}
-                  className="px-4 py-2 text-sm font-medium text-brand-text/60 dark:text-gray-400 hover:text-brand-secondary dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-all duration-200 cursor-pointer"
-                >
-                  {t('common.close') || 'Đóng'}
-                </button>
-              </div>
+                </div>
+              )}
             </div>
           </motion.div>
         </div>

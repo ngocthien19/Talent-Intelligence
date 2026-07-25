@@ -39,7 +39,7 @@ const InterviewTable = ({
       title: t('hr.interview.deleteTitle') || 'Xóa lịch phỏng vấn',
       message: t('hr.interview.deleteMessage') || 'Bạn có chắc chắn muốn xóa lịch phỏng vấn này? Hành động này không thể hoàn tác.',
       type: 'danger',
-      confirmText: t('hr.interview.delete') || 'Xóa',
+      confirmText: t('hr.interview.cancelSchedule') || 'Hủy lịch',
       onConfirm: () => handleConfirmDelete(id)
     })
     setIsConfirmModalOpen(true)
@@ -57,7 +57,7 @@ const InterviewTable = ({
       title: t('hr.interview.deleteBulkTitle') || 'Xóa hàng loạt lịch phỏng vấn',
       message: t('hr.interview.deleteBulkMessage') || `Bạn có chắc chắn muốn xóa ${selectedCount} lịch phỏng vấn đã chọn? Hành động này không thể hoàn tác.`,
       type: 'danger',
-      confirmText: t('hr.interview.delete') || 'Xóa',
+      confirmText: t('hr.interview.cancelSchedule') || 'Hủy lịch',
       onConfirm: handleConfirmBulkDelete
     })
     setIsConfirmModalOpen(true)
@@ -117,7 +117,7 @@ const InterviewTable = ({
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-gray-50/50 dark:bg-gray-900/50 border-b border-brand-light/30 dark:border-gray-700/50">
-                <th className="w-10 px-3 py-3">
+                <th className="w-10 px-3 py-3 text-center">
                   <input
                     type="checkbox"
                     checked={allSelected}
@@ -125,22 +125,22 @@ const InterviewTable = ({
                     className="w-4 h-4 rounded border-brand-light/50 dark:border-gray-700 text-brand-primary focus:ring-brand-primary/50 transition-all cursor-pointer"
                   />
                 </th>
-                <th className="px-3 py-3 text-left text-xs font-semibold text-brand-text/60 dark:text-gray-400 uppercase tracking-wider">
+                <th className="px-3 py-3 text-center text-xs font-semibold text-brand-text/60 dark:text-gray-400 uppercase tracking-wider">
                   {t('hr.interview.candidate') || 'Ứng viên'}
                 </th>
-                <th className="px-3 py-3 text-left text-xs font-semibold text-brand-text/60 dark:text-gray-400 uppercase tracking-wider">
+                <th className="px-3 py-3 text-center text-xs font-semibold text-brand-text/60 dark:text-gray-400 uppercase tracking-wider">
                   {t('hr.interview.position') || 'Vị trí'}
                 </th>
-                <th className="px-3 py-3 text-left text-xs font-semibold text-brand-text/60 dark:text-gray-400 uppercase tracking-wider">
+                <th className="px-3 py-3 text-center text-xs font-semibold text-brand-text/60 dark:text-gray-400 uppercase tracking-wider">
                   {t('hr.interview.dateTime') || 'Thời gian'}
                 </th>
-                <th className="px-3 py-3 text-left text-xs font-semibold text-brand-text/60 dark:text-gray-400 uppercase tracking-wider">
+                <th className="px-3 py-3 text-center text-xs font-semibold text-brand-text/60 dark:text-gray-400 uppercase tracking-wider">
                   {t('hr.interview.location') || 'Địa điểm'}
                 </th>
-                <th className="px-3 py-3 text-left text-xs font-semibold text-brand-text/60 dark:text-gray-400 uppercase tracking-wider">
+                <th className="px-3 py-3 text-center text-xs font-semibold text-brand-text/60 dark:text-gray-400 uppercase tracking-wider">
                   {t('hr.interview.statusLabel') || 'Trạng thái'}
                 </th>
-                <th className="px-3 py-3 text-right text-xs font-semibold text-brand-text/60 dark:text-gray-400 uppercase tracking-wider">
+                <th className="px-3 py-3 text-center text-xs font-semibold text-brand-text/60 dark:text-gray-400 uppercase tracking-wider">
                   {t('hr.interview.actions') || 'Thao tác'}
                 </th>
               </tr>

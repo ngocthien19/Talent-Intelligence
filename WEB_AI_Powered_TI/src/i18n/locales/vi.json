@@ -209,7 +209,8 @@
     "noData": "Không có dữ liệu",
     "noDataDesc": "Chưa có dữ liệu để hiển thị",
     "error": "Có lỗi xảy ra",
-    "refresh": "Làm mới"
+    "refresh": "Làm mới",
+    "close": "Đóng"
   },
    "profile": {
     "title": "Hồ sơ của tôi",
@@ -610,6 +611,13 @@
       "viewCandidates": "Xem ứng viên"
     },
     "interview": {
+      "calendarLink": "Google Calendar",
+      "viewCalendar": "Xem trên Google Calendar",
+      "online": "Trực tuyến",
+      "offline": "Trực tiếp",
+      "interviewType": "Hình thức phỏng vấn",
+      "meetLinkHint": "Nhập link Google Meet",
+      "locationOfflinePlaceholder": "Nhập địa chỉ phỏng vấn trực tiếp",
       "total": "Tổng",
       "schedules": "lịch",
       "today": "hôm nay",
@@ -641,11 +649,11 @@
       "viewDetail": "Xem chi tiết",
       "edit": "Chỉnh sửa",
       "delete": "Xóa",
+      "cancelSchedule": "Hủy lịch",
       "confirm": "Xác nhận",
-      "cancel": "Hủy",
       "update": "Cập nhật",
-      "deleteTitle": "Xóa lịch phỏng vấn",
-      "deleteMessage": "Bạn có chắc chắn muốn xóa lịch phỏng vấn này? Hành động này không thể hoàn tác.",
+      "deleteTitle": "Hủy lịch phỏng vấn",
+      "deleteMessage": "Bạn có chắc chắn muốn hủy lịch phỏng vấn này? Hành động này không thể hoàn tác.",
       "deleteBulkTitle": "Xóa hàng loạt lịch phỏng vấn",
       "deleteBulkMessage": "Bạn có chắc chắn muốn xóa {count} lịch phỏng vấn đã chọn? Hành động này không thể hoàn tác.",
       "autoCreateCalendar": "Tự động tạo sự kiện Google Calendar",
@@ -656,9 +664,21 @@
       "overdue": "Quá hạn",
       "selectCandidate": "Chọn ứng viên...",
       "locationPlaceholder": "Nhập địa điểm hoặc để trống (Google Meet)",
-      "meetLinkPlaceholder": "https://meet.google.com/xxx-xxxx-xxx",
+      "meetLinkPlaceholder": "Để trống sẽ tự động tạo link Google Meet",
       "notesPlaceholder": "Nhập ghi chú cho buổi phỏng vấn...",
       "allStatus": "Tất cả trạng thái",
+      "email": "Email",
+      "phone": "Số điện thoại",
+      "noNotes": "Không có ghi chú",
+      "markComplete": "Đánh dấu hoàn thành",
+      "createSuccess": "Tạo lịch phỏng vấn thành công",
+      "updateSuccess": "Cập nhật lịch phỏng vấn thành công",
+      "deleteSuccess": "Xóa lịch phỏng vấn thành công",
+      "cancelSuccess": "Hủy lịch phỏng vấn thành công",
+      "deleteBulkSuccess": "Đã xóa {count} lịch phỏng vấn",
+      "confirmSuccess": "Xác nhận lịch phỏng vấn thành công",
+      "statusUpdateSuccess": "Cập nhật trạng thái thành công",
+      "loadError": "Không thể tải danh sách lịch phỏng vấn",
       "statuses": {
         "scheduled": "Đã lên lịch",
         "confirmed": "Đã xác nhận",
@@ -669,7 +689,8 @@
       "validation": {
         "candidateRequired": "Vui lòng chọn ứng viên",
         "dateRequired": "Vui lòng chọn ngày",
-        "timeRequired": "Vui lòng chọn giờ"
+        "timeRequired": "Vui lòng chọn giờ",
+        "locationRequired": "Vui lòng nhập địa điểm phỏng vấn trực tiếp"
       }
     }
   }

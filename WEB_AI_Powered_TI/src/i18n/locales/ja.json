@@ -191,6 +191,7 @@
     "next": "次へ"
   },
   "common": {
+    "close": "閉じる",
     "addToFavorites": "お気に入りに追加",
     "removeFromFavorites": "お気に入りから削除",
     "loginRequired": "保存するにはログインしてください",
@@ -603,6 +604,13 @@
       "viewCandidates": "応募者を見る"
     },
     "interview": {
+      "calendarLink": "Googleカレンダー",
+      "viewCalendar": "Googleカレンダーで見る",
+      "online": "オンライン",
+      "offline": "対面",
+      "interviewType": "面接形式",
+      "meetLinkHint": "Google Meetリンクを入力",
+      "locationOfflinePlaceholder": "対面面接の住所を入力",
       "total": "合計",
       "schedules": "スケジュール",
       "today": "今日",
@@ -634,11 +642,11 @@
       "viewDetail": "詳細を見る",
       "edit": "編集",
       "delete": "削除",
+      "cancelSchedule": "スケジュールをキャンセル",
       "confirm": "確認",
-      "cancel": "キャンセル",
       "update": "更新",
-      "deleteTitle": "面接スケジュール削除",
-      "deleteMessage": "この面接スケジュールを削除してもよろしいですか？この操作は取り消せません。",
+      "deleteTitle": "面接スケジュールをキャンセル",
+      "deleteMessage": "この面接スケジュールをキャンセルしてもよろしいですか？この操作は取り消せません。",
       "deleteBulkTitle": "面接スケジュール一括削除",
       "deleteBulkMessage": "選択した{count}件の面接スケジュールを削除してもよろしいですか？この操作は取り消せません。",
       "autoCreateCalendar": "Googleカレンダーイベントを自動作成",
@@ -649,9 +657,21 @@
       "overdue": "期限切れ",
       "selectCandidate": "応募者を選択...",
       "locationPlaceholder": "場所を入力（空の場合はGoogle Meet）",
-      "meetLinkPlaceholder": "https://meet.google.com/xxx-xxxx-xxx",
+      "meetLinkPlaceholder": "空のままにするとGoogle Meetリンクが自動生成されます",
       "notesPlaceholder": "面接のメモを入力...",
       "allStatus": "すべてのステータス",
+      "email": "メール",
+      "phone": "電話番号",
+      "noNotes": "メモなし",
+      "markComplete": "完了にする",
+      "createSuccess": "面接スケジュールを作成しました",
+      "updateSuccess": "面接スケジュールを更新しました",
+      "deleteSuccess": "面接スケジュールを削除しました",
+      "cancelSuccess": "面接スケジュールをキャンセルしました",
+      "deleteBulkSuccess": "{count}件の面接スケジュールを削除しました",
+      "confirmSuccess": "面接スケジュールを確認しました",
+      "statusUpdateSuccess": "ステータスを更新しました",
+      "loadError": "面接スケジュールを読み込めません",
       "statuses": {
         "scheduled": "予約済み",
         "confirmed": "確定",
@@ -662,7 +682,8 @@
       "validation": {
         "candidateRequired": "応募者を選択してください",
         "dateRequired": "日付を選択してください",
-        "timeRequired": "時間を選択してください"
+        "timeRequired": "時間を選択してください",
+        "locationRequired": "対面面接の場所を入力してください"
       }
     }
   }

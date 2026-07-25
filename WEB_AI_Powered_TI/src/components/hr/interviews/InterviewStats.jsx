@@ -42,35 +42,35 @@ const InterviewStats = ({ stats }) => {
 
   const statItems = [
     {
-      label: t('hr.interview.scheduled') || 'Đã lên lịch',
+      label: t('hr.interview.statuses.scheduled') || 'Đã lên lịch',
       value: stats.scheduled || 0,
       icon: FaClock,
       color: 'text-blue-500',
       bg: 'bg-blue-50 dark:bg-blue-950/20'
     },
     {
-      label: t('hr.interview.confirmed') || 'Đã xác nhận',
+      label: t('hr.interview.statuses.confirmed') || 'Đã xác nhận',
       value: stats.confirmed || 0,
       icon: FaCheckCircle,
       color: 'text-emerald-500',
       bg: 'bg-emerald-50 dark:bg-emerald-950/20'
     },
     {
-      label: t('hr.interview.completed') || 'Đã hoàn thành',
+      label: t('hr.interview.statuses.completed') || 'Đã hoàn thành',
       value: stats.completed || 0,
       icon: FaCalendarCheck,
       color: 'text-green-500',
       bg: 'bg-green-50 dark:bg-green-950/20'
     },
     {
-      label: t('hr.interview.cancelled') || 'Đã hủy',
+      label: t('hr.interview.statuses.cancelled') || 'Đã hủy',
       value: stats.cancelled || 0,
       icon: FaTimesCircle,
       color: 'text-red-500',
       bg: 'bg-red-50 dark:bg-red-950/20'
     },
     {
-      label: t('hr.interview.noShow') || 'Vắng mặt',
+      label: t('hr.interview.statuses.noShow') || 'Vắng mặt',
       value: stats.no_show || 0,
       icon: FaUserSlash,
       color: 'text-orange-500',
