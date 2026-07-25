@@ -56,6 +56,7 @@ const jobDescriptionModel = {
       employmentType,
       isActive,
       categoryId,
+      location,
       sortBy = 'created_at',
       sortOrder = 'DESC',
       limit = 20,
@@ -97,6 +98,12 @@ const jobDescriptionModel = {
     if (categoryId) {
       conditions.push(`j.category_id = $${paramIndex}`)
       params.push(categoryId)
+      paramIndex++
+    }
+
+    if (location) {
+      conditions.push(`j.location = $${paramIndex}`)
+      params.push(location)
       paramIndex++
     }
 

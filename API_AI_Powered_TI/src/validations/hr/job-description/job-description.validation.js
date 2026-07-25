@@ -69,6 +69,7 @@ export const getJDListValidation = Joi.object({
   employmentType: Joi.string().valid('Full-time', 'Part-time', 'Contract', 'Internship', 'Freelance').optional(),
   isActive: Joi.boolean().optional(),
   categoryId: Joi.string().uuid().optional(),
+  location: Joi.string().optional(),
   sortBy: Joi.string().valid('title', 'created_at', 'updated_at').default('created_at'),
   sortOrder: Joi.string().valid('ASC', 'DESC').default('DESC'),
   limit: Joi.number().min(1).max(100).default(20),
