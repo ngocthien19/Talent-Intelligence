@@ -1,4 +1,3 @@
-// src/layouts/hr/HRHeader.jsx - Cập nhật để dùng context
 import { useState, useRef, useEffect } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '~/hooks/useAuth'
@@ -114,9 +113,8 @@ const HRHeader = () => {
     const path = location.pathname
     const pageMap = {
       '/hr/dashboard': t('hr.dashboard') || 'Dashboard',
-      '/hr/candidates': t('hr.candidates') || 'Ứng viên',
-      '/hr/jobs': t('hr.jobs') || 'Việc làm',
       '/hr/applications': t('hr.applications') || 'Đơn ứng tuyển',
+      '/hr/jobs': t('hr.jobs') || 'Việc làm',
       '/hr/analytics': t('hr.analytics') || 'Phân tích',
       '/hr/interviews': t('hr.interviews') || 'Lịch phỏng vấn',
       '/hr/mock-interview': t('hr.mockInterview') || 'Mock Interview',

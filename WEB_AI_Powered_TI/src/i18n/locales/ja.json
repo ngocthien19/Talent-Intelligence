@@ -603,6 +603,26 @@
       "quickActions": "クイックアクション",
       "viewCandidates": "応募者を見る"
     },
+    "comparison": {
+      "title": "候補者比較",
+      "candidates": "候補者",
+      "compare": "比較",
+      "loading": "比較を分析中...",
+      "bestMatch": "最適な候補者",
+      "score": "スコア",
+      "total": "合計",
+      "highest": "最高",
+      "average": "平均",
+      "criteria": "基準",
+      "overallScore": "総合スコア",
+      "skills": "スキル",
+      "cultureFit": "カルチャーフィット",
+      "retention": "定着率",
+      "status": "ステータス",
+      "recommendation": "推奨",
+      "selectAtLeast": "比較するには少なくとも2名の候補者を選択してください",
+      "maxFive": "最大5名の候補者を比較できます"
+    },
     "interview": {
       "calendarLink": "Googleカレンダー",
       "viewCalendar": "Googleカレンダーで見る",

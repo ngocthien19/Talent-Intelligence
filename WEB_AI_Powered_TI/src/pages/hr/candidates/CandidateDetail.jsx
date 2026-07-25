@@ -69,7 +69,7 @@ const CandidateDetail = () => {
   }
 
   const handleBack = () => {
-    navigate('/hr/candidates')
+    navigate('/hr/applications')
   }
 
   if (isLoading) {

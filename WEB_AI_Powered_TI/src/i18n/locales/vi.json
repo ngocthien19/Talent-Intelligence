@@ -610,6 +610,26 @@
       "quickActions": "Hành động nhanh",
       "viewCandidates": "Xem ứng viên"
     },
+    "comparison": {
+      "title": "So sánh ứng viên",
+      "candidates": "ứng viên",
+      "compare": "So sánh",
+      "loading": "Đang phân tích so sánh...",
+      "bestMatch": "Ứng viên phù hợp nhất",
+      "score": "Điểm",
+      "total": "Tổng",
+      "highest": "Cao nhất",
+      "average": "Trung bình",
+      "criteria": "Tiêu chí",
+      "overallScore": "Điểm tổng quan",
+      "skills": "Kỹ năng",
+      "cultureFit": "Văn hóa",
+      "retention": "Gắn bó",
+      "status": "Trạng thái",
+      "recommendation": "Gợi ý",
+      "selectAtLeast": "Vui lòng chọn ít nhất 2 ứng viên để so sánh",
+      "maxFive": "Chỉ có thể so sánh tối đa 5 ứng viên"
+    },
     "interview": {
       "calendarLink": "Google Calendar",
       "viewCalendar": "Xem trên Google Calendar",

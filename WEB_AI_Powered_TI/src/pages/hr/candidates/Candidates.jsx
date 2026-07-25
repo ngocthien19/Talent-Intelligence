@@ -11,6 +11,7 @@ import CandidateStats from '~/components/hr/candidate/CandidateStats'
 import CandidateFilters from '~/components/hr/candidate/CandidateFilters'
 import CandidateTable from '~/components/hr/candidate/CandidateTable'
 import CandidateEmptyState from '~/components/hr/candidate/CandidateEmptyState'
+import ComparisonModal from '~/components/hr/comparison/ComparisonModal'
 
 // Animation variants
 const containerVariants = {
@@ -56,6 +57,10 @@ const Candidates = () => {
   })
   const [error, setError] = useState(null)
   const [selectedIds, setSelectedIds] = useState([])
+
+  // Comparison state
+  const [isComparisonOpen, setIsComparisonOpen] = useState(false)
+  const [comparisonCandidateIds, setComparisonCandidateIds] = useState([])
 
   const [filters, setFilters] = useState({
     status: searchParams.get('status') || '',
@@ -210,6 +215,20 @@ const Candidates = () => {
     }
   }
 
+  // Handler so sánh
+  const handleCompare = () => {
+    if (selectedIds.length < 2) {
+      toast.warning(t('hr.comparison.selectAtLeast') || 'Vui lòng chọn ít nhất 2 ứng viên để so sánh')
+      return
+    }
+    if (selectedIds.length > 5) {
+      toast.warning(t('hr.comparison.maxFive') || 'Chỉ có thể so sánh tối đa 5 ứng viên')
+      return
+    }
+    setComparisonCandidateIds(selectedIds)
+    setIsComparisonOpen(true)
+  }
+
   const handleStatusUpdate = async (id, status) => {
     try {
       const response = await candidateApi.updateStatus(id, status)
@@ -274,7 +293,7 @@ const Candidates = () => {
       variants={containerVariants}
       className="space-y-6"
     >
-      {/* Header - chỉ có title + search (Enter mới tìm) */}
+      {/* Header */}
       <CandidateHeader
         filters={filters}
         onSearch={handleSearch}
@@ -284,7 +303,7 @@ const Candidates = () => {
       {/* Stats */}
       <CandidateStats widgets={widgets} />
 
-      {/* Filters - hiển thị luôn */}
+      {/* Filters */}
       <CandidateFilters
         filters={filters}
         onFilterChange={handleFilterChange}
@@ -319,6 +338,7 @@ const Candidates = () => {
                 currentSortBy={filters.sortBy}
                 currentSortOrder={filters.sortOrder}
                 isLoading={isTableLoading}
+                onCompare={handleCompare}
               />
             ) : (
               <CandidateEmptyState
@@ -348,6 +368,16 @@ const Candidates = () => {
           </button>
         </motion.div>
       )}
+
+      {/* Comparison Modal */}
+      <ComparisonModal
+        isOpen={isComparisonOpen}
+        onClose={() => {
+          setIsComparisonOpen(false)
+          setComparisonCandidateIds([])
+        }}
+        candidateIds={comparisonCandidateIds}
+      />
     </motion.div>
   )
 }

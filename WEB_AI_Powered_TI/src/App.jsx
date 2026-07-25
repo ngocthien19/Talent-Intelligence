@@ -82,8 +82,8 @@ function App() {
         <Route path="/hr" element={<HRLayout />}>
           <Route index element={<Dashboard />} />
           <Route path="dashboard" element={<Dashboard />} />
-          <Route path="candidates" element={<Candidates />} />
-          <Route path="candidates/:id" element={<CandidateDetail />} />
+          <Route path="applications" element={<Candidates />} />
+          <Route path="applications/:id" element={<CandidateDetail />} />
           <Route path="jobs" element={<HRJobs />} />
           <Route path="jobs/:id" element={<JobDetail />} />
           <Route path="interviews" element={<Interviews />} />

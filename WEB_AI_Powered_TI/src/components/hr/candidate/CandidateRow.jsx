@@ -194,7 +194,7 @@ const CandidateRow = ({
             <Tooltip>
               <TooltipTrigger asChild>
                 <Link
-                  to={`/hr/candidates/${candidate.id}`}
+                  to={`/hr/applications/${candidate.id}`}
                   className="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-brand-primary text-brand-primary hover:bg-brand-primary hover:!text-white dark:border-brand-primary dark:text-brand-light dark:hover:bg-brand-primary dark:hover:text-white transition-all duration-200 cursor-pointer hover:scale-110 active:scale-95"
                 >
                   <FaEye size={15} />

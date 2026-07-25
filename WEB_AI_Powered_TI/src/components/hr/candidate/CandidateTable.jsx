@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { FaSpinner, FaTrash, FaTimes } from 'react-icons/fa'
+import { FaSpinner, FaTrash, FaTimes, FaBalanceScale } from 'react-icons/fa'
 import { useLanguage } from '~/hooks/useLanguage'
 import CandidateRow from './CandidateRow'
 import Pagination from '~/components/common/Pagination'
@@ -20,7 +20,8 @@ const CandidateTable = ({
   onSortChange,
   currentSortBy,
   currentSortOrder,
-  isLoading
+  isLoading,
+  onCompare
 }) => {
   const { t } = useLanguage()
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false)
@@ -122,6 +123,17 @@ const CandidateTable = ({
                   <span className="text-xs font-medium text-brand-text/60 dark:text-gray-400 mr-1">
                     {t('hr.candidate.bulkActions') || 'Thao tác hàng loạt:'}
                   </span>
+
+                  {/* Nút So sánh - hiển thị khi chọn từ 2-5 ứng viên */}
+                  {selectedCount >= 2 && selectedCount <= 5 && (
+                    <button
+                      onClick={onCompare}
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-purple-600 bg-purple-50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-900/50 transition-all duration-200 cursor-pointer hover:scale-[1.02] active:scale-95"
+                    >
+                      <FaBalanceScale size={12} />
+                      {t('hr.comparison.compare') || 'So sánh'}
+                    </button>
+                  )}
 
                   <button
                     onClick={openDeleteConfirm}
