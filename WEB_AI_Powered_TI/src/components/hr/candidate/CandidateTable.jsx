@@ -37,7 +37,7 @@ const CandidateTable = ({
   const allSelected = candidates.length > 0 && candidates.every(c => selectedIds.includes(c.id))
   const selectedCount = selectedIds.length
 
-  // Mở modal xác nhận xóa 1 ứng viên (bấm icon xóa trên từng dòng)
+  // Mở modal xác nhận xóa 1 ứng viên
   const openSingleDeleteConfirm = (id, candidateName) => {
     const displayName = candidateName || 'ứng viên'
     const messageTemplate = t('hr.candidate.deleteMessage') || 'Bạn có chắc chắn muốn xóa ứng viên {name}? Hành động này không thể hoàn tác.'
@@ -100,11 +100,6 @@ const CandidateTable = ({
     onSelectAll(false)
   }
 
-  const getSortIcon = (field) => {
-    if (currentSortBy !== field) return null
-    return currentSortOrder === 'DESC' ? '↓' : '↑'
-  }
-
   return (
     <>
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-custom border border-brand-light/30 dark:border-gray-700/50 overflow-hidden hover:shadow-glow transition-all duration-300">
@@ -124,7 +119,7 @@ const CandidateTable = ({
                     {t('hr.candidate.bulkActions') || 'Thao tác hàng loạt:'}
                   </span>
 
-                  {/* Nút So sánh - hiển thị khi chọn từ 2-5 ứng viên */}
+                  {/* Nút So sánh - luôn hiển thị khi chọn 2-5 ứng viên */}
                   {selectedCount >= 2 && selectedCount <= 5 && (
                     <button
                       onClick={onCompare}

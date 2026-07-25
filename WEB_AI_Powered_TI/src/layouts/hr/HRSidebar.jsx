@@ -49,7 +49,7 @@ const HRSidebar = () => {
     { path: '/hr/jobs', icon: FaBriefcase, label: 'hr.jobs', defaultLabel: 'Việc làm' },
     { path: '/hr/interviews', icon: FaCalendarAlt, label: 'hr.interviews', defaultLabel: 'Lịch phỏng vấn' },
     { path: '/hr/mock-interview', icon: FaUserCog, label: 'hr.mockInterview', defaultLabel: 'Mock Interview' },
-    { path: '/hr/search', icon: FaSearch, label: 'hr.search', defaultLabel: 'Tìm kiếm' },
+    { path: '/hr/search', icon: FaSearch, label: 'hr.searchCandidate', defaultLabel: 'Tìm kiếm' },
     { path: '/hr/analytics', icon: FaChartBar, label: 'hr.analytics', defaultLabel: 'Phân tích' },
     { path: '/hr/reports', icon: FaFileInvoice, label: 'hr.reports', defaultLabel: 'Báo cáo' }
   ]

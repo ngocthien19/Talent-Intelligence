@@ -16,11 +16,17 @@ import {
   FaUsers,
   FaHeart,
   FaChevronDown,
-  FaChevronUp
+  FaChevronUp,
+  FaLightbulb,
+  FaThumbsUp,
+  FaThumbsDown,
+  FaInfoCircle,
+  FaFileAlt
 } from 'react-icons/fa'
 import { useLanguage } from '~/hooks/useLanguage'
 import { comparisonApi } from '~/api/hr/comparison.api'
 import { formatCompactNumber } from '~/utils/format'
+import { toast } from 'react-toastify'
 
 const ComparisonModal = ({ isOpen, onClose, candidateIds }) => {
   const { t } = useLanguage()
@@ -28,9 +34,12 @@ const ComparisonModal = ({ isOpen, onClose, candidateIds }) => {
   const [comparisonData, setComparisonData] = useState(null)
   const [expandedSections, setExpandedSections] = useState({
     overview: true,
-    skills: true,
     scores: true,
-    analysis: true
+    skills: true,
+    strengths: false,
+    weaknesses: false,
+    suggestions: false,
+    analysis: false
   })
 
   useEffect(() => {
@@ -77,7 +86,7 @@ const ComparisonModal = ({ isOpen, onClose, candidateIds }) => {
     case 1: return <FaTrophy className="text-yellow-400" size={20} />
     case 2: return <FaMedal className="text-gray-400" size={18} />
     case 3: return <FaMedal className="text-amber-600" size={18} />
-    default: return <span className="text-xs font-bold">{rank}</span>
+    default: return <span className="text-xs font-bold">#{rank}</span>
     }
   }
 
@@ -88,11 +97,16 @@ const ComparisonModal = ({ isOpen, onClose, candidateIds }) => {
     return 'text-red-500'
   }
 
-  const getScoreBg = (score) => {
-    if (score >= 80) return 'bg-emerald-50 dark:bg-emerald-950/20'
-    if (score >= 60) return 'bg-blue-50 dark:bg-blue-950/20'
-    if (score >= 40) return 'bg-yellow-50 dark:bg-yellow-950/20'
-    return 'bg-red-50 dark:bg-red-950/20'
+  const getRecommendationBadge = (recommendation) => {
+    if (recommendation === 'hire') {
+      return { color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400', icon: FaCheckCircle, label: 'Nên tuyển' }
+    } else if (recommendation === 'shortlist') {
+      return { color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400', icon: FaStar, label: 'Shortlist' }
+    } else if (recommendation === 'interview') {
+      return { color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400', icon: FaUsers, label: 'Nên phỏng vấn' }
+    } else {
+      return { color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400', icon: FaTimesCircle, label: 'Không phù hợp' }
+    }
   }
 
   if (!isOpen) return null
@@ -127,7 +141,7 @@ const ComparisonModal = ({ isOpen, onClose, candidateIds }) => {
               </button>
             </div>
 
-            {/* Loading state */}
+            {/* Loading */}
             {isLoading && (
               <div className="flex items-center justify-center py-20">
                 <div className="flex flex-col items-center gap-4">
@@ -143,7 +157,7 @@ const ComparisonModal = ({ isOpen, onClose, candidateIds }) => {
             {!isLoading && comparisonData && (
               <div className="p-6 space-y-6">
                 {/* Rankings summary */}
-                <div className="bg-gray-50/50 dark:bg-gray-800/50 rounded-xl p-4">
+                <div className="bg-gradient-to-r from-brand-primary/5 to-purple-500/5 dark:from-brand-primary/10 dark:to-purple-500/10 rounded-xl p-4 border border-brand-primary/10 dark:border-brand-primary/20">
                   <div className="flex flex-wrap items-center justify-between gap-4">
                     <div>
                       <p className="text-xs text-brand-text/60 dark:text-gray-400">
@@ -184,7 +198,7 @@ const ComparisonModal = ({ isOpen, onClose, candidateIds }) => {
                         <th className="sticky left-0 z-10 bg-gray-50/50 dark:bg-gray-800/50 px-3 py-2 text-left text-xs font-semibold text-brand-text/60 dark:text-gray-400 border-b border-brand-light/30 dark:border-gray-700">
                           {t('hr.comparison.criteria') || 'Tiêu chí'}
                         </th>
-                        {comparisonData.comparison?.map((candidate, index) => (
+                        {comparisonData.rankings?.map((candidate, index) => (
                           <th key={candidate.id} className="px-3 py-2 text-center border-b border-brand-light/30 dark:border-gray-700 min-w-[150px]">
                             <div className="flex flex-col items-center gap-1">
                               <div className="flex items-center gap-1">
@@ -199,6 +213,12 @@ const ComparisonModal = ({ isOpen, onClose, candidateIds }) => {
                               <p className="text-xs text-brand-text/40 dark:text-gray-500 truncate max-w-[120px]">
                                 {candidate.positionApplied}
                               </p>
+                              {/* Recommendation badge */}
+                              {candidate.recommendation && (
+                                <span className={`text-[10px] px-2 py-0.5 rounded-full ${getRecommendationBadge(candidate.recommendation).color}`}>
+                                  {getRecommendationBadge(candidate.recommendation).label}
+                                </span>
+                              )}
                             </div>
                           </th>
                         ))}
@@ -210,14 +230,14 @@ const ComparisonModal = ({ isOpen, onClose, candidateIds }) => {
                         <td className="sticky left-0 z-10 bg-white dark:bg-gray-900 px-3 py-2.5 text-xs font-semibold text-brand-text/60 dark:text-gray-400 border-b border-brand-light/30 dark:border-gray-700">
                           {t('hr.comparison.overallScore') || 'Điểm tổng quan'}
                         </td>
-                        {comparisonData.comparison?.map((candidate) => (
+                        {comparisonData.rankings?.map((candidate) => (
                           <td key={candidate.id} className="px-3 py-2.5 text-center border-b border-brand-light/30 dark:border-gray-700">
                             <span className={`text-lg font-bold ${getScoreColor(candidate.scores?.overall)}`}>
                               {candidate.scores?.overall || 0}
                             </span>
                             <div className="w-full h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full mt-1 overflow-hidden">
                               <div
-                                className={'h-full rounded-full transition-all duration-500'}
+                                className="h-full rounded-full transition-all duration-500"
                                 style={{
                                   width: `${candidate.scores?.overall || 0}%`,
                                   backgroundColor: candidate.scores?.overall >= 80 ? '#10b981' :
@@ -235,14 +255,14 @@ const ComparisonModal = ({ isOpen, onClose, candidateIds }) => {
                         <td className="sticky left-0 z-10 bg-white dark:bg-gray-900 px-3 py-2.5 text-xs font-semibold text-brand-text/60 dark:text-gray-400 border-b border-brand-light/30 dark:border-gray-700">
                           {t('hr.comparison.skills') || 'Kỹ năng'}
                         </td>
-                        {comparisonData.comparison?.map((candidate) => (
+                        {comparisonData.rankings?.map((candidate) => (
                           <td key={candidate.id} className="px-3 py-2.5 text-center border-b border-brand-light/30 dark:border-gray-700">
                             <span className={`text-sm font-bold ${getScoreColor(candidate.scores?.skillsMatch || 0)}`}>
                               {candidate.scores?.skillsMatch || 0}
                             </span>
                             <div className="flex flex-wrap justify-center gap-1 mt-1">
                               {candidate.skills?.slice(0, 3).map((skill, i) => (
-                                <span key={i} className="text-[10px] px-1.5 py-0.5 bg-brand-primary/10 text-brand-primary dark:bg-brand-primary/20 rounded">
+                                <span key={i} className="text-[10px] px-1.5 py-0.5 bg-brand-primary/10 text-brand-primary dark:bg-brand-primary/20 rounded truncate max-w-[60px]">
                                   {skill}
                                 </span>
                               ))}
@@ -261,7 +281,7 @@ const ComparisonModal = ({ isOpen, onClose, candidateIds }) => {
                         <td className="sticky left-0 z-10 bg-white dark:bg-gray-900 px-3 py-2.5 text-xs font-semibold text-brand-text/60 dark:text-gray-400 border-b border-brand-light/30 dark:border-gray-700">
                           {t('hr.comparison.cultureFit') || 'Văn hóa'}
                         </td>
-                        {comparisonData.comparison?.map((candidate) => (
+                        {comparisonData.rankings?.map((candidate) => (
                           <td key={candidate.id} className="px-3 py-2.5 text-center border-b border-brand-light/30 dark:border-gray-700">
                             <span className={`text-sm font-bold ${getScoreColor(candidate.scores?.cultureFit || 0)}`}>
                               {candidate.scores?.cultureFit || 0}
@@ -275,7 +295,7 @@ const ComparisonModal = ({ isOpen, onClose, candidateIds }) => {
                         <td className="sticky left-0 z-10 bg-white dark:bg-gray-900 px-3 py-2.5 text-xs font-semibold text-brand-text/60 dark:text-gray-400 border-b border-brand-light/30 dark:border-gray-700">
                           {t('hr.comparison.retention') || 'Gắn bó'}
                         </td>
-                        {comparisonData.comparison?.map((candidate) => (
+                        {comparisonData.rankings?.map((candidate) => (
                           <td key={candidate.id} className="px-3 py-2.5 text-center border-b border-brand-light/30 dark:border-gray-700">
                             <span className={`text-sm font-bold ${getScoreColor(candidate.scores?.retention || 0)}`}>
                               {candidate.scores?.retention || 0}
@@ -289,7 +309,7 @@ const ComparisonModal = ({ isOpen, onClose, candidateIds }) => {
                         <td className="sticky left-0 z-10 bg-white dark:bg-gray-900 px-3 py-2.5 text-xs font-semibold text-brand-text/60 dark:text-gray-400 border-b border-brand-light/30 dark:border-gray-700">
                           {t('hr.comparison.status') || 'Trạng thái'}
                         </td>
-                        {comparisonData.comparison?.map((candidate) => (
+                        {comparisonData.rankings?.map((candidate) => (
                           <td key={candidate.id} className="px-3 py-2.5 text-center border-b border-brand-light/30 dark:border-gray-700">
                             <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${
                               candidate.status === 'hired' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
@@ -307,9 +327,136 @@ const ComparisonModal = ({ isOpen, onClose, candidateIds }) => {
                   </table>
                 </div>
 
+                {/* Detailed Analysis Section */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-bold text-brand-secondary dark:text-white flex items-center gap-2">
+                    <FaInfoCircle size={18} className="text-brand-primary" />
+                    {t('hr.comparison.detailedAnalysis') || 'Phân tích chi tiết'}
+                  </h3>
+
+                  {comparisonData.rankings?.map((candidate, index) => (
+                    <div key={candidate.id} className="border border-brand-light/30 dark:border-gray-700 rounded-xl overflow-hidden">
+                      {/* Candidate header */}
+                      <div
+                        className="flex items-center justify-between p-4 bg-gray-50/50 dark:bg-gray-800/50 cursor-pointer hover:bg-gray-100/50 dark:hover:bg-gray-700/30 transition-colors"
+                        onClick={() => toggleSection(`analysis_${candidate.id}`)}
+                      >
+                        <div className="flex items-center gap-3">
+                          <span className={`font-bold ${getRankColor(index + 1)}`}>
+                            #{index + 1}
+                          </span>
+                          <span className="font-semibold text-brand-secondary dark:text-white">
+                            {candidate.name}
+                          </span>
+                          <span className="text-sm text-brand-text/60 dark:text-gray-400">
+                            {candidate.positionApplied}
+                          </span>
+                          {candidate.scores?.overall && (
+                            <span className={`text-sm font-bold ${getScoreColor(candidate.scores.overall)}`}>
+                              {candidate.scores.overall}/100
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {candidate.recommendation && (
+                            <span className={`text-[10px] px-2 py-0.5 rounded-full ${getRecommendationBadge(candidate.recommendation).color}`}>
+                              {getRecommendationBadge(candidate.recommendation).label}
+                            </span>
+                          )}
+                          {expandedSections[`analysis_${candidate.id}`] ? (
+                            <FaChevronUp className="text-brand-text/40" />
+                          ) : (
+                            <FaChevronDown className="text-brand-text/40" />
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Analysis content */}
+                      <AnimatePresence>
+                        {expandedSections[`analysis_${candidate.id}`] && (
+                          <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            transition={{ duration: 0.3 }}
+                            className="p-4 space-y-4 border-t border-brand-light/30 dark:border-gray-700"
+                          >
+                            {/* Summary */}
+                            {candidate.analysisSummary && (
+                              <div className="p-3 bg-blue-50/50 dark:bg-blue-950/20 rounded-lg border border-blue-100/50 dark:border-blue-900/30">
+                                <p className="text-xs font-medium text-blue-600 dark:text-blue-400 flex items-center gap-1.5">
+                                  <FaFileAlt size={12} />
+                                  {t('hr.comparison.summary') || 'Tổng quan'}
+                                </p>
+                                <p className="text-sm text-brand-text dark:text-gray-300 mt-1 leading-relaxed">
+                                  {candidate.analysisSummary}
+                                </p>
+                              </div>
+                            )}
+
+                            {/* Strengths */}
+                            {candidate.strengths?.length > 0 && (
+                              <div>
+                                <p className="text-xs font-medium text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
+                                  <FaThumbsUp size={12} />
+                                  {t('hr.comparison.strengths') || 'Điểm mạnh'}
+                                </p>
+                                <ul className="mt-1 space-y-1">
+                                  {candidate.strengths.map((item, i) => (
+                                    <li key={i} className="text-sm text-brand-text dark:text-gray-300 flex items-start gap-2 pl-4">
+                                      <span className="text-emerald-400">•</span>
+                                      {item}
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+
+                            {/* Weaknesses */}
+                            {candidate.weaknesses?.length > 0 && (
+                              <div>
+                                <p className="text-xs font-medium text-red-600 dark:text-red-400 flex items-center gap-1.5">
+                                  <FaThumbsDown size={12} />
+                                  {t('hr.comparison.weaknesses') || 'Điểm yếu'}
+                                </p>
+                                <ul className="mt-1 space-y-1">
+                                  {candidate.weaknesses.map((item, i) => (
+                                    <li key={i} className="text-sm text-brand-text dark:text-gray-300 flex items-start gap-2 pl-4">
+                                      <span className="text-red-400">•</span>
+                                      {item}
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+
+                            {/* Suggestions */}
+                            {candidate.suggestions?.length > 0 && (
+                              <div>
+                                <p className="text-xs font-medium text-blue-600 dark:text-blue-400 flex items-center gap-1.5">
+                                  <FaLightbulb size={12} />
+                                  {t('hr.comparison.suggestions') || 'Gợi ý cải thiện'}
+                                </p>
+                                <ul className="mt-1 space-y-1">
+                                  {candidate.suggestions.map((item, i) => (
+                                    <li key={i} className="text-sm text-brand-text dark:text-gray-300 flex items-start gap-2 pl-4">
+                                      <span className="text-blue-400">•</span>
+                                      {item}
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  ))}
+                </div>
+
                 {/* Recommendation */}
                 {comparisonData.recommendation && (
-                  <div className="bg-brand-primary/5 dark:bg-brand-primary/10 rounded-xl p-4 border border-brand-primary/20 dark:border-brand-primary/30">
+                  <div className="bg-gradient-to-r from-brand-primary/5 to-purple-500/5 dark:from-brand-primary/10 dark:to-purple-500/10 rounded-xl p-4 border border-brand-primary/20 dark:border-brand-primary/30">
                     <div className="flex items-start gap-3">
                       <div className="p-2 rounded-full bg-brand-primary/20 text-brand-primary flex-shrink-0">
                         <FaTrophy size={20} />
