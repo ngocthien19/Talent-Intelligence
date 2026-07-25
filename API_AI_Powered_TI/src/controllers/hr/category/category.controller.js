@@ -27,6 +27,10 @@ const categoryController = {
       const {
         isActive,
         keyword,
+        startDate,
+        endDate,
+        sortBy = 'created_at',
+        sortOrder = 'DESC',
         limit = 20,
         page = 1
       } = req.query
@@ -36,6 +40,10 @@ const categoryController = {
       const result = await categoryService.getList(companyId, {
         isActive: isActive !== undefined ? isActive === 'true' : undefined,
         keyword,
+        startDate,
+        endDate,
+        sortBy,
+        sortOrder,
         limit: parseInt(limit),
         offset: parseInt(offset)
       })
@@ -118,6 +126,70 @@ const categoryController = {
     }
   },
 
+  // Cập nhật trạng thái (single)
+  updateStatus: async (req, res) => {
+    try {
+      const { id } = req.params
+      const { isActive } = req.body
+      const companyId = req.user.companyId
+
+      if (isActive === undefined || isActive === null) {
+        return res.status(400).json({
+          success: false,
+          message: 'Vui lòng cung cấp trạng thái'
+        })
+      }
+
+      const result = await categoryService.updateStatus(id, companyId, isActive)
+
+      return res.status(200).json({
+        success: true,
+        message: `Đã ${isActive ? 'kích hoạt' : 'tạm dừng'} danh mục thành công`,
+        data: result
+      })
+    } catch (error) {
+      return res.status(400).json({
+        success: false,
+        message: error.message
+      })
+    }
+  },
+
+  // Cập nhật trạng thái hàng loạt (bulk)
+  updateStatusBulk: async (req, res) => {
+    try {
+      const { ids, isActive } = req.body
+      const companyId = req.user.companyId
+
+      if (!ids || !Array.isArray(ids) || ids.length === 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'Vui lòng cung cấp danh sách ID'
+        })
+      }
+
+      if (isActive === undefined || isActive === null) {
+        return res.status(400).json({
+          success: false,
+          message: 'Vui lòng cung cấp trạng thái'
+        })
+      }
+
+      const result = await categoryService.updateStatusBulk(ids, companyId, isActive)
+
+      return res.status(200).json({
+        success: true,
+        message: `Đã cập nhật trạng thái cho ${result.length} danh mục`,
+        data: result
+      })
+    } catch (error) {
+      return res.status(400).json({
+        success: false,
+        message: error.message
+      })
+    }
+  },
+
   delete: async (req, res) => {
     try {
       const { id } = req.params
@@ -132,6 +204,60 @@ const categoryController = {
       })
     } catch (error) {
       return res.status(404).json({
+        success: false,
+        message: error.message
+      })
+    }
+  },
+
+  // Xóa hàng loạt (bulk)
+  deleteBulk: async (req, res) => {
+    try {
+      const { ids } = req.body
+      const companyId = req.user.companyId
+
+      if (!ids || !Array.isArray(ids) || ids.length === 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'Vui lòng cung cấp danh sách ID'
+        })
+      }
+
+      const result = await categoryService.deleteBulk(ids, companyId)
+
+      return res.status(200).json({
+        success: true,
+        message: `Đã xóa ${result.length} danh mục`,
+        data: result
+      })
+    } catch (error) {
+      return res.status(400).json({
+        success: false,
+        message: error.message
+      })
+    }
+  },
+
+  // Lấy thống kê
+  getStats: async (req, res) => {
+    try {
+      const companyId = req.user.companyId
+
+      if (!companyId) {
+        return res.status(400).json({
+          success: false,
+          message: 'Không tìm thấy company ID'
+        })
+      }
+
+      const stats = await categoryService.getStats(companyId)
+
+      return res.status(200).json({
+        success: true,
+        data: stats
+      })
+    } catch (error) {
+      return res.status(500).json({
         success: false,
         message: error.message
       })

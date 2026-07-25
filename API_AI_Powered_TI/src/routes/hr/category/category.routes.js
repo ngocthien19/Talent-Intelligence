@@ -7,13 +7,22 @@ import {
   createCategoryValidation,
   updateCategoryValidation,
   idValidation,
-  getCategoriesValidation
+  getCategoriesValidation,
+  updateStatusBulkValidation,
+  deleteBulkValidation,
+  updateStatusValidation
 } from '~/validations/hr/category/category.validation'
 
 const router = express.Router()
 
 router.use(authGuard.isAuthorized)
 router.use(authGuard.authorize(ROLES.HR))
+
+// Lấy thống kê
+router.get('/categories/stats', categoryController.getStats)
+
+// Lấy danh sách dropdown
+router.get('/categories/dropdown', categoryController.getDropdown)
 
 // Tạo category
 router.post(
@@ -22,17 +31,11 @@ router.post(
   categoryController.create
 )
 
-// Danh sách category
+// Danh sách category (có filter theo ngày tạo)
 router.get(
   '/categories',
   validate(getCategoriesValidation, 'query'),
   categoryController.getList
-)
-
-// Dropdown category - THÊM ROUTE NÀY
-router.get(
-  '/categories/dropdown',
-  categoryController.getDropdown
 )
 
 // Chi tiết category
@@ -50,11 +53,33 @@ router.put(
   categoryController.update
 )
 
-// Xóa category
+// Cập nhật trạng thái (single)
+router.put(
+  '/categories/:id/status',
+  validate(idValidation, 'params'),
+  validate(updateStatusValidation, 'body'),
+  categoryController.updateStatus
+)
+
+// Cập nhật trạng thái hàng loạt (bulk)
+router.put(
+  '/categories/status/bulk',
+  validate(updateStatusBulkValidation, 'body'),
+  categoryController.updateStatusBulk
+)
+
+// Xóa category (single)
 router.delete(
   '/categories/:id',
   validate(idValidation, 'params'),
   categoryController.delete
+)
+
+// Xóa hàng loạt (bulk)
+router.delete(
+  '/categories/bulk',
+  validate(deleteBulkValidation, 'body'),
+  categoryController.deleteBulk
 )
 
 export default router
