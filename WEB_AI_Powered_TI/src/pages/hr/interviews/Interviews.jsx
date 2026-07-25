@@ -212,6 +212,9 @@ const Interviews = () => {
         })
         if (response.success) {
           toast.success(t('hr.interview.createSuccess') || 'Tạo lịch thành công')
+          if (response.data?.calendarWarning) {
+            toast.warning(response.data.calendarWarning)
+          }
         }
       }
 
@@ -330,6 +333,7 @@ const Interviews = () => {
         onView={handleView}
         onEdit={handleEdit}
         onDelete={handleDelete}
+        onConfirm={handleConfirm}
         onUpdateStatus={handleUpdateStatus}
         onPageChange={handlePageChange}
         isLoading={isLoading}

@@ -26,22 +26,18 @@ const InterviewDetailModal = ({ isOpen, onClose, interview, onUpdateStatus }) =>
   const [calendarLink, setCalendarLink] = useState(null)
   const [isLoadingLink, setIsLoadingLink] = useState(false)
 
-  if (!isOpen || !interview) return null
-
-  const interviewDate = new Date(interview.interview_date)
-
-  // Lấy avatar URL
-  const avatarUrl = interview?.avatar?.secure_url || null
-
-  // Fetch calendar link khi mở modal
   useEffect(() => {
     if (isOpen && interview?.id) {
       fetchCalendarLink()
     }
   }, [isOpen, interview?.id])
 
+  if (!isOpen || !interview) return null
+
+  const interviewDate = new Date(interview.interview_date)
+  const avatarUrl = interview?.avatar?.secure_url || null
+
   const fetchCalendarLink = async () => {
-    // Nếu không có google_event_id thì không cần gọi
     if (!interview.google_event_id) return
 
     setIsLoadingLink(true)
@@ -51,7 +47,7 @@ const InterviewDetailModal = ({ isOpen, onClose, interview, onUpdateStatus }) =>
         setCalendarLink(response.data)
       }
     } catch (error) {
-      console.error('Error fetching calendar link:', error)
+      // console.error('Error fetching calendar link:', error)
     } finally {
       setIsLoadingLink(false)
     }
@@ -77,7 +73,6 @@ const InterviewDetailModal = ({ isOpen, onClose, interview, onUpdateStatus }) =>
     onClose()
   }
 
-  // Kiểm tra trạng thái có thể thao tác
   const canCancel = interview.status === 'scheduled'
   const canComplete = interview.status === 'confirmed'
 
@@ -134,15 +129,9 @@ const InterviewDetailModal = ({ isOpen, onClose, interview, onUpdateStatus }) =>
                         src={avatarUrl}
                         alt={interview.candidate_name || 'Avatar'}
                         className="w-10 h-10 rounded-full object-cover border-2 border-brand-light/30 dark:border-gray-700 flex-shrink-0"
-                        onError={(e) => {
-                          e.target.style.display = 'none'
-                          const parent = e.target.parentElement
-                          const fallback = parent?.querySelector('.fallback-avatar')
-                          if (fallback) fallback.classList.remove('hidden')
-                        }}
                       />
                     ) : null}
-                    <div className={`w-10 h-10 rounded-full bg-gradient-brand flex items-center justify-center text-white font-semibold text-sm flex-shrink-0 fallback-avatar ${avatarUrl ? 'hidden' : ''}`}>
+                    <div className={`w-10 h-10 rounded-full bg-gradient-brand flex items-center justify-center text-white font-semibold text-sm flex-shrink-0 ${avatarUrl ? 'hidden' : ''}`}>
                       {interview.candidate_name?.charAt(0)?.toUpperCase() || 'U'}
                     </div>
                     <div>
@@ -218,8 +207,6 @@ const InterviewDetailModal = ({ isOpen, onClose, interview, onUpdateStatus }) =>
                       }
                     />
                   )}
-
-                  {/* Google Calendar Link */}
                   {calendarLink?.hasCalendarEvent && (
                     <DetailItem
                       icon={FaGoogle}
@@ -241,7 +228,6 @@ const InterviewDetailModal = ({ isOpen, onClose, interview, onUpdateStatus }) =>
                       }
                     />
                   )}
-
                   <DetailItem
                     icon={FaFileAlt}
                     label={t('hr.interview.notes') || 'Ghi chú'}

@@ -145,9 +145,10 @@ const InterviewFormModal = ({
                     {...register('applicationId', {
                       required: t('hr.interview.validation.candidateRequired') || 'Vui lòng chọn ứng viên'
                     })}
+                    disabled={!!editingInterview}
                     className={`w-full pl-10 pr-4 py-2.5 text-sm border rounded-lg bg-white dark:bg-gray-900 text-brand-secondary dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-primary/50 transition-all duration-200 ${
                       errors.applicationId ? 'border-red-500' : 'border-brand-light/50 dark:border-gray-700'
-                    }`}
+                    } ${editingInterview ? 'opacity-60 cursor-not-allowed bg-gray-50 dark:bg-gray-800' : ''}`}
                   >
                     <option value="">{t('hr.interview.selectCandidate') || 'Chọn ứng viên...'}</option>
                     {candidates.map((candidate) => (
@@ -158,6 +159,11 @@ const InterviewFormModal = ({
                   </select>
                 </div>
                 {errors.applicationId && <p className="text-xs text-red-500 mt-1">{errors.applicationId.message}</p>}
+                {editingInterview && (
+                  <p className="text-xs text-brand-text/50 dark:text-gray-500 mt-1">
+                    {t('hr.interview.candidateLocked') || 'Không thể thay đổi ứng viên khi chỉnh sửa lịch'}
+                  </p>
+                )}
               </div>
 
               {/* Date & Time */}
@@ -253,13 +259,6 @@ const InterviewFormModal = ({
                 </div>
               </div>
 
-              {/*
-                QUAN TRỌNG: cả 2 khối location & meetLink LUÔN NẰM TRONG DOM (không unmount bằng ternary),
-                chỉ ẩn/hiện bằng class `hidden`. Nếu unmount hẳn (như bản cũ dùng if/else) thì mỗi lần
-                chuyển tab online/offline, React hủy input đó và giá trị người dùng đã gõ sẽ mất khi mount lại.
-                Input bị `hidden` sẽ tự động được trình duyệt bỏ qua khi validate `required`, nên không ảnh hưởng submit.
-              */}
-
               {/* Location */}
               <div className={interviewType === 'offline' ? '' : 'hidden'}>
                 <label className="text-sm font-medium text-brand-secondary dark:text-white block mb-1.5">
@@ -315,7 +314,6 @@ const InterviewFormModal = ({
                 />
               </div>
 
-              {/* Auto create calendar - chỉ hiện khi online, vì offline không cần Meet event */}
               <div className={`flex items-center gap-3 pt-2 ${interviewType === 'online' ? '' : 'hidden'}`}>
                 <input
                   {...register('autoCreateCalendar')}
