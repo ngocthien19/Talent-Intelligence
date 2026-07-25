@@ -8,6 +8,8 @@ const auth = new google.auth.GoogleAuth({
 
 const calendar = google.calendar({ version: 'v3', auth })
 
+const CALENDAR_ID = env.GOOGLE_CALENDAR_ID || 'primary'
+
 export const getCalendarClient = () => {
   return calendar
 }
@@ -55,9 +57,9 @@ export const createCalendarEvent = async (eventData) => {
     }
 
     const response = await calendar.events.insert({
-      calendarId: 'primary',
+      calendarId: CALENDAR_ID,
       resource: event,
-      sendUpdates: 'all'
+      sendUpdates: 'none'
     })
 
     const meetLinkResult = meetLink || response.data.htmlLink
@@ -74,16 +76,15 @@ export const createCalendarEvent = async (eventData) => {
   }
 }
 
-// THÊM MỚI: Lấy chi tiết sự kiện Google Calendar
 export const getCalendarEvent = async (eventId) => {
   try {
     const response = await calendar.events.get({
-      calendarId: 'primary',
+      calendarId: CALENDAR_ID,
       eventId: eventId
     })
     return response.data
   } catch (error) {
-    console.error('Error getting calendar event:', error)
+    console.error('Error getting calendar event:', error.message)
     return null
   }
 }
@@ -91,8 +92,9 @@ export const getCalendarEvent = async (eventId) => {
 export const deleteCalendarEvent = async (eventId) => {
   try {
     await calendar.events.delete({
-      calendarId: 'primary',
-      eventId: eventId
+      calendarId: CALENDAR_ID,
+      eventId: eventId,
+      sendUpdates: 'none'
     })
     return { success: true, message: 'Xóa sự kiện thành công' }
   } catch (error) {
@@ -100,7 +102,6 @@ export const deleteCalendarEvent = async (eventId) => {
   }
 }
 
-// THÊM MỚI: Cập nhật sự kiện Google Calendar
 export const updateCalendarEvent = async (eventId, eventData) => {
   try {
     const {
@@ -127,10 +128,10 @@ export const updateCalendarEvent = async (eventId, eventData) => {
     }
 
     const response = await calendar.events.update({
-      calendarId: 'primary',
+      calendarId: CALENDAR_ID,
       eventId: eventId,
       resource: event,
-      sendUpdates: 'all'
+      sendUpdates: 'none'
     })
 
     return {
