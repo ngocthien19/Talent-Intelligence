@@ -116,7 +116,7 @@ const HRHeader = () => {
       '/hr/applications': t('hr.applications') || 'Đơn ứng tuyển',
       '/hr/jobs': t('hr.jobs') || 'Việc làm',
       '/hr/categories': t('hr.categories') || 'Danh mục',
-      '/hr/analytics': t('hr.analytics') || 'Phân tích',
+      '/hr/analytics': t('hr.analytic') || 'Phân tích',
       '/hr/interviews': t('hr.interviews') || 'Lịch phỏng vấn',
       '/hr/mock-interview': t('hr.mockInterview') || 'Mock Interview',
       '/hr/search': t('hr.searchCandidate') || 'Tìm kiếm ứng viên',
