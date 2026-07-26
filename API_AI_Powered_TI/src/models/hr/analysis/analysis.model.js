@@ -1,17 +1,35 @@
 import pool from '~/config/db.js'
 
 const analysisModel = {
-  // Lấy thông tin candidate để phân tích
-  getCandidateForAnalysis: async (candidateId) => {
+  // Lấy thông tin application để phân tích
+  getCandidateForAnalysis: async (applicationId) => {
     const result = await pool.query(
-      `SELECT c.*, jd.title as job_title, jd.description as job_description,
-              jd.required_skills, jd.nice_to_have_skills,
-              comp.name as company_name, comp.culture_description
-       FROM candidates c
-       LEFT JOIN job_descriptions jd ON c.jd_id = jd.id
-       LEFT JOIN companies comp ON c.company_id = comp.id
-       WHERE c.id = $1`,
-      [candidateId]
+      `SELECT 
+        a.*,
+        a.id as application_id,
+        a.position as position_applied,
+        a.jd_text,
+        cp.id as candidate_profile_id,
+        cp.name,
+        cp.email,
+        cp.phone,
+        cp.address,
+        cp.cv_text,
+        cp.parsed_data,
+        cp.skills,
+        jd.title as job_title,
+        jd.description as job_description,
+        jd.requirements,
+        jd.required_skills,
+        jd.nice_to_have_skills,
+        comp.name as company_name,
+        comp.culture_description
+       FROM applications a
+       LEFT JOIN candidate_profiles cp ON a.candidate_profile_id = cp.id
+       LEFT JOIN job_descriptions jd ON a.job_description_id = jd.id
+       LEFT JOIN companies comp ON a.company_id = comp.id
+       WHERE a.id = $1`,
+      [applicationId]
     )
     return result.rows[0]
   },
@@ -48,12 +66,12 @@ const analysisModel = {
     return resultQuery.rows[0]
   },
 
-  // Cập nhật candidate scores
-  updateCandidateScores: async (candidateId, scores) => {
+  // Cập nhật application scores
+  updateApplicationScores: async (applicationId, scores) => {
     const { overall_score, skills_match_score, culture_fit_score, retention_score } = scores
 
     const query = `
-      UPDATE candidates
+      UPDATE applications
       SET overall_score = $1,
           skills_match_score = $2,
           culture_fit_score = $3,
@@ -65,7 +83,11 @@ const analysisModel = {
     `
 
     const result = await pool.query(query, [
-      overall_score, skills_match_score, culture_fit_score, retention_score, candidateId
+      overall_score || 0,
+      skills_match_score || 0,
+      culture_fit_score || 0,
+      retention_score || 0,
+      applicationId
     ])
 
     return result.rows[0]
@@ -84,13 +106,13 @@ const analysisModel = {
   },
 
   // Kiểm tra đã phân tích chưa
-  hasAnalyzed: async (candidateId) => {
+  hasAnalyzed: async (applicationId) => {
     const result = await pool.query(
       `SELECT id FROM analyses
        WHERE candidate_id = $1
        AND analysis_type = 'full_analysis'
        AND status = 'completed'`,
-      [candidateId]
+      [applicationId]
     )
     return result.rows.length > 0
   }
