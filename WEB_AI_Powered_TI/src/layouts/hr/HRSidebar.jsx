@@ -51,7 +51,7 @@ const HRSidebar = () => {
     { path: '/hr/interviews', icon: FaCalendarAlt, label: 'hr.interviews', defaultLabel: 'Lịch phỏng vấn' },
     { path: '/hr/mock-interview', icon: FaUserCog, label: 'hr.mockInterview', defaultLabel: 'Mock Interview' },
     { path: '/hr/search', icon: FaSearch, label: 'hr.searchCandidate', defaultLabel: 'Tìm kiếm' },
-    { path: '/hr/analytics', icon: FaChartBar, label: 'hr.analytics', defaultLabel: 'Phân tích' }
+    { path: '/hr/analytics', icon: FaChartBar, label: 'hr.analytic', defaultLabel: 'Phân tích' }
   ]
 
   // Listen for toggle event from header
