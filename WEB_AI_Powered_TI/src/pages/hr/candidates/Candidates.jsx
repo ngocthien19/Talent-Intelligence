@@ -5,6 +5,9 @@ import { FaSpinner } from 'react-icons/fa'
 import { toast } from 'react-toastify'
 import { useLanguage } from '~/hooks/useLanguage'
 import { candidateApi } from '~/api/hr/candidate.api'
+import { analysisApi } from '~/api/hr/analysis.api'
+import { enrichmentApi } from '~/api/hr/enrichment.api'
+import { reportApi } from '~/api/hr/report.api'
 
 import CandidateHeader from '~/components/hr/candidate/CandidateHeader'
 import CandidateStats from '~/components/hr/candidate/CandidateStats'
@@ -12,6 +15,7 @@ import CandidateFilters from '~/components/hr/candidate/CandidateFilters'
 import CandidateTable from '~/components/hr/candidate/CandidateTable'
 import CandidateEmptyState from '~/components/hr/candidate/CandidateEmptyState'
 import ComparisonModal from '~/components/hr/comparison/ComparisonModal'
+import AnalysisResultModal from '~/components/hr/candidate/AnalysisResultModal'
 
 // Animation variants
 const containerVariants = {
@@ -38,11 +42,16 @@ const DEFAULT_FILTERS = {
   limit: 20
 }
 
+// Cấu hình polling trạng thái phân tích cơ bản (chạy qua queue nên không có kết quả ngay lập tức)
+const ANALYSIS_POLL_INTERVAL_MS = 3000
+const ANALYSIS_POLL_MAX_ATTEMPTS = 30 // ~90s
+
 const Candidates = () => {
   const { t } = useLanguage()
   const [searchParams, setSearchParams] = useSearchParams()
 
   const skipAutoFetch = useRef(false)
+  const pollTimerRef = useRef(null)
 
   // State
   const [isLoading, setIsLoading] = useState(true)
@@ -62,6 +71,18 @@ const Candidates = () => {
   const [isComparisonOpen, setIsComparisonOpen] = useState(false)
   const [comparisonCandidateIds, setComparisonCandidateIds] = useState([])
 
+  // Analysis state
+  const [analyzingId, setAnalyzingId] = useState(null)
+  const [isAnalysisModalOpen, setIsAnalysisModalOpen] = useState(false)
+  const [analysisModalCandidate, setAnalysisModalCandidate] = useState(null)
+  const [analysisModalData, setAnalysisModalData] = useState({
+    analysis: null,
+    enrichment: null,
+    reportSent: false,
+    isLoading: false
+  })
+  const [isSendingReport, setIsSendingReport] = useState(false)
+
   const [filters, setFilters] = useState({
     status: searchParams.get('status') || '',
     keyword: searchParams.get('keyword') || '',
@@ -74,6 +95,13 @@ const Candidates = () => {
     page: parseInt(searchParams.get('page')) || 1,
     limit: parseInt(searchParams.get('limit')) || 20
   })
+
+  // Dọn dẹp timer polling khi unmount, tránh setState trên component đã gỡ
+  useEffect(() => {
+    return () => {
+      if (pollTimerRef.current) clearInterval(pollTimerRef.current)
+    }
+  }, [])
 
   // Fetch widgets
   const fetchWidgets = useCallback(async () => {
@@ -316,6 +344,152 @@ const Candidates = () => {
     }
   }
 
+  // ===== PHÂN TÍCH =====
+
+  // Kiểm tra trạng thái đã gửi báo cáo chưa, gộp vào modal data hiện tại
+  const refreshReportStatus = async (candidateId) => {
+    try {
+      const res = await reportApi.checkSent(candidateId)
+      if (res.success) {
+        setAnalysisModalData(prev => ({
+          ...prev,
+          reportSent: !!(res.data?.is_notified || res.data?.report_sent_at)
+        }))
+      }
+    } catch (err) {
+      // Không chặn luồng chính nếu check report lỗi
+      console.error('Check report status error:', err)
+    }
+  }
+
+  // Poll trạng thái phân tích cơ bản (chạy qua queue) cho tới khi có kết quả hoặc hết lượt thử
+  const pollAnalysisStatus = (candidateId) => {
+    return new Promise((resolve) => {
+      let attempts = 0
+      pollTimerRef.current = setInterval(async () => {
+        attempts++
+        try {
+          const res = await analysisApi.getAnalysisStatus(candidateId)
+          if (res.success && res.data?.isAnalyzed && res.data?.analysis) {
+            clearInterval(pollTimerRef.current)
+            setAnalysisModalData(prev => ({ ...prev, analysis: res.data.analysis, isLoading: false }))
+            refreshReportStatus(candidateId)
+            resolve(true)
+            return
+          }
+        } catch (err) {
+          // Bỏ qua lỗi tạm thời, tiếp tục poll cho tới khi hết số lượt thử
+        }
+
+        if (attempts >= ANALYSIS_POLL_MAX_ATTEMPTS) {
+          clearInterval(pollTimerRef.current)
+          setAnalysisModalData(prev => ({ ...prev, isLoading: false }))
+          toast.warning(
+            t('hr.candidate.analysisTimeout') ||
+            'Phân tích cơ bản đang mất nhiều thời gian hơn dự kiến. Bạn có thể đóng modal và xem lại kết quả sau.'
+          )
+          resolve(false)
+        }
+      }, ANALYSIS_POLL_INTERVAL_MS)
+    })
+  }
+
+  // Nhấn nút "Phân tích": chạy song song phân tích cơ bản (bất đồng bộ) + nâng cao (đồng bộ)
+  const handleAnalyze = async (candidate) => {
+    setAnalyzingId(candidate.id)
+    setAnalysisModalCandidate(candidate)
+    setAnalysisModalData({ analysis: null, enrichment: null, reportSent: false, isLoading: true })
+    setIsAnalysisModalOpen(true)
+
+    try {
+      const [analyzeRes, enrichRes] = await Promise.allSettled([
+        analysisApi.analyzeCandidate(candidate.id),
+        enrichmentApi.analyzeResume(candidate.id)
+      ])
+
+      // Phân tích nâng cao chạy đồng bộ nên có kết quả ngay
+      if (enrichRes.status === 'fulfilled' && enrichRes.value.success) {
+        setAnalysisModalData(prev => ({ ...prev, enrichment: enrichRes.value.data }))
+      } else {
+        const msg = enrichRes.status === 'rejected'
+          ? (enrichRes.reason?.response?.data?.message || enrichRes.reason?.message)
+          : enrichRes.value?.message
+        toast.error(msg || t('hr.candidate.enrichFailed') || 'Phân tích nâng cao thất bại')
+      }
+
+      // Phân tích cơ bản chạy qua queue -> cần poll cho tới khi xong
+      if (analyzeRes.status === 'fulfilled' && analyzeRes.value.success) {
+        await pollAnalysisStatus(candidate.id)
+      } else {
+        const msg = analyzeRes.status === 'rejected'
+          ? (analyzeRes.reason?.response?.data?.message || analyzeRes.reason?.message)
+          : analyzeRes.value?.message
+        toast.error(msg || t('hr.candidate.analyzeFailed') || 'Phân tích cơ bản thất bại')
+        setAnalysisModalData(prev => ({ ...prev, isLoading: false }))
+      }
+    } catch (err) {
+      toast.error(t('common.error') || 'Có lỗi xảy ra khi phân tích')
+      setAnalysisModalData(prev => ({ ...prev, isLoading: false }))
+    } finally {
+      setAnalyzingId(null)
+      fetchCandidates()
+      fetchWidgets()
+    }
+  }
+
+  // Nhấn nút "Xem phân tích": lấy lại kết quả đã có sẵn (không chạy phân tích mới)
+  const handleViewAnalysis = async (candidate) => {
+    setAnalysisModalCandidate(candidate)
+    setAnalysisModalData({ analysis: null, enrichment: null, reportSent: false, isLoading: true })
+    setIsAnalysisModalOpen(true)
+
+    try {
+      const [analysisRes, enrichRes, reportRes] = await Promise.allSettled([
+        analysisApi.getAnalysisResult(candidate.id),
+        enrichmentApi.getEnrichment(candidate.id),
+        reportApi.checkSent(candidate.id)
+      ])
+
+      setAnalysisModalData({
+        analysis: analysisRes.status === 'fulfilled' && analysisRes.value.success ? analysisRes.value.data : null,
+        enrichment: enrichRes.status === 'fulfilled' && enrichRes.value.success ? enrichRes.value.data : null,
+        reportSent: reportRes.status === 'fulfilled' && reportRes.value.success
+          ? !!(reportRes.value.data?.is_notified || reportRes.value.data?.report_sent_at)
+          : false,
+        isLoading: false
+      })
+    } catch (err) {
+      setAnalysisModalData(prev => ({ ...prev, isLoading: false }))
+      toast.error(t('hr.candidate.loadAnalysisFailed') || 'Không thể tải kết quả phân tích')
+    }
+  }
+
+  const handleCloseAnalysisModal = () => {
+    if (pollTimerRef.current) {
+      clearInterval(pollTimerRef.current)
+      pollTimerRef.current = null
+    }
+    setIsAnalysisModalOpen(false)
+    setAnalysisModalCandidate(null)
+  }
+
+  const handleSendReport = async (candidateId) => {
+    setIsSendingReport(true)
+    try {
+      const res = await reportApi.sendReport(candidateId)
+      if (res.success) {
+        toast.success(t('hr.candidate.sendReportSuccess') || 'Đã gửi báo cáo thành công')
+        setAnalysisModalData(prev => ({ ...prev, reportSent: true }))
+      } else {
+        toast.error(res.message || t('hr.candidate.sendReportFailed') || 'Gửi báo cáo thất bại')
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || err.message || t('hr.candidate.sendReportFailed') || 'Gửi báo cáo thất bại')
+    } finally {
+      setIsSendingReport(false)
+    }
+  }
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-[60vh]">
@@ -380,6 +554,9 @@ const Candidates = () => {
                 currentSortOrder={filters.sortOrder}
                 isLoading={isTableLoading}
                 onCompare={handleCompare}
+                onAnalyze={handleAnalyze}
+                onViewAnalysis={handleViewAnalysis}
+                analyzingId={analyzingId}
               />
             ) : (
               <CandidateEmptyState
@@ -418,6 +595,16 @@ const Candidates = () => {
           setComparisonCandidateIds([])
         }}
         candidateIds={comparisonCandidateIds}
+      />
+
+      {/* Analysis Result Modal */}
+      <AnalysisResultModal
+        isOpen={isAnalysisModalOpen}
+        onClose={handleCloseAnalysisModal}
+        candidate={analysisModalCandidate}
+        data={analysisModalData}
+        onSendReport={handleSendReport}
+        isSendingReport={isSendingReport}
       />
     </motion.div>
   )

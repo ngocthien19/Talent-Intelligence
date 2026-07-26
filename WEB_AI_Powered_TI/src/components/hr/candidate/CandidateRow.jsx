@@ -5,7 +5,10 @@ import {
   FaEye,
   FaTrash,
   FaChevronDown,
-  FaStar
+  FaStar,
+  FaMagic,
+  FaChartBar,
+  FaSpinner
 } from 'react-icons/fa'
 import {
   Tooltip,
@@ -41,10 +44,17 @@ const CandidateRow = ({
   onSelect,
   onStatusUpdate,
   onDelete,
+  onAnalyze,
+  onViewAnalysis,
+  isAnalyzing = false,
   index
 }) => {
   const { t } = useLanguage()
   const [isStatusOpen, setIsStatusOpen] = useState(false)
+
+  // Ứng viên đã có điểm phân tích (overall_score được set sau khi analyzeCandidateSync/Async chạy xong)
+  // => dùng làm cờ xác định đã phân tích hay chưa, không cần gọi API riêng để check
+  const hasAnalysis = candidate.overall_score !== null && candidate.overall_score !== undefined
 
   return (
     <motion.tr
@@ -106,7 +116,7 @@ const CandidateRow = ({
 
       {/* Score - Căn giữa */}
       <td className="px-3 py-3 text-center">
-        {candidate.overall_score !== null && candidate.overall_score !== undefined ? (
+        {hasAnalysis ? (
           <div className="flex items-center justify-center gap-1.5">
             <span className={`text-sm font-bold ${getScoreColor(candidate.overall_score)}`}>
               {formatCompactNumber(candidate.overall_score)}
@@ -202,6 +212,43 @@ const CandidateRow = ({
               </TooltipTrigger>
               <TooltipContent side="top">
                 <p>{t('hr.candidate.viewDetail') || 'Xem chi tiết'}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+
+          {/* Analyze / View Analysis */}
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                {hasAnalysis ? (
+                  <button
+                    onClick={() => onViewAnalysis(candidate)}
+                    className="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-purple-500 text-purple-500 hover:bg-purple-500 hover:text-white dark:border-purple-400 dark:text-purple-400 dark:hover:bg-purple-500 dark:hover:text-white transition-all duration-200 cursor-pointer hover:scale-110 active:scale-95"
+                  >
+                    <FaChartBar size={15} />
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => onAnalyze(candidate)}
+                    disabled={isAnalyzing}
+                    className="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-indigo-500 text-indigo-500 hover:bg-indigo-500 hover:text-white dark:border-indigo-400 dark:text-indigo-400 dark:hover:bg-indigo-500 dark:hover:text-white transition-all duration-200 cursor-pointer hover:scale-110 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                  >
+                    {isAnalyzing ? (
+                      <FaSpinner className="animate-spin" size={15} />
+                    ) : (
+                      <FaMagic size={15} />
+                    )}
+                  </button>
+                )}
+              </TooltipTrigger>
+              <TooltipContent side="top">
+                <p>
+                  {hasAnalysis
+                    ? (t('hr.candidate.viewAnalysis') || 'Xem kết quả phân tích')
+                    : isAnalyzing
+                      ? (t('hr.candidate.analyzingTooltip') || 'Đang phân tích...')
+                      : (t('hr.candidate.analyze') || 'Phân tích ứng viên')}
+                </p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
