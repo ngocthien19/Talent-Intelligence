@@ -21,7 +21,10 @@ const CandidateTable = ({
   currentSortBy,
   currentSortOrder,
   isLoading,
-  onCompare
+  onCompare,
+  onAnalyze,
+  onViewAnalysis,
+  analyzingId
 }) => {
   const { t } = useLanguage()
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false)
@@ -209,6 +212,9 @@ const CandidateTable = ({
                     onSelect={(checked) => onSelectOne(candidate.id, checked)}
                     onStatusUpdate={onStatusUpdate}
                     onDelete={(id) => openSingleDeleteConfirm(id, candidate.name)}
+                    onAnalyze={onAnalyze}
+                    onViewAnalysis={onViewAnalysis}
+                    isAnalyzing={analyzingId === candidate.id}
                     index={index}
                   />
                 ))
