@@ -102,7 +102,7 @@ Vui lòng phân tích và trả về kết quả dưới dạng JSON với cấu
       retention_score: result.retention?.score || 0
     }
 
-    const updatedCandidate = await analysisModel.updateCandidateScores(candidateId, scores)
+    const updatedCandidate = await analysisModel.updateApplicationScores(candidateId, scores)
 
     // Gửi thông báo
     await notificationService.sendToCompany(candidate.company_id, {
