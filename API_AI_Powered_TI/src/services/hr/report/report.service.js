@@ -37,7 +37,12 @@ const reportService = {
       name: profile.name,
       email: profile.email,
       phone: profile.phone,
-      address: profile.address
+      address: profile.address,
+      position_applied: application.position,
+      position: application.position,
+      job_title: application.position,
+      company_name: application.company_name,
+      job_location: application.job_location
     }
 
     const htmlContent = generateReportHTML(candidateData, {
@@ -71,7 +76,7 @@ const reportService = {
 
     // 8. Gửi thông báo cho HR (xác nhận đã gửi)
     await notificationService.sendToHR(hrId, {
-      type: 'report_sent_confirm',
+      type: 'report_sent',
       title: `Đã gửi báo cáo cho ${profile.name}`,
       content: `Báo cáo đánh giá đã được gửi đến email của ${profile.name}`,
       extraData: {

@@ -3,25 +3,29 @@ import { env } from '~/config/environment'
 
 // Khởi tạo Gemini
 const genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY)
-const MODEL_NAME = 'gemini-2.5-flash'
+const MODEL_NAME = 'gemini-3.5-flash'
 
 // Hàm retry với exponential backoff
 const retry = async (fn, maxRetries = 5, delay = 1000) => {
-  let lastError
-
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
       return await fn()
     } catch (error) {
-      lastError = error
+      // Chỉ thử lại khi gặp lỗi 429 (Too Many Requests) hoặc 503 (Service Unavailable)
       if (error.status !== 429 && error.status !== 503) {
-        throw error
+        throw error // Ném lỗi khác ra ngoài
       }
-      const waitTime = delay * Math.pow(2, attempt - 1) + Math.random() * 1000
+      // Tính thời gian chờ dựa trên thông báo lỗi hoặc tăng dần
+      let waitTime = delay * Math.pow(2, attempt - 1)
+      if (error.message?.includes('retryDelay')) {
+        // Thử lấy thời gian chờ từ response error (nếu có)
+        const match = error.message.match(/retryDelay":"(\d+)s/)
+        if (match) waitTime = parseInt(match[1]) * 1000 + 1000
+      }
       await new Promise(resolve => setTimeout(resolve, waitTime))
     }
   }
-  throw lastError
+  throw new Error('Max retries exceeded')
 }
 
 export const getModel = () => {
