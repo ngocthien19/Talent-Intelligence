@@ -53,10 +53,11 @@ const analysisController = {
 
       return res.status(200).json({
         success: true,
-        data: result
+        data: result || null,
+        message: result ? 'Đã có kết quả phân tích' : 'Chưa có phân tích'
       })
     } catch (error) {
-      return res.status(404).json({
+      return res.status(500).json({
         success: false,
         message: error.message
       })

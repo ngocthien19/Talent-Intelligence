@@ -7,6 +7,8 @@ export const generateReportHTML = (candidate, analysis) => {
     return '#ef4444'
   }
 
+  const position = candidate.position_applied || candidate.position || candidate.job_title || 'Vị trí chưa xác định'
+
   return `
 <!DOCTYPE html>
 <html>
@@ -131,7 +133,7 @@ export const generateReportHTML = (candidate, analysis) => {
     <!-- Header -->
     <div class="header">
       <h1>Kết quả đánh giá hồ sơ</h1>
-      <p>Cảm ơn bạn đã ứng tuyển vào vị trí <strong>${candidate.position_applied}</strong></p>
+      <p>Cảm ơn bạn đã ứng tuyển vào vị trí <strong>${position}</strong></p>
     </div>
 
     <!-- Overall Score -->

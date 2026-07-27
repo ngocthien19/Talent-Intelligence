@@ -7,6 +7,7 @@ export const analysisWorker = async (job) => {
   let candidate = null
 
   try {
+
     // 1. Lấy thông tin candidate
     candidate = await analysisModel.getCandidateForAnalysis(candidateId)
     if (!candidate) {
@@ -92,7 +93,7 @@ Vui lòng phân tích và trả về kết quả dưới dạng JSON với cấu
       processing_time: processingTime
     })
 
-    // 6. Cập nhật candidate scores
+    // 6. Cập nhật application scores
     const scores = {
       overall_score: result.overall?.score || 0,
       skills_match_score: result.skills_match?.score || 0,
@@ -100,28 +101,30 @@ Vui lòng phân tích và trả về kết quả dưới dạng JSON với cấu
       retention_score: result.retention?.score || 0
     }
 
-    await analysisModel.updateCandidateScores(candidateId, scores)
+    await analysisModel.updateApplicationScores(candidateId, scores)
 
-    // Gửi cho HR
-    await notificationService.sendToHR(userId, {
-      type: 'analysis_completed',
-      title: `Phân tích hoàn tất: ${candidate.name}`,
-      content: `Phân tích CV cho ứng viên ${candidate.name} đã hoàn tất. Điểm: ${scores.overall_score}/100`,
-      extraData: {
-        candidateId: candidate.id,
-        candidateName: candidate.name,
-        positionApplied: candidate.position_applied,
-        overallScore: scores.overall_score,
-        skillsMatchScore: scores.skills_match_score,
-        cultureFitScore: scores.culture_fit_score,
-        retentionScore: scores.retention_score,
-        recommendation: result.overall?.recommendation,
-        analysisId: analysis.id,
-        processingTime: processingTime
-      }
-    })
+    // Gửi thông báo cho HR
+    if (userId) {
+      await notificationService.sendToHR(userId, {
+        type: 'analysis_completed',
+        title: `Phân tích hoàn tất: ${candidate.name}`,
+        content: `Phân tích CV cho ứng viên ${candidate.name} đã hoàn tất. Điểm: ${scores.overall_score}/100`,
+        extraData: {
+          candidateId: candidate.id,
+          candidateName: candidate.name,
+          positionApplied: candidate.position_applied,
+          overallScore: scores.overall_score,
+          skillsMatchScore: scores.skills_match_score,
+          cultureFitScore: scores.culture_fit_score,
+          retentionScore: scores.retention_score,
+          recommendation: result.overall?.recommendation,
+          analysisId: analysis.id,
+          processingTime: processingTime
+        }
+      })
+    }
 
-    // Gửi cho toàn công ty
+    // Gửi thông báo cho công ty
     await notificationService.sendToCompany(candidate.company_id, {
       type: 'analysis_completed',
       title: `Phân tích hoàn tất: ${candidate.name}`,
@@ -147,17 +150,23 @@ Vui lòng phân tích và trả về kết quả dưới dạng JSON với cấu
 
     // Gửi thông báo lỗi cho HR
     if (userId) {
-      await notificationService.sendToHR(userId, {
-        type: 'analysis_failed',
-        title: `Phân tích thất bại: ${candidateName}`,
-        content: `Phân tích CV thất bại: ${error.message}`,
-        extraData: {
-          candidateId: candidateId,
-          error: error.message
-        }
-      })
+      try {
+        await notificationService.sendToHR(userId, {
+          type: 'status_update',
+          title: `Phân tích thất bại: ${candidateName}`,
+          content: `Phân tích CV thất bại: ${error.message}`,
+          extraData: {
+            candidateId: candidateId,
+            error: error.message
+          }
+        })
+      } catch (notifError) {
+        // Bỏ qua lỗi notification
+      }
     }
 
     throw error
   }
 }
+
+export default analysisWorker

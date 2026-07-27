@@ -131,28 +131,16 @@ Vui lòng phân tích và trả về kết quả dưới dạng JSON với cấu
 
   // PHÂN TÍCH BẤT ĐỒNG BỘ (Dùng Queue)
   analyzeCandidateAsync: async (candidateId, companyId, userId) => {
-    // Kiểm tra đã phân tích chưa
+  // Kiểm tra đã phân tích chưa
     const hasAnalyzed = await analysisModel.hasAnalyzed(candidateId)
     if (hasAnalyzed) {
       throw new Error('Ứng viên này đã được phân tích')
     }
 
-    // Gửi thông báo cho HR biết đang xử lý
+    // Lấy thông tin candidate để gửi thông báo
     const candidate = await analysisModel.getCandidateForAnalysis(candidateId)
 
-    // Gửi thông báo cho HR biết đang xử lý
-    await notificationService.sendToHR(userId, {
-      type: 'analysis_started',
-      title: `Đang phân tích: ${candidate?.name || 'Ứng viên'}`,
-      content: 'Hệ thống đang phân tích CV cho ứng viên. Vui lòng chờ trong giây lát.',
-      extraData: {
-        candidateId: candidateId,
-        candidateName: candidate?.name,
-        status: 'processing'
-      }
-    })
-
-    // Thêm vào queue
+    // 1. Đưa vào queue NGAY LẬP TỨC
     const job = await addJob(analysisQueue, 'analyze-cv', {
       candidateId,
       companyId,
@@ -164,6 +152,18 @@ Vui lòng phân tích và trả về kết quả dưới dạng JSON với cấu
         delay: 5000
       }
     })
+
+    // 2. Gửi thông báo
+    notificationService.sendToHR(userId, {
+      type: 'analysis_started',
+      title: `Đang phân tích: ${candidate?.name || 'Ứng viên'}`,
+      content: 'Hệ thống đang phân tích CV cho ứng viên. Vui lòng chờ trong giây lát.',
+      extraData: {
+        candidateId: candidateId,
+        candidateName: candidate?.name,
+        status: 'processing'
+      }
+    }).catch(() => {})
 
     return {
       success: true,
@@ -187,10 +187,7 @@ Vui lòng phân tích và trả về kết quả dưới dạng JSON với cấu
   // LẤY KẾT QUẢ PHÂN TÍCH
   getAnalysisResult: async (candidateId) => {
     const analysis = await analysisModel.getAnalysisResult(candidateId)
-    if (!analysis) {
-      throw new Error('Chưa có phân tích cho ứng viên này')
-    }
-    return analysis
+    return analysis || null
   }
 }
 

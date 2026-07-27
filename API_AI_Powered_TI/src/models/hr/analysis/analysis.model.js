@@ -38,6 +38,7 @@ const analysisModel = {
   saveAnalysis: async (data) => {
     const {
       candidate_id,
+      old_candidate_id,
       analysis_type,
       result,
       score,
@@ -49,18 +50,33 @@ const analysisModel = {
     } = data
 
     const query = `
-      INSERT INTO analyses (
-        candidate_id, analysis_type, result, score,
-        explanation, strengths, weaknesses, suggestions,
-        processing_time, status
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'completed')
-      RETURNING *
-    `
+    INSERT INTO analyses (
+      candidate_id,
+      old_candidate_id,  
+      analysis_type,
+      result,
+      score,
+      explanation,
+      strengths,
+      weaknesses,
+      suggestions,
+      processing_time,
+      status
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 'completed')
+    RETURNING *
+  `
 
     const resultQuery = await pool.query(query, [
-      candidate_id, analysis_type, JSON.stringify(result), score,
-      explanation, JSON.stringify(strengths), JSON.stringify(weaknesses),
-      JSON.stringify(suggestions), processing_time
+      candidate_id,
+      old_candidate_id || candidate_id,
+      analysis_type,
+      JSON.stringify(result),
+      score,
+      explanation,
+      JSON.stringify(strengths),
+      JSON.stringify(weaknesses),
+      JSON.stringify(suggestions),
+      processing_time
     ])
 
     return resultQuery.rows[0]
@@ -71,16 +87,16 @@ const analysisModel = {
     const { overall_score, skills_match_score, culture_fit_score, retention_score } = scores
 
     const query = `
-      UPDATE applications
-      SET overall_score = $1,
-          skills_match_score = $2,
-          culture_fit_score = $3,
-          retention_score = $4,
-          status = 'analyzed',
-          updated_at = CURRENT_TIMESTAMP
-      WHERE id = $5
-      RETURNING *
-    `
+    UPDATE applications
+    SET overall_score = $1,
+        skills_match_score = $2,
+        culture_fit_score = $3,
+        retention_score = $4,
+        status = 'analyzed',
+        updated_at = CURRENT_TIMESTAMP
+    WHERE id = $5
+    RETURNING *
+  `
 
     const result = await pool.query(query, [
       overall_score || 0,
