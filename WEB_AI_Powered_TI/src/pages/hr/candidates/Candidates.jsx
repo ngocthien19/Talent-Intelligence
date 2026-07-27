@@ -17,7 +17,6 @@ import CandidateEmptyState from '~/components/hr/candidate/CandidateEmptyState'
 import ComparisonModal from '~/components/hr/comparison/ComparisonModal'
 import AnalysisResultModal from '~/components/hr/candidate/AnalysisResultModal'
 
-// Animation variants
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
@@ -42,9 +41,8 @@ const DEFAULT_FILTERS = {
   limit: 20
 }
 
-// Cấu hình polling trạng thái phân tích cơ bản (chạy qua queue nên không có kết quả ngay lập tức)
-const ANALYSIS_POLL_INTERVAL_MS = 3000
-const ANALYSIS_POLL_MAX_ATTEMPTS = 30 // ~90s
+const ANALYSIS_POLL_INTERVAL_MS = 1200
+const ANALYSIS_POLL_MAX_ATTEMPTS = 30
 
 const Candidates = () => {
   const { t } = useLanguage()
@@ -52,6 +50,7 @@ const Candidates = () => {
 
   const skipAutoFetch = useRef(false)
   const pollTimerRef = useRef(null)
+  const pollAttemptsRef = useRef(0)
 
   // State
   const [isLoading, setIsLoading] = useState(true)
@@ -96,7 +95,7 @@ const Candidates = () => {
     limit: parseInt(searchParams.get('limit')) || 20
   })
 
-  // Dọn dẹp timer polling khi unmount, tránh setState trên component đã gỡ
+  // Dọn dẹp timer polling khi unmount
   useEffect(() => {
     return () => {
       if (pollTimerRef.current) clearInterval(pollTimerRef.current)
@@ -199,7 +198,7 @@ const Candidates = () => {
     setSearchParams(params, { replace: true })
   }, [filters, setSearchParams])
 
-  // Handlers cho các field "live" (keyword, page, sortBy, sortOrder)
+  // Handlers
   const handleFilterChange = (key, value) => {
     if (key === 'page') {
       setFilters(prev => ({ ...prev, page: value }))
@@ -243,9 +242,7 @@ const Candidates = () => {
     }
   }
 
-  // Handler so sánh
   const handleCompare = () => {
-  // 1. Kiểm tra số lượng
     if (selectedIds.length < 2) {
       toast.warning(t('hr.comparison.selectAtLeast') || 'Vui lòng chọn ít nhất 2 ứng viên để so sánh')
       return
@@ -255,9 +252,7 @@ const Candidates = () => {
       return
     }
 
-    // 2. KIỂM TRA TRẠNG THÁI: Chỉ cho phép so sánh ứng viên đã được phân tích
     const validStatuses = ['analyzed', 'shortlisted', 'interviewed', 'offered', 'hired']
-
     const invalidCandidates = selectedIds.filter(id => {
       const c = candidates.find(c => c.id === id)
       return !validStatuses.includes(c?.status)
@@ -268,15 +263,12 @@ const Candidates = () => {
         const c = candidates.find(c => c.id === id)
         return c?.name || 'Không xác định'
       })
-
-      // Hiển thị cảnh báo với danh sách tên ứng viên chưa phân tích
       toast.warning(
         `Ứng viên "${names.join(', ')}" chưa được phân tích. Chỉ những ứng viên đã phân tích mới có thể so sánh.`
       )
       return
     }
 
-    // 3. Kiểm tra có điểm số không (phòng trường hợp status đúng nhưng score null)
     const noScoreCandidates = selectedIds.filter(id => {
       const c = candidates.find(c => c.id === id)
       return c?.overall_score === null || c?.overall_score === undefined
@@ -293,7 +285,6 @@ const Candidates = () => {
       return
     }
 
-    // 4. Mở modal so sánh
     setComparisonCandidateIds(selectedIds)
     setIsComparisonOpen(true)
   }
@@ -344,110 +335,83 @@ const Candidates = () => {
     }
   }
 
-  // ===== PHÂN TÍCH =====
-
-  // Kiểm tra trạng thái đã gửi báo cáo chưa, gộp vào modal data hiện tại
-  const refreshReportStatus = async (candidateId) => {
+  // Hàm kiểm tra kết quả phân tích (chạy nền, không phụ thuộc modal)
+  const checkAnalysisResult = useCallback(async (candidateId) => {
     try {
-      const res = await reportApi.checkSent(candidateId)
-      if (res.success) {
-        setAnalysisModalData(prev => ({
-          ...prev,
-          reportSent: !!(res.data?.is_notified || res.data?.report_sent_at)
-        }))
+      const res = await analysisApi.getAnalysisResult(candidateId)
+      if (res.success && res.data) {
+        // Phân tích hoàn tất!
+        toast.success('Phân tích hoàn tất!')
+        setAnalyzingId(null)
+        pollAttemptsRef.current = 0
+        if (pollTimerRef.current) {
+          clearInterval(pollTimerRef.current)
+          pollTimerRef.current = null
+        }
+        // Refresh danh sách để cập nhật điểm
+        fetchCandidates()
+        fetchWidgets()
+        // Nếu modal đang mở, cập nhật data luôn
+        if (isAnalysisModalOpen && analysisModalCandidate?.id === candidateId) {
+          loadAnalysisData(candidateId)
+        }
+        return true
       }
-    } catch (err) {
-      // Không chặn luồng chính nếu check report lỗi
-      console.error('Check report status error:', err)
+      return false
+    } catch (error) {
+      return false
     }
-  }
+  }, [fetchCandidates, fetchWidgets, isAnalysisModalOpen, analysisModalCandidate])
 
-  // Poll trạng thái phân tích cơ bản (chạy qua queue) cho tới khi có kết quả hoặc hết lượt thử
-  const pollAnalysisStatus = (candidateId) => {
-    return new Promise((resolve) => {
-      let attempts = 0
+  // Hàm bắt đầu polling nền
+  const startBackgroundPolling = useCallback((candidateId) => {
+    // Xóa interval cũ nếu có
+    if (pollTimerRef.current) {
+      clearInterval(pollTimerRef.current)
+      pollTimerRef.current = null
+    }
+
+    pollAttemptsRef.current = 0
+    setAnalyzingId(candidateId)
+
+    // KIỂM TRA NGAY LẬP TỨC (không đợi interval đầu tiên)
+    checkAnalysisResult(candidateId).then((done) => {
+      if (done) return
+
+      // Nếu chưa xong, bắt đầu interval
       pollTimerRef.current = setInterval(async () => {
-        attempts++
-        try {
-          const res = await analysisApi.getAnalysisStatus(candidateId)
-          if (res.success && res.data?.isAnalyzed && res.data?.analysis) {
+        pollAttemptsRef.current += 1
+
+        const done = await checkAnalysisResult(candidateId)
+        if (done) {
+          if (pollTimerRef.current) {
             clearInterval(pollTimerRef.current)
-            setAnalysisModalData(prev => ({ ...prev, analysis: res.data.analysis, isLoading: false }))
-            refreshReportStatus(candidateId)
-            resolve(true)
-            return
+            pollTimerRef.current = null
           }
-        } catch (err) {
-          // Bỏ qua lỗi tạm thời, tiếp tục poll cho tới khi hết số lượt thử
+          return
         }
 
-        if (attempts >= ANALYSIS_POLL_MAX_ATTEMPTS) {
-          clearInterval(pollTimerRef.current)
-          setAnalysisModalData(prev => ({ ...prev, isLoading: false }))
-          toast.warning(
-            t('hr.candidate.analysisTimeout') ||
-            'Phân tích cơ bản đang mất nhiều thời gian hơn dự kiến. Bạn có thể đóng modal và xem lại kết quả sau.'
-          )
-          resolve(false)
+        // Timeout sau MAX_POLL_ATTEMPTS lần
+        if (pollAttemptsRef.current >= ANALYSIS_POLL_MAX_ATTEMPTS) {
+          toast.warning(t('hr.candidate.analysisTimeout') || 'Phân tích đang được xử lý. Vui lòng kiểm tra lại sau.')
+          setAnalyzingId(null)
+          if (pollTimerRef.current) {
+            clearInterval(pollTimerRef.current)
+            pollTimerRef.current = null
+          }
         }
       }, ANALYSIS_POLL_INTERVAL_MS)
     })
-  }
+  }, [checkAnalysisResult, t])
 
-  // Nhấn nút "Phân tích": chạy song song phân tích cơ bản (bất đồng bộ) + nâng cao (đồng bộ)
-  const handleAnalyze = async (candidate) => {
-    setAnalyzingId(candidate.id)
-    setAnalysisModalCandidate(candidate)
-    setAnalysisModalData({ analysis: null, enrichment: null, reportSent: false, isLoading: true })
-    setIsAnalysisModalOpen(true)
-
-    try {
-      const [analyzeRes, enrichRes] = await Promise.allSettled([
-        analysisApi.analyzeCandidate(candidate.id),
-        enrichmentApi.analyzeResume(candidate.id)
-      ])
-
-      // Phân tích nâng cao chạy đồng bộ nên có kết quả ngay
-      if (enrichRes.status === 'fulfilled' && enrichRes.value.success) {
-        setAnalysisModalData(prev => ({ ...prev, enrichment: enrichRes.value.data }))
-      } else {
-        const msg = enrichRes.status === 'rejected'
-          ? (enrichRes.reason?.response?.data?.message || enrichRes.reason?.message)
-          : enrichRes.value?.message
-        toast.error(msg || t('hr.candidate.enrichFailed') || 'Phân tích nâng cao thất bại')
-      }
-
-      // Phân tích cơ bản chạy qua queue -> cần poll cho tới khi xong
-      if (analyzeRes.status === 'fulfilled' && analyzeRes.value.success) {
-        await pollAnalysisStatus(candidate.id)
-      } else {
-        const msg = analyzeRes.status === 'rejected'
-          ? (analyzeRes.reason?.response?.data?.message || analyzeRes.reason?.message)
-          : analyzeRes.value?.message
-        toast.error(msg || t('hr.candidate.analyzeFailed') || 'Phân tích cơ bản thất bại')
-        setAnalysisModalData(prev => ({ ...prev, isLoading: false }))
-      }
-    } catch (err) {
-      toast.error(t('common.error') || 'Có lỗi xảy ra khi phân tích')
-      setAnalysisModalData(prev => ({ ...prev, isLoading: false }))
-    } finally {
-      setAnalyzingId(null)
-      fetchCandidates()
-      fetchWidgets()
-    }
-  }
-
-  // Nhấn nút "Xem phân tích": lấy lại kết quả đã có sẵn (không chạy phân tích mới)
-  const handleViewAnalysis = async (candidate) => {
-    setAnalysisModalCandidate(candidate)
-    setAnalysisModalData({ analysis: null, enrichment: null, reportSent: false, isLoading: true })
-    setIsAnalysisModalOpen(true)
-
+  // Load dữ liệu phân tích cho modal
+  const loadAnalysisData = useCallback(async (candidateId) => {
+    setAnalysisModalData(prev => ({ ...prev, isLoading: true }))
     try {
       const [analysisRes, enrichRes, reportRes] = await Promise.allSettled([
-        analysisApi.getAnalysisResult(candidate.id),
-        enrichmentApi.getEnrichment(candidate.id),
-        reportApi.checkSent(candidate.id)
+        analysisApi.getAnalysisResult(candidateId),
+        enrichmentApi.getEnrichment(candidateId),
+        reportApi.checkSent(candidateId)
       ])
 
       setAnalysisModalData({
@@ -460,17 +424,49 @@ const Candidates = () => {
       })
     } catch (err) {
       setAnalysisModalData(prev => ({ ...prev, isLoading: false }))
-      toast.error(t('hr.candidate.loadAnalysisFailed') || 'Không thể tải kết quả phân tích')
     }
-  }
+  }, [])
 
-  const handleCloseAnalysisModal = () => {
-    if (pollTimerRef.current) {
-      clearInterval(pollTimerRef.current)
-      pollTimerRef.current = null
+  // Nhấn nút "Phân tích"
+  const handleAnalyze = useCallback(async (candidate) => {
+    if (!candidate) return
+
+    const candidateId = candidate.id
+    setAnalysisModalCandidate(candidate)
+    setAnalysisModalData({ analysis: null, enrichment: null, reportSent: false, isLoading: true })
+    setIsAnalysisModalOpen(true)
+
+    try {
+      // Gọi API phân tích (bất đồng bộ)
+      const response = await analysisApi.analyzeCandidate(candidateId)
+      if (response.success) {
+        toast.info('Đang phân tích CV...')
+        // Bắt đầu polling nền
+        startBackgroundPolling(candidateId)
+        // Cập nhật trạng thái loading trong modal
+        setAnalysisModalData(prev => ({ ...prev, isLoading: true }))
+      } else {
+        toast.error(response.message || 'Phân tích thất bại')
+        setAnalysisModalData(prev => ({ ...prev, isLoading: false }))
+      }
+    } catch (error) {
+      toast.error(error.message || 'Có lỗi xảy ra')
+      setAnalysisModalData(prev => ({ ...prev, isLoading: false }))
     }
+  }, [startBackgroundPolling])
+
+  // Nhấn nút "Xem phân tích"
+  const handleViewAnalysis = useCallback(async (candidate) => {
+    setAnalysisModalCandidate(candidate)
+    setIsAnalysisModalOpen(true)
+    await loadAnalysisData(candidate.id)
+  }, [loadAnalysisData])
+
+  // Đóng modal - KHÔNG clear polling
+  const handleCloseAnalysisModal = () => {
     setIsAnalysisModalOpen(false)
     setAnalysisModalCandidate(null)
+    // KHÔNG clear interval ở đây - polling vẫn chạy nền
   }
 
   const handleSendReport = async (candidateId) => {
@@ -508,17 +504,14 @@ const Candidates = () => {
       variants={containerVariants}
       className="space-y-6"
     >
-      {/* Header */}
       <CandidateHeader
         filters={filters}
         onSearch={handleSearch}
         totalCount={pagination.total}
       />
 
-      {/* Stats */}
       <CandidateStats widgets={widgets} />
 
-      {/* Filters */}
       <CandidateFilters
         filters={filters}
         onFilterChange={handleFilterChange}
@@ -526,7 +519,6 @@ const Candidates = () => {
         onReset={handleResetFilters}
       />
 
-      {/* Table */}
       <AnimatePresence mode="wait">
         {!error && (
           <motion.div
@@ -568,7 +560,6 @@ const Candidates = () => {
         )}
       </AnimatePresence>
 
-      {/* Error state */}
       {error && (
         <motion.div
           initial={{ opacity: 0 }}
@@ -587,7 +578,6 @@ const Candidates = () => {
         </motion.div>
       )}
 
-      {/* Comparison Modal */}
       <ComparisonModal
         isOpen={isComparisonOpen}
         onClose={() => {
@@ -597,7 +587,6 @@ const Candidates = () => {
         candidateIds={comparisonCandidateIds}
       />
 
-      {/* Analysis Result Modal */}
       <AnalysisResultModal
         isOpen={isAnalysisModalOpen}
         onClose={handleCloseAnalysisModal}
