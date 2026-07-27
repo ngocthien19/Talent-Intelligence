@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { FaSpinner, FaArrowLeft } from 'react-icons/fa'
+import { FaSpinner, FaArrowLeft, FaFilePdf, FaFileWord, FaFile, FaExternalLinkAlt } from 'react-icons/fa'
 import { toast } from 'react-toastify'
 import { useLanguage } from '~/hooks/useLanguage'
 import { candidateApi } from '~/api/hr/candidate.api'
@@ -34,6 +34,12 @@ const itemVariants = {
       ease: [0.25, 0.46, 0.45, 0.94]
     }
   }
+}
+
+const getFileIcon = (mimeType) => {
+  if (mimeType?.includes('pdf')) return FaFilePdf
+  if (mimeType?.includes('word') || mimeType?.includes('document')) return FaFileWord
+  return FaFile
 }
 
 const CandidateDetail = () => {
@@ -72,6 +78,13 @@ const CandidateDetail = () => {
     navigate('/hr/applications')
   }
 
+  const handleViewCV = (cvUrl) => {
+    if (cvUrl) {
+      const viewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(cvUrl)}&embedded=true`
+      window.open(viewerUrl, '_blank')
+    }
+  }
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-[60vh]">
@@ -101,6 +114,9 @@ const CandidateDetail = () => {
     )
   }
 
+  const FileIcon = getFileIcon(candidate.cv_mime_type)
+  const hasCV = candidate.cv_url && candidate.cv_url.trim() !== ''
+
   return (
     <motion.div
       initial="hidden"
@@ -124,16 +140,59 @@ const CandidateDetail = () => {
       {/* Stats */}
       <CandidateDetailStats candidate={candidate} />
 
+      {/* CV Section - THÊM MỚI */}
+      <motion.div
+        variants={itemVariants}
+        className="bg-white dark:bg-gray-800 rounded-xl shadow-custom p-6 border border-brand-light/30 dark:border-gray-700/50"
+      >
+        <h3 className="text-sm font-medium text-brand-secondary dark:text-white mb-3 flex items-center gap-2">
+          <FaFile size={16} className="text-brand-primary" />
+          {t('applications.cv') || 'CV đã gửi'}
+        </h3>
+        {hasCV ? (
+          <div className="flex flex-wrap items-center gap-3 p-4 bg-brand-light/20 dark:bg-gray-700/30 rounded-xl border border-brand-light/30 dark:border-gray-700/50">
+            <div className="flex items-center gap-3 flex-1 min-w-0">
+              <FileIcon
+                size={24}
+                className={`${candidate.cv_mime_type?.includes('pdf') ? 'text-red-500' : candidate.cv_mime_type?.includes('word') ? 'text-blue-500' : 'text-brand-text/60'}`}
+              />
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-brand-secondary dark:text-white truncate">
+                  {candidate.cv_original_name || 'CV.pdf'}
+                </p>
+                {candidate.cv_file_size && (
+                  <p className="text-xs text-brand-text/60 dark:text-gray-400">
+                    {(candidate.cv_file_size / 1024).toFixed(1)} KB
+                  </p>
+                )}
+              </div>
+            </div>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <button
+                onClick={() => handleViewCV(candidate.cv_url)}
+                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-brand-primary border border-brand-primary rounded-lg hover:bg-brand-primary hover:!text-white transition-all duration-200 cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
+              >
+                <FaExternalLinkAlt size={14} />
+                {t('applications.view') || 'Xem CV'}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="p-4 bg-brand-light/20 dark:bg-gray-700/30 rounded-xl border border-brand-light/30 dark:border-gray-700/50 text-center">
+            <p className="text-brand-text/60 dark:text-gray-400">
+              {t('applications.noCV') || 'Chưa có CV'}
+            </p>
+          </div>
+        )}
+      </motion.div>
+
       {/* Main content */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left column - 2 columns */}
         <div className="lg:col-span-2 space-y-6">
           <CandidateDetailInfo candidate={candidate} />
           <CandidateDetailJob candidate={candidate} />
           <CandidateDetailSkills candidate={candidate} />
         </div>
-
-        {/* Right column - 1 column */}
         <div className="space-y-6">
           <CandidateDetailTimeline candidate={candidate} />
         </div>

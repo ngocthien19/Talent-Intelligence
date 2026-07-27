@@ -40,7 +40,6 @@ const CandidateTable = ({
   const allSelected = candidates.length > 0 && candidates.every(c => selectedIds.includes(c.id))
   const selectedCount = selectedIds.length
 
-  // Mở modal xác nhận xóa 1 ứng viên
   const openSingleDeleteConfirm = (id, candidateName) => {
     const displayName = candidateName || 'ứng viên'
     const messageTemplate = t('hr.candidate.deleteMessage') || 'Bạn có chắc chắn muốn xóa ứng viên {name}? Hành động này không thể hoàn tác.'
@@ -70,7 +69,6 @@ const CandidateTable = ({
     setIsConfirmModalOpen(false)
   }
 
-  // Mở modal xác nhận xóa hàng loạt
   const openDeleteConfirm = () => {
     const messageTemplate = t('hr.candidate.deleteBulkMessage') || 'Bạn có chắc chắn muốn xóa {count} ứng viên đã chọn? Hành động này không thể hoàn tác.'
 
@@ -122,7 +120,6 @@ const CandidateTable = ({
                     {t('hr.candidate.bulkActions') || 'Thao tác hàng loạt:'}
                   </span>
 
-                  {/* Nút So sánh - luôn hiển thị khi chọn 2-5 ứng viên */}
                   {selectedCount >= 2 && selectedCount <= 5 && (
                     <button
                       onClick={onCompare}
@@ -180,6 +177,9 @@ const CandidateTable = ({
                   {t('hr.candidate.position') || 'Vị trí'}
                 </th>
                 <th className="px-3 py-3 text-center text-xs font-semibold text-brand-text/60 dark:text-gray-400 uppercase tracking-wider">
+                  {t('hr.candidate.cv') || 'CV'}
+                </th>
+                <th className="px-3 py-3 text-center text-xs font-semibold text-brand-text/60 dark:text-gray-400 uppercase tracking-wider">
                   {t('hr.candidate.score') || 'Điểm'}
                 </th>
                 <th className="px-3 py-3 text-center text-xs font-semibold text-brand-text/60 dark:text-gray-400 uppercase tracking-wider">
@@ -196,7 +196,7 @@ const CandidateTable = ({
             <tbody className="divide-y divide-brand-light/30 dark:divide-gray-700/50">
               {isLoading ? (
                 <tr>
-                  <td colSpan="7" className="px-3 py-12 text-center">
+                  <td colSpan="8" className="px-3 py-12 text-center">
                     <div className="flex items-center justify-center gap-3 text-brand-text/60 dark:text-gray-400">
                       <FaSpinner className="animate-spin text-brand-primary" size={20} />
                       <span>{t('common.loading') || 'Đang tải...'}</span>

@@ -1,3 +1,4 @@
+// src/components/hr/candidate/CandidateRow.jsx
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Link } from 'react-router-dom'
@@ -8,7 +9,11 @@ import {
   FaStar,
   FaMagic,
   FaChartBar,
-  FaSpinner
+  FaSpinner,
+  FaFilePdf,
+  FaFileWord,
+  FaFile,
+  FaExternalLinkAlt
 } from 'react-icons/fa'
 import {
   Tooltip,
@@ -38,6 +43,12 @@ const getScoreColor = (score) => {
   return 'text-red-500'
 }
 
+const getFileIcon = (mimeType) => {
+  if (mimeType?.includes('pdf')) return FaFilePdf
+  if (mimeType?.includes('word') || mimeType?.includes('document')) return FaFileWord
+  return FaFile
+}
+
 const CandidateRow = ({
   candidate,
   isSelected,
@@ -52,9 +63,18 @@ const CandidateRow = ({
   const { t } = useLanguage()
   const [isStatusOpen, setIsStatusOpen] = useState(false)
 
-  // Ứng viên đã có điểm phân tích (overall_score được set sau khi analyzeCandidateSync/Async chạy xong)
-  // => dùng làm cờ xác định đã phân tích hay chưa, không cần gọi API riêng để check
   const hasAnalysis = candidate.overall_score !== null && candidate.overall_score !== undefined
+  const FileIcon = getFileIcon(candidate.cv_mime_type)
+  const hasCV = candidate.cv_url && candidate.cv_url.trim() !== ''
+
+  const handleViewCV = (cvUrl, e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (cvUrl) {
+      const viewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(cvUrl)}&embedded=true`
+      window.open(viewerUrl, '_blank')
+    }
+  }
 
   return (
     <motion.tr
@@ -67,7 +87,7 @@ const CandidateRow = ({
       }}
       className="hover:bg-brand-light/5 dark:hover:bg-gray-800/30 transition-colors duration-150"
     >
-      {/* Checkbox - Căn giữa */}
+      {/* Checkbox */}
       <td className="px-3 py-3 text-center">
         <input
           type="checkbox"
@@ -77,7 +97,7 @@ const CandidateRow = ({
         />
       </td>
 
-      {/* Name - Căn trái */}
+      {/* Name */}
       <td className="px-3 py-3 text-left">
         <div className="flex items-center gap-2">
           {candidate.avatar ? (
@@ -102,7 +122,7 @@ const CandidateRow = ({
         </div>
       </td>
 
-      {/* Position - Căn trái */}
+      {/* Position */}
       <td className="px-3 py-3 text-left">
         <p className="text-brand-text dark:text-gray-300 truncate max-w-[120px]">
           {candidate.position_applied || candidate.job_title || t('hr.candidate.unknown') || 'Chưa xác định'}
@@ -114,7 +134,27 @@ const CandidateRow = ({
         )}
       </td>
 
-      {/* Score - Căn giữa */}
+      {/* CV Column */}
+      <td className="px-3 py-3 text-center">
+        {hasCV ? (
+          <button
+            onClick={(e) => handleViewCV(candidate.cv_url, e)}
+            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-brand-primary hover:text-white border border-brand-primary hover:bg-brand-primary rounded-lg transition-all duration-200 cursor-pointer hover:scale-105 active:scale-95"
+            title={t('applications.viewCV') || 'Xem CV'}
+          >
+            <FileIcon size={14} className="flex-shrink-0" />
+            <span className="hidden sm:inline">
+              {t('hr.candidate.viewCV') || 'Xem CV'}
+            </span>
+          </button>
+        ) : (
+          <span className="text-xs text-brand-text/40 dark:text-gray-500">
+            {t('hr.candidate.noCV') || '--'}
+          </span>
+        )}
+      </td>
+
+      {/* Score */}
       <td className="px-3 py-3 text-center">
         {hasAnalysis ? (
           <div className="flex items-center justify-center gap-1.5">
@@ -142,7 +182,7 @@ const CandidateRow = ({
         )}
       </td>
 
-      {/* Status - Căn giữa */}
+      {/* Status */}
       <td className="px-3 py-3 text-center">
         <div className="relative inline-block">
           <button
@@ -189,14 +229,14 @@ const CandidateRow = ({
         </div>
       </td>
 
-      {/* Date - Căn giữa */}
+      {/* Date */}
       <td className="px-3 py-3 text-center">
         <p className="text-xs text-brand-text/60 dark:text-gray-400">
           {candidate.created_at ? getDaysAgo(candidate.created_at) : '--'}
         </p>
       </td>
 
-      {/* Actions - Căn giữa */}
+      {/* Actions */}
       <td className="px-3 py-3 text-center">
         <div className="flex items-center justify-center gap-1">
           {/* View Detail */}
