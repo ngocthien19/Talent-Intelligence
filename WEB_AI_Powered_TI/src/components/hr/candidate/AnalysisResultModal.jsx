@@ -157,7 +157,7 @@ const AnalysisResultModal = ({
                   </div>
                   <div className="text-center">
                     <p className="text-sm font-medium text-brand-secondary dark:text-white">
-                      {t('hr.candidate.analyzing') || 'Đang phân tích...'}
+                      {t('hr.candidate.analyzingCV') || 'Đang phân tích...'}
                     </p>
                     <p className="text-xs text-brand-text/50 dark:text-gray-500 mt-1">
                       {t('hr.candidate.analyzingDesc') || 'Quá trình này có thể mất khoảng 30-60 giây'}
