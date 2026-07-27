@@ -49,7 +49,6 @@ const HRSidebar = () => {
     { path: '/hr/jobs', icon: FaBriefcase, label: 'hr.jobs', defaultLabel: 'Việc làm' },
     { path: '/hr/categories', icon: FaFolder, label: 'hr.categories', defaultLabel: 'Danh mục' },
     { path: '/hr/interviews', icon: FaCalendarAlt, label: 'hr.interviews', defaultLabel: 'Lịch phỏng vấn' },
-    { path: '/hr/mock-interview', icon: FaUserCog, label: 'hr.mockInterview', defaultLabel: 'Mock Interview' },
     { path: '/hr/search', icon: FaSearch, label: 'hr.searchCandidate', defaultLabel: 'Tìm kiếm' }
   ]
 

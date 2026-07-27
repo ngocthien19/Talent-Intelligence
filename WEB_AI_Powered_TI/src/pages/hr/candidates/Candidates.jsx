@@ -335,12 +335,34 @@ const Candidates = () => {
     }
   }
 
+  const loadAnalysisData = useCallback(async (candidateId) => {
+    setAnalysisModalData(prev => ({ ...prev, isLoading: true }))
+    try {
+      const [analysisRes, enrichRes, reportRes] = await Promise.allSettled([
+        analysisApi.getAnalysisResult(candidateId),
+        enrichmentApi.getEnrichment(candidateId),
+        reportApi.checkSent(candidateId)
+      ])
+
+      setAnalysisModalData({
+        analysis: analysisRes.status === 'fulfilled' && analysisRes.value.success ? analysisRes.value.data : null,
+        enrichment: enrichRes.status === 'fulfilled' && enrichRes.value.success ? enrichRes.value.data : null,
+        reportSent: reportRes.status === 'fulfilled' && reportRes.value.success
+          ? !!(reportRes.value.data?.is_notified || reportRes.value.data?.report_sent_at)
+          : false,
+        isLoading: false
+      })
+    } catch (err) {
+      setAnalysisModalData(prev => ({ ...prev, isLoading: false }))
+    }
+  }, [])
+
   // Hàm kiểm tra kết quả phân tích (chạy nền, không phụ thuộc modal)
   const checkAnalysisResult = useCallback(async (candidateId) => {
     try {
       const res = await analysisApi.getAnalysisResult(candidateId)
       if (res.success && res.data) {
-        // Phân tích hoàn tất!
+      // Phân tích hoàn tất!
         toast.success('Phân tích hoàn tất!')
         setAnalyzingId(null)
         pollAttemptsRef.current = 0
@@ -348,20 +370,23 @@ const Candidates = () => {
           clearInterval(pollTimerRef.current)
           pollTimerRef.current = null
         }
-        // Refresh danh sách để cập nhật điểm
+
         fetchCandidates()
         fetchWidgets()
-        // Nếu modal đang mở, cập nhật data luôn
-        if (isAnalysisModalOpen && analysisModalCandidate?.id === candidateId) {
-          loadAnalysisData(candidateId)
+
+        if (analysisModalCandidate?.id === candidateId) {
+          await loadAnalysisData(candidateId)
+          setAnalysisModalData(prev => ({ ...prev, isLoading: false }))
         }
+
         return true
       }
       return false
     } catch (error) {
+      console.debug('Analysis result not ready yet')
       return false
     }
-  }, [fetchCandidates, fetchWidgets, isAnalysisModalOpen, analysisModalCandidate])
+  }, [fetchCandidates, fetchWidgets, analysisModalCandidate, loadAnalysisData])
 
   // Hàm bắt đầu polling nền
   const startBackgroundPolling = useCallback((candidateId) => {
@@ -404,29 +429,6 @@ const Candidates = () => {
     })
   }, [checkAnalysisResult, t])
 
-  // Load dữ liệu phân tích cho modal
-  const loadAnalysisData = useCallback(async (candidateId) => {
-    setAnalysisModalData(prev => ({ ...prev, isLoading: true }))
-    try {
-      const [analysisRes, enrichRes, reportRes] = await Promise.allSettled([
-        analysisApi.getAnalysisResult(candidateId),
-        enrichmentApi.getEnrichment(candidateId),
-        reportApi.checkSent(candidateId)
-      ])
-
-      setAnalysisModalData({
-        analysis: analysisRes.status === 'fulfilled' && analysisRes.value.success ? analysisRes.value.data : null,
-        enrichment: enrichRes.status === 'fulfilled' && enrichRes.value.success ? enrichRes.value.data : null,
-        reportSent: reportRes.status === 'fulfilled' && reportRes.value.success
-          ? !!(reportRes.value.data?.is_notified || reportRes.value.data?.report_sent_at)
-          : false,
-        isLoading: false
-      })
-    } catch (err) {
-      setAnalysisModalData(prev => ({ ...prev, isLoading: false }))
-    }
-  }, [])
-
   // Nhấn nút "Phân tích"
   const handleAnalyze = useCallback(async (candidate) => {
     if (!candidate) return
@@ -437,14 +439,11 @@ const Candidates = () => {
     setIsAnalysisModalOpen(true)
 
     try {
-      // Gọi API phân tích (bất đồng bộ)
       const response = await analysisApi.analyzeCandidate(candidateId)
       if (response.success) {
         toast.info('Đang phân tích CV...')
-        // Bắt đầu polling nền
+        // Bắt đầu polling nền - khi có kết quả sẽ tự động cập nhật modal
         startBackgroundPolling(candidateId)
-        // Cập nhật trạng thái loading trong modal
-        setAnalysisModalData(prev => ({ ...prev, isLoading: true }))
       } else {
         toast.error(response.message || 'Phân tích thất bại')
         setAnalysisModalData(prev => ({ ...prev, isLoading: false }))
