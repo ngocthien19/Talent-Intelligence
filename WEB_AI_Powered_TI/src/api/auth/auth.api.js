@@ -46,7 +46,7 @@ export const authApi = {
   },
 
   getProfile: async () => {
-    const response = await authorizedAxiosInstance.get(`${DEV_API_URL}/api/candidates/profile`)
+    const response = await authorizedAxiosInstance.get(`${DEV_API_URL}/api/auth/me`)
     return response.data
   }
 }

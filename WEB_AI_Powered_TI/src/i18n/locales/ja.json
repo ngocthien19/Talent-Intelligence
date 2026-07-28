@@ -592,7 +592,8 @@
       "clickToChangeAvatar": "カメラをクリックしてアバターを変更",
       "googleLoginTitle": "Googleアカウント",
       "googleLoginDesc": "Googleアカウントでログインしています。セキュリティのため、Googleでパスワードを変更してください。",
-      "goToGoogle": "Googleセキュリティへ"
+      "goToGoogle": "Googleセキュリティへ",
+      "changePasswordDesc": "アカウントを保護するためにパスワードを更新してください"
     },
     "job": {
       "totalJobs": "総求人数",

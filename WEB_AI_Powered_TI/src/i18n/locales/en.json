@@ -599,7 +599,8 @@
       "clickToChangeAvatar": "Click camera to change avatar",
       "googleLoginTitle": "Google Account",
       "googleLoginDesc": "You are logged in with Google account. Please change password through Google for security.",
-      "goToGoogle": "Go to Google Security"
+      "goToGoogle": "Go to Google Security",
+      "changePasswordDesc": "Update your password to secure your account"
     },
     "job": {
       "totalJobs": "Total Jobs",
