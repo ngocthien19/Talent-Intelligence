@@ -22,8 +22,7 @@ export const updateProfileValidation = Joi.object({
 // Validation đổi mật khẩu
 export const changePasswordValidation = Joi.object({
   currentPassword: Joi.string().min(6).required(),
-  newPassword: Joi.string().min(6).required(),
-  confirmPassword: Joi.string().valid(Joi.ref('newPassword')).required()
+  newPassword: Joi.string().min(6).required()
 })
 
 export default {

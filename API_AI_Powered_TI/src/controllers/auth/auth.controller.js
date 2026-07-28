@@ -264,6 +264,35 @@ const authController = {
       }
       return res.status(500).json({ message: `Lỗi hệ thống refresh token: ${error.message}` })
     }
+  },
+
+  getMe: async (req, res) => {
+    try {
+      const userId = req.user.id
+      const user = await authService.getUserById(userId)
+
+      return res.status(200).json({
+        success: true,
+        data: {
+          id: user.id,
+          fullname: user.fullname,
+          email: user.email,
+          phone: user.phone,
+          address: user.address,
+          roleId: user.role_id,
+          roleName: user.role_name,
+          avatar: user.avatar,
+          isActive: user.is_active,
+          companyId: user.company_id,
+          hasPassword: !!user.password_hash
+        }
+      })
+    } catch (error) {
+      if (error.message.includes('không tồn tại')) {
+        return res.status(404).json({ success: false, message: error.message })
+      }
+      return res.status(500).json({ success: false, message: `Lỗi hệ thống: ${error.message}` })
+    }
   }
 }
 
