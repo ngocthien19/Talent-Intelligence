@@ -1,6 +1,7 @@
 import express from 'express'
 import authController from '~/controllers/auth/auth.controller'
 import { authMiddleware } from '~/middlewares/auth.middleware'
+import { authGuard } from '~/middlewares/auth.guard'
 import passport from 'passport'
 
 const router = express.Router()
@@ -78,6 +79,12 @@ router.get(
     session: false
   }),
   authController.googleCallback
+)
+
+router.get(
+  '/me',
+  authGuard.isAuthorized,
+  authController.getMe
 )
 
 export default router
