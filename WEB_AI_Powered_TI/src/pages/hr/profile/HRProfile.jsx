@@ -22,6 +22,9 @@ const containerVariants = {
   }
 }
 
+// Key lưu tab
+const ACTIVE_TAB_KEY = 'hr_profile_active_tab'
+
 const HRProfile = () => {
   useScrollToTop()
   const { t } = useLanguage()
@@ -29,7 +32,11 @@ const HRProfile = () => {
   const [isLoading, setIsLoading] = useState(true)
   const [profile, setProfile] = useState(null)
   const [company, setCompany] = useState(null)
-  const [activeTab, setActiveTab] = useState('info')
+
+  const [activeTab, setActiveTab] = useState(() => {
+    const savedTab = localStorage.getItem(ACTIVE_TAB_KEY)
+    return savedTab || 'info'
+  })
 
   const loadProfile = async () => {
     setIsLoading(true)
@@ -55,6 +62,12 @@ const HRProfile = () => {
   useEffect(() => {
     loadProfile()
   }, [])
+
+  const handleTabChange = (tab) => {
+    setActiveTab(tab)
+    // Lưu tab vào localStorage
+    localStorage.setItem(ACTIVE_TAB_KEY, tab)
+  }
 
   const handleUpdateSuccess = async () => {
     await fetchProfile()
@@ -106,7 +119,7 @@ const HRProfile = () => {
             user={user}
             profile={profile}
             activeTab={activeTab}
-            onTabChange={setActiveTab}
+            onTabChange={handleTabChange}
             isGoogleLogin={isGoogleLogin}
           />
         </div>

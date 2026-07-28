@@ -1,3 +1,4 @@
+// src/components/hr/profile/HRCompanyInfo.jsx
 import { useState, useRef } from 'react'
 import { useLanguage } from '~/hooks/useLanguage'
 import { motion } from 'framer-motion'
@@ -14,10 +15,17 @@ import {
   FaSpinner,
   FaCheckCircle,
   FaExclamationCircle,
-  FaImage
+  FaImage,
+  FaChevronDown
 } from 'react-icons/fa'
 import { toast } from 'react-toastify'
 import { hrProfileApi } from '~/api/hr/hrProfile.api'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from '~/components/ui/dropdown-menu'
 
 const companySchema = yup.object({
   name: yup
@@ -85,12 +93,14 @@ const HRCompanyInfo = ({ company, onUpdateSuccess, fetchProfile }) => {
   const [isUploadingBanner, setIsUploadingBanner] = useState(false)
   const logoInputRef = useRef(null)
   const bannerInputRef = useRef(null)
+  const [isSizeOpen, setIsSizeOpen] = useState(false)
 
   const {
     register,
     handleSubmit,
     formState: { errors, isDirty },
     reset,
+    setValue,
     watch
   } = useForm({
     resolver: yupResolver(companySchema),
@@ -105,13 +115,24 @@ const HRCompanyInfo = ({ company, onUpdateSuccess, fetchProfile }) => {
     }
   })
 
+  const selectedSize = watch('size')
+
+  const getSizeLabel = (value) => {
+    const option = COMPANY_SIZES.find(s => s.value === value)
+    return option ? option.label : t('hr.profile.selectSize') || 'Chọn quy mô...'
+  }
+
+  const handleSizeSelect = (value) => {
+    setValue('size', value, { shouldDirty: true })
+    setIsSizeOpen(false)
+  }
+
   const onSubmit = async (data) => {
     setIsLoading(true)
     try {
       const response = await hrProfileApi.updateCompany(data)
       if (response.success) {
         toast.success(t('hr.profile.companyUpdateSuccess') || 'Cập nhật thông tin công ty thành công!')
-        // Gọi fetchProfile để cập nhật Redux store
         await fetchProfile()
         await onUpdateSuccess()
         reset(data)
@@ -435,28 +456,56 @@ const HRCompanyInfo = ({ company, onUpdateSuccess, fetchProfile }) => {
               )}
             </div>
 
-            {/* Size */}
+            {/* Size - Dropdown Menu */}
             <div>
               <label className="block text-sm font-medium text-brand-secondary dark:text-white mb-1.5">
                 {t('hr.profile.size') || 'Quy mô'}
               </label>
               <div className="relative">
-                <FaUsers size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-text/40 dark:text-gray-500" />
-                <select
-                  {...register('size')}
-                  className={`w-full pl-10 pr-8 py-2.5 bg-brand-bg dark:bg-gray-900 border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary/50 focus:border-transparent transition-all duration-200 text-brand-secondary dark:text-white appearance-none ${
-                    errors.size
-                      ? 'border-red-500 focus:ring-red-500/50'
-                      : 'border-brand-light dark:border-gray-700'
-                  }`}
-                >
-                  <option value="">{t('hr.profile.selectSize') || 'Chọn quy mô...'}</option>
-                  {COMPANY_SIZES.map((size) => (
-                    <option key={size.value} value={size.value}>
-                      {size.label}
-                    </option>
-                  ))}
-                </select>
+                <FaUsers size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-text/40 dark:text-gray-500 z-10" />
+                <DropdownMenu open={isSizeOpen} onOpenChange={setIsSizeOpen}>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      type="button"
+                      className={`w-full pl-10 pr-10 py-2.5 bg-brand-bg dark:bg-gray-900 border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary/50 focus:border-transparent transition-all duration-200 text-brand-secondary dark:text-white text-left flex items-center justify-between ${
+                        errors.size
+                          ? 'border-red-500 focus:ring-red-500/50'
+                          : 'border-brand-light dark:border-gray-700'
+                      }`}
+                    >
+                      <span className="truncate">{getSizeLabel(selectedSize)}</span>
+                      <FaChevronDown size={14} className={`text-brand-text/40 dark:text-gray-500 transition-transform duration-200 ${isSizeOpen ? 'rotate-180' : ''}`} />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    align="start"
+                    className="w-[var(--radix-dropdown-menu-trigger-width)] min-w-[200px] p-1 bg-white dark:bg-gray-900 border border-brand-light/50 dark:border-gray-700 rounded-xl shadow-xl z-50 max-h-60 overflow-y-auto"
+                  >
+                    <DropdownMenuItem
+                      onClick={() => handleSizeSelect('')}
+                      className={`cursor-pointer px-3 py-2.5 rounded-lg transition-all duration-200 text-sm ${
+                        selectedSize === ''
+                          ? 'bg-brand-primary/10 text-brand-primary dark:bg-brand-primary/20 font-medium'
+                          : 'text-brand-text dark:text-gray-300 hover:bg-brand-light/30 dark:hover:bg-gray-700/50'
+                      }`}
+                    >
+                      {t('hr.profile.selectSize') || 'Chọn quy mô...'}
+                    </DropdownMenuItem>
+                    {COMPANY_SIZES.map((size) => (
+                      <DropdownMenuItem
+                        key={size.value}
+                        onClick={() => handleSizeSelect(size.value)}
+                        className={`cursor-pointer px-3 py-2.5 rounded-lg transition-all duration-200 text-sm ${
+                          selectedSize === size.value
+                            ? 'bg-brand-primary/10 text-brand-primary dark:bg-brand-primary/20 font-medium'
+                            : 'text-brand-text dark:text-gray-300 hover:bg-brand-light/30 dark:hover:bg-gray-700/50'
+                        }`}
+                      >
+                        {size.label}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
               {errors.size && (
                 <motion.p

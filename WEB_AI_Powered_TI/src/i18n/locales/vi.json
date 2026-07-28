@@ -599,7 +599,8 @@
       "clickToChangeAvatar": "Click vào camera để đổi avatar",
       "googleLoginTitle": "Tài khoản Google",
       "googleLoginDesc": "Bạn đang đăng nhập bằng tài khoản Google. Vui lòng đổi mật khẩu qua Google để bảo mật.",
-      "goToGoogle": "Đến Google Security"
+      "goToGoogle": "Đến Google Security",  
+      "changePasswordDesc": "Cập nhật mật khẩu để bảo mật tài khoản của bạn"
     },
     "job": {
       "totalJobs": "Tổng công việc",
