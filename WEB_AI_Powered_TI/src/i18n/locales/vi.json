@@ -210,7 +210,15 @@
     "noDataDesc": "Chưa có dữ liệu để hiển thị",
     "error": "Có lỗi xảy ra",
     "refresh": "Làm mới",
-    "close": "Đóng"
+    "close": "Đóng",
+    "viewDetail": "Xem chi tiết",
+    "deleteAll": "Xóa tất cả",
+    "viewMore": "Xem thêm",
+    "unread": "chưa đọc",
+    "back": "Quay lại",
+    "additionalInfo": "Thông tin bổ sung",
+    "readAt": "Đã đọc",
+    "notifications": "thông báo"
   },
    "profile": {
     "title": "Hồ sơ của tôi",
@@ -366,7 +374,21 @@
     "noMessagesDesc": "Hãy bắt đầu cuộc trò chuyện với AI",
     "welcomeMessage": "Chào bạn! Tôi là trợ lý phỏng vấn AI.\n\nTôi sẽ giúp bạn luyện tập phỏng vấn như một buổi phỏng vấn thực tế. Bạn có thể:\n\n- Trò chuyện tự nhiên: Trả lời các câu hỏi của tôi như trong phỏng vấn thật\n- Hỏi đáp: Hỏi tôi bất kỳ câu hỏi nào về phỏng vấn\n- Nhận phản hồi: Tôi sẽ đánh giá và góp ý cho câu trả lời của bạn\n\nHãy bắt đầu bằng cách giới thiệu về bản thân bạn nhé!"
   },
+  "candidate": {
+    "notifications": "Thông báo",
+    "noNotifications": "Chưa có thông báo mới",
+    "checkLater": "Hãy quay lại sau để xem thông báo mới",
+    "markAllRead": "Đọc tất cả",
+    "markAsRead": "Đánh dấu đã đọc",
+    "viewAllNotifications": "Xem tất cả thông báo",
+    "selectNotification": "Chọn một thông báo để xem",
+    "clickNotificationToView": "Nhấn vào một thông báo bên trái để xem chi tiết"
+  },
   "hr": {
+    "selectNotification": "Chọn một thông báo để xem",
+    "clickNotificationToView": "Nhấn vào một thông báo bên trái để xem chi tiết",
+    "viewAllNotifications": "Xem tất cả thông báo",
+    "markAsRead": "Đánh dấu đã đọc",
     "thisWeek": "tuần này",
     "needReview": "cần xem xét",
     "shortlisted": "shortlist",

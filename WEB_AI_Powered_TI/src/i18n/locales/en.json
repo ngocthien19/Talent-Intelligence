@@ -210,7 +210,15 @@
     "noData": "No data",
     "noDataDesc": "No data available to display",
     "error": "An error occurred",
-    "refresh": "Refresh"
+    "refresh": "Refresh",
+    "viewDetail": "View details",
+    "deleteAll": "Delete all",
+    "viewMore": "View more",
+    "unread": "unread",
+    "back": "Back",
+    "additionalInfo": "Additional information",
+    "readAt": "Read at",
+    "notifications": "notifications"
   },
   "profile": {
     "title": "My Profile",
@@ -366,7 +374,21 @@
     "noMessagesDesc": "Start a conversation with AI",
     "welcomeMessage": "Hello! I am your AI interview assistant.\n\nI will help you practice interviews like a real interview session. You can:\n\n- Natural conversation: Answer my questions like in a real interview\n- Q&A: Ask me any questions about interviews\n- Get feedback: I will evaluate and give feedback on your answers\n\nLet's start by introducing yourself!"
   },
+  "candidate": {
+    "notifications": "Notifications",
+    "noNotifications": "No new notifications",
+    "checkLater": "Check back later for new notifications",
+    "markAllRead": "Mark all as read",
+    "markAsRead": "Mark as read",
+    "viewAllNotifications": "View all notifications",
+    "selectNotification": "Select a notification to view",
+    "clickNotificationToView": "Click a notification on the left to view details"
+  },
   "hr": {
+    "selectNotification": "Select a notification to view",
+    "clickNotificationToView": "Click a notification on the left to view details",
+    "viewAllNotifications": "View all notifications",
+    "markAsRead": "Mark as read",
     "thisWeek": "this week",
     "needReview": "need review",
     "shortlisted": "shortlist",

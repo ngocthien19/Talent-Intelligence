@@ -18,12 +18,15 @@ const resources = {
   }
 }
 
+// Lấy ngôn ngữ từ localStorage
+const savedLanguage = localStorage.getItem('language') || 'vi'
+
 i18n
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
     resources,
-    lng: 'vi', // Ngôn ngữ mặc định
+    lng: savedLanguage,
     fallbackLng: 'vi',
     interpolation: {
       escapeValue: false

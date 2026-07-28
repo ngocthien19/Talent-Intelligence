@@ -1,7 +1,12 @@
 import { createSlice } from '@reduxjs/toolkit'
 
+const getInitialLanguage = () => {
+  const saved = localStorage.getItem('language')
+  return saved || 'vi'
+}
+
 const initialState = {
-  language: 'vi',
+  language: getInitialLanguage(),
   isDarkMode: false
 }
 
@@ -27,6 +32,7 @@ const uiSlice = createSlice({
     },
     setLanguage: (state, action) => {
       state.language = action.payload
+      localStorage.setItem('language', action.payload)
     }
   }
 })

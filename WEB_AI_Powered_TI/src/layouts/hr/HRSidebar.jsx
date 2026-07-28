@@ -9,7 +9,7 @@ import {
   FaUsers,
   FaBriefcase,
   FaFolder,
-  FaChartBar,
+  FaBell,
   FaCalendarAlt,
   FaSearch,
   FaFileInvoice,
@@ -302,12 +302,12 @@ const HRSidebar = () => {
                     {t('hr.profileTab') || 'Hồ sơ'}
                   </NavLink>
                   <NavLink
-                    to="/hr/settings"
+                    to="/hr/notifications"
                     className="flex items-center gap-3 px-3 py-2 text-sm text-brand-text dark:text-gray-300 hover:bg-brand-light dark:hover:bg-gray-800 transition-all duration-200 cursor-pointer"
                     onClick={() => setIsUserMenuOpen(false)}
                   >
-                    <FaCog size={14} />
-                    {t('hr.settings') || 'Cài đặt'}
+                    <FaBell size={14} />
+                    {t('hr.notifications') || 'Thông báo'}
                   </NavLink>
                   <div className="h-px bg-brand-light/50 dark:bg-gray-700 my-1 mx-2" />
                   <button

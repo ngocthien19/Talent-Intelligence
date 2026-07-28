@@ -14,6 +14,7 @@ import Applications from '~/pages/candidate/Applications'
 import ApplicationDetail from '~/pages/candidate/ApplicationDetail'
 import Profile from '~/pages/candidate/Profile'
 import MockInterview from '~/pages/candidate/MockInterview'
+import CandidateNotifications from '~/pages/candidate/CandidateNotifications'
 
 import HRLayout from '~/layouts/hr/HRLayout'
 import Dashboard from '~/pages/hr/dashboard/Dashboard'
@@ -25,6 +26,7 @@ import Interviews from '~/pages/hr/interviews/Interviews'
 import SemanticSearch from '~/pages/hr/semanticSearch/SemanticSearch'
 import Categories from '~/pages/hr/categories/Categories'
 import HRProfile from '~/pages/hr/profile/HRProfile'
+import HRNotifications from '~/pages/hr/notifications/HRNotifications'
 
 import Login from '~/pages/auth/Login'
 import Register from '~/pages/auth/Register'
@@ -78,6 +80,7 @@ function App() {
           <Route path="applications/:id" element={<ApplicationDetail />} />
           <Route path="profile" element={<Profile />} />
           <Route path="mock-interview" element={<MockInterview />} />
+          <Route path="notifications" element={<CandidateNotifications />} />
 
         </Route>
 
@@ -93,6 +96,7 @@ function App() {
           <Route path="search" element={<SemanticSearch />} />
           <Route path="categories" element={<Categories />} />
           <Route path="profile" element={<HRProfile />} />
+          <Route path="notifications" element={<HRNotifications />} />
 
         </Route>
       </Routes>
