@@ -24,6 +24,7 @@ import JobDetail from '~/pages/hr/jobs/JobDetail'
 import Interviews from '~/pages/hr/interviews/Interviews'
 import SemanticSearch from '~/pages/hr/semanticSearch/SemanticSearch'
 import Categories from '~/pages/hr/categories/Categories'
+import HRProfile from '~/pages/hr/profile/HRProfile'
 
 import Login from '~/pages/auth/Login'
 import Register from '~/pages/auth/Register'
@@ -91,6 +92,8 @@ function App() {
           <Route path="interviews" element={<Interviews />} />
           <Route path="search" element={<SemanticSearch />} />
           <Route path="categories" element={<Categories />} />
+          <Route path="profile" element={<HRProfile />} />
+
         </Route>
       </Routes>
     </>

@@ -118,7 +118,7 @@ const HRHeader = () => {
       '/hr/categories': t('hr.categories') || 'Danh mục',
       '/hr/interviews': t('hr.interviews') || 'Lịch phỏng vấn',
       '/hr/search': t('hr.searchCandidate') || 'Tìm kiếm ứng viên',
-      '/hr/profile': t('hr.profile') || 'Hồ sơ của tôi',
+      '/hr/profile': t('hr.profileTab') || 'Hồ sơ của tôi',
       '/hr/settings': t('hr.settings') || 'Cài đặt'
     }
     return pageMap[path] || 'Dashboard'
@@ -391,7 +391,7 @@ const HRHeader = () => {
                   onClick={() => setIsDropdownOpen(false)}
                 >
                   <FaUser size={14} className="text-brand-text/60 dark:text-gray-500 group-hover:text-brand-primary transition-colors flex-shrink-0" />
-                  <span className="truncate">{t('hr.profile') || 'Hồ sơ của tôi'}</span>
+                  <span className="truncate">{t('hr.profileTab') || 'Hồ sơ của tôi'}</span>
                 </Link>
                 <Link
                   to="/hr/settings"

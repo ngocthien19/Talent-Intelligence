@@ -299,7 +299,7 @@ const HRSidebar = () => {
                     onClick={() => setIsUserMenuOpen(false)}
                   >
                     <FaUser size={14} />
-                    {t('hr.profile') || 'Hồ sơ'}
+                    {t('hr.profileTab') || 'Hồ sơ'}
                   </NavLink>
                   <NavLink
                     to="/hr/settings"
