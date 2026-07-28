@@ -1,4 +1,3 @@
-// src/components/layout/Header.jsx
 import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import {
@@ -35,6 +34,7 @@ import {
   DropdownMenuTrigger
 } from '~/components/ui/dropdown-menu'
 import { getAvatarUrl, getInitials } from '~/utils/format'
+import CandidateNotificationDropdown from '~/components/candidate/notification/CandidateNotificationDropdown'
 
 const Header = () => {
   const navigate = useNavigate()
@@ -46,8 +46,7 @@ const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [unreadCount, setUnreadCount] = useState(0)
-  const [isNotificationOpen, setIsNotificationOpen] = useState(false)
-  const notificationRef = useRef(null)
+  const dropdownRef = useRef(null)
 
   const languages = [
     { code: 'vi', label: 'Tiếng Việt', flag: '🇻🇳' },
@@ -55,20 +54,27 @@ const Header = () => {
     { code: 'ja', label: '日本語', flag: '🇯🇵' }
   ]
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      setUnreadCount(3)
-    }
-  }, [isAuthenticated])
-
+  // Click outside dropdown
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (notificationRef.current && !notificationRef.current.contains(event.target)) {
-        setIsNotificationOpen(false)
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false)
       }
     }
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  // Close dropdown on escape
+  useEffect(() => {
+    const handleEscape = (event) => {
+      if (event.key === 'Escape') {
+        setIsDropdownOpen(false)
+        setIsMenuOpen(false)
+      }
+    }
+    document.addEventListener('keydown', handleEscape)
+    return () => document.removeEventListener('keydown', handleEscape)
   }, [])
 
   const handleLogout = async () => {
@@ -89,6 +95,10 @@ const Header = () => {
 
   const avatarUrl = getAvatarUrl(user?.avatar)
   const userInitial = getInitials(user?.fullname)
+
+  const handleUnreadCountChange = (count) => {
+    setUnreadCount(count || 0)
+  }
 
   return (
     <header className="bg-white dark:bg-gray-900 shadow-custom sticky top-0 z-50 transition-colors duration-300 ease-in-out">
@@ -173,55 +183,14 @@ const Header = () => {
               </DropdownMenuContent>
             </DropdownMenu>
 
-            {/* Notifications */}
+            {/* Notifications - Sử dụng CandidateNotificationDropdown */}
             {isAuthenticated && (
-              <div ref={notificationRef} className="relative">
-                <button
-                  onClick={() => setIsNotificationOpen(!isNotificationOpen)}
-                  className="relative p-2 rounded-full hover:bg-brand-light dark:hover:bg-gray-800 transition-all duration-300 ease-in-out focus:outline-none group cursor-pointer"
-                >
-                  <FaBell
-                    size={20}
-                    className={`transition-all duration-300 ${isNotificationOpen ? 'text-brand-primary scale-110' : 'text-brand-text dark:text-gray-300 group-hover:text-brand-primary group-hover:scale-110'}`}
-                  />
-                  {unreadCount > 0 && (
-                    <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white dark:border-gray-900 animate-pulse">
-                      {unreadCount > 9 ? '9+' : unreadCount}
-                    </span>
-                  )}
-                </button>
-
-                <div
-                  className={`absolute right-0 mt-3 w-80 bg-white dark:bg-gray-900 rounded-xl shadow-2xl border border-brand-light dark:border-gray-700 overflow-hidden z-50
-                    transition-all duration-300 ease-out origin-top-right
-                    ${isNotificationOpen
-                ? 'opacity-100 scale-100 translate-y-0 pointer-events-auto'
-                : 'opacity-0 scale-95 -translate-y-2 pointer-events-none'
-              }`}
-                >
-                  <div className="px-4 py-3 border-b border-brand-light dark:border-gray-700 flex items-center justify-between bg-gray-50/50 dark:bg-gray-800/50">
-                    <h4 className="font-semibold text-brand-secondary dark:text-white">
-                      {t('header.notifications') || 'Thông báo'}
-                    </h4>
-                    {unreadCount > 0 && (
-                      <button className="text-xs font-medium text-brand-primary hover:text-brand-secondary dark:hover:text-gray-300 transition-colors duration-200 cursor-pointer">
-                        {t('header.markAllRead') || 'Đánh dấu đã đọc'}
-                      </button>
-                    )}
-                  </div>
-                  <div className="max-h-64 overflow-y-auto">
-                    <div className="px-4 py-8 text-center text-brand-text/70 dark:text-gray-400 text-sm flex flex-col items-center gap-2">
-                      <FaBell className="text-brand-light/80 dark:text-gray-700" size={32} />
-                      {t('header.noNotifications') || 'Chưa có thông báo'}
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <CandidateNotificationDropdown onUnreadCountChange={handleUnreadCountChange} />
             )}
 
-            {/* Auth buttons - KHÔNG RETURN SỚM */}
+            {/* Auth buttons */}
             {isAuthenticated ? (
-              <div className="relative">
+              <div ref={dropdownRef} className="relative">
                 <button
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                   className="flex items-center gap-2 px-3 py-1.5 rounded-full hover:bg-brand-light dark:hover:bg-gray-800 transition-all duration-300 ease-in-out border border-transparent hover:border-brand-border/50 dark:hover:border-gray-700 focus:outline-none group cursor-pointer"
@@ -293,6 +262,14 @@ const Header = () => {
                       <FaBookmark size={16} className="text-brand-text/60 dark:text-gray-500 group-hover:text-brand-primary transition-colors" />
                       {t('header.favorites') || 'Công việc đã lưu'}
                     </Link>
+                    <Link
+                      to="/notifications"
+                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-brand-text dark:text-gray-300 hover:bg-brand-light dark:hover:bg-gray-800 hover:text-brand-primary dark:hover:text-white transition-all duration-200 group cursor-pointer"
+                      onClick={() => setIsDropdownOpen(false)}
+                    >
+                      <FaBell size={16} className="text-brand-text/60 dark:text-gray-500 group-hover:text-brand-primary transition-colors" />
+                      {t('header.notifications') || 'Thông báo'}
+                    </Link>
                     <div className="h-px bg-brand-light dark:bg-gray-700 my-1 mx-2"></div>
                     <button
                       onClick={handleLogout}
@@ -358,6 +335,23 @@ const Header = () => {
               </div>
               <Switch checked={isDarkMode} onCheckedChange={toggleDarkMode} />
             </div>
+
+            {/* Mobile notifications link */}
+            {isAuthenticated && (
+              <Link
+                to="/notifications"
+                className="flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-200 mb-1 text-brand-secondary dark:text-gray-200 font-medium hover:text-brand-primary dark:hover:text-white hover:bg-brand-light/50 dark:hover:bg-gray-800/50"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <FaBell size={20} className="text-brand-text/70 dark:text-gray-400" />
+                <span>{t('header.notifications') || 'Thông báo'}</span>
+                {unreadCount > 0 && (
+                  <span className="ml-auto bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                    {unreadCount}
+                  </span>
+                )}
+              </Link>
+            )}
 
             {!isAuthenticated && (
               <div className="mt-2 pt-4 border-t border-brand-light dark:border-gray-700 flex flex-col gap-3 px-2">

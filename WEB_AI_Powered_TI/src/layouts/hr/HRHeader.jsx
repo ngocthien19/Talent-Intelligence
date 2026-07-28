@@ -4,6 +4,7 @@ import { useAuth } from '~/hooks/useAuth'
 import { useUI } from '~/hooks/useUI'
 import { useLanguage } from '~/hooks/useLanguage'
 import { useSidebar } from './HRLayout'
+import HRNotificationDropdown from '~/components/hr/notification/HRNotificationDropdown'
 import {
   FaBell,
   FaMoon,
@@ -105,6 +106,10 @@ const HRHeader = () => {
     setIsMobileOpen(prev => !prev)
   }
 
+  const handleUnreadCountChange = (count) => {
+    setUnreadCount(count)
+  }
+
   const avatarUrl = getAvatarUrl(user?.avatar)
   const userInitial = getInitials(user?.fullname)
 
@@ -119,7 +124,7 @@ const HRHeader = () => {
       '/hr/interviews': t('hr.interviews') || 'Lịch phỏng vấn',
       '/hr/search': t('hr.searchCandidate') || 'Tìm kiếm ứng viên',
       '/hr/profile': t('hr.profileTab') || 'Hồ sơ của tôi',
-      '/hr/settings': t('hr.settings') || 'Cài đặt'
+      '/hr/notifications': t('hr.notifications') || 'Thông báo'
     }
     return pageMap[path] || 'Dashboard'
   }
@@ -238,97 +243,7 @@ const HRHeader = () => {
           </DropdownMenu>
 
           {/* Notifications */}
-          <div ref={notificationRef} className="relative flex-shrink-0">
-            <button
-              onClick={() => setIsNotificationOpen(!isNotificationOpen)}
-              className="relative p-1.5 sm:p-2 rounded-full hover:bg-brand-light/50 dark:hover:bg-gray-800 transition-all duration-300 focus:outline-none group cursor-pointer"
-              aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ''}`}
-              aria-expanded={isNotificationOpen}
-            >
-              <FaBell
-                size={16}
-                className={`transition-all duration-300 ${
-                  isNotificationOpen
-                    ? 'text-brand-primary scale-110'
-                    : 'text-brand-text dark:text-gray-300 group-hover:text-brand-primary group-hover:scale-110'
-                }`}
-              />
-              {unreadCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-[14px] px-1 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center border-2 border-white dark:border-gray-900 animate-pulse">
-                  {unreadCount > 9 ? '9+' : unreadCount}
-                </span>
-              )}
-            </button>
-
-            {/* Notification dropdown */}
-            <div
-              className={`absolute right-0 mt-2 w-[280px] sm:w-80 bg-white dark:bg-gray-900 rounded-xl shadow-2xl border border-brand-light/50 dark:border-gray-700 overflow-hidden z-50
-                transition-all duration-300 ease-out origin-top-right
-                ${
-    isNotificationOpen
-      ? 'opacity-100 scale-100 translate-y-0 pointer-events-auto'
-      : 'opacity-0 scale-95 -translate-y-2 pointer-events-none'
-    }`}
-            >
-              <div className="px-3 sm:px-4 py-2.5 border-b border-brand-light/50 dark:border-gray-700 flex items-center justify-between bg-gray-50/50 dark:bg-gray-800/50">
-                <h4 className="font-semibold text-sm text-brand-secondary dark:text-white">
-                  {t('hr.notifications') || 'Thông báo'}
-                </h4>
-                {unreadCount > 0 && (
-                  <button
-                    onClick={handleMarkAllRead}
-                    className="text-xs font-medium text-brand-primary hover:text-brand-secondary dark:hover:text-gray-300 transition-colors duration-200 cursor-pointer"
-                  >
-                    {t('hr.markAllRead') || 'Đánh dấu đã đọc'}
-                  </button>
-                )}
-              </div>
-
-              <div className="max-h-56 sm:max-h-64 overflow-y-auto">
-                {notifications.length > 0 ? (
-                  <ul className="py-1">
-                    {notifications.map((notification) => (
-                      <li key={notification.id}>
-                        <button
-                          className={`w-full text-left px-3 sm:px-4 py-2.5 hover:bg-brand-light/30 dark:hover:bg-gray-800 transition-colors duration-150 ${
-                            !notification.read ? 'bg-brand-primary/5 dark:bg-brand-primary/10' : ''
-                          }`}
-                          onClick={() => {
-                            setIsNotificationOpen(false)
-                          }}
-                        >
-                          <p className="text-sm text-brand-secondary dark:text-white font-medium">
-                            {notification.title}
-                          </p>
-                          <p className="text-xs text-brand-text/60 dark:text-gray-400 mt-0.5">
-                            {notification.time}
-                          </p>
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <div className="px-4 py-8 text-center text-brand-text/70 dark:text-gray-400 text-sm flex flex-col items-center gap-2">
-                    <FaBell className="text-brand-light/80 dark:text-gray-700" size={28} />
-                    {t('hr.noNotifications') || 'Chưa có thông báo mới'}
-                  </div>
-                )}
-              </div>
-
-              {notifications.length > 0 && (
-                <div className="px-3 py-2 border-t border-brand-light/50 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
-                  <button
-                    className="w-full text-center text-xs text-brand-primary hover:text-brand-secondary dark:hover:text-gray-300 transition-colors duration-200 font-medium"
-                    onClick={() => {
-                      setIsNotificationOpen(false)
-                    }}
-                  >
-                    {t('hr.viewAll') || 'Xem tất cả'}
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
+          <HRNotificationDropdown onUnreadCountChange={handleUnreadCountChange} />
 
           {/* User dropdown */}
           <div ref={dropdownRef} className="relative flex-shrink-0">
@@ -394,12 +309,12 @@ const HRHeader = () => {
                   <span className="truncate">{t('hr.profileTab') || 'Hồ sơ của tôi'}</span>
                 </Link>
                 <Link
-                  to="/hr/settings"
+                  to="/hr/notifications"
                   className="flex items-center gap-3 px-3 sm:px-4 py-2 text-sm text-brand-text dark:text-gray-300 hover:bg-brand-light/50 dark:hover:bg-gray-800 hover:text-brand-primary dark:hover:text-white transition-all duration-200 group cursor-pointer"
                   onClick={() => setIsDropdownOpen(false)}
                 >
-                  <FaCog size={14} className="text-brand-text/60 dark:text-gray-500 group-hover:text-brand-primary transition-colors flex-shrink-0" />
-                  <span className="truncate">{t('hr.settings') || 'Cài đặt'}</span>
+                  <FaBell size={14} className="text-brand-text/60 dark:text-gray-500 group-hover:text-brand-primary transition-colors flex-shrink-0" />
+                  <span className="truncate">{t('hr.notifications') || 'Thông báo'}</span>
                 </Link>
                 <div className="h-px bg-brand-light/50 dark:bg-gray-700 my-1 mx-2"></div>
                 <button

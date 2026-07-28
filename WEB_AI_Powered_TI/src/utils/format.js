@@ -77,3 +77,26 @@ export const inputStringToDate = (str) => {
   const parts = str.split('-')
   return new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]))
 }
+
+export const formatDistanceToNow = (date, options = {}) => {
+  const now = new Date()
+  const diff = now - new Date(date)
+  const seconds = Math.floor(diff / 1000)
+  const minutes = Math.floor(seconds / 60)
+  const hours = Math.floor(minutes / 60)
+  const days = Math.floor(hours / 24)
+
+  if (options.addSuffix) {
+    if (seconds < 60) return 'Vừa xong'
+    if (minutes < 60) return `${minutes} phút trước`
+    if (hours < 24) return `${hours} giờ trước`
+    if (days < 7) return `${days} ngày trước`
+    return new Date(date).toLocaleDateString('vi-VN')
+  }
+
+  if (seconds < 60) return 'Vừa xong'
+  if (minutes < 60) return `${minutes} phút`
+  if (hours < 24) return `${hours} giờ`
+  if (days < 7) return `${days} ngày`
+  return new Date(date).toLocaleDateString('vi-VN')
+}

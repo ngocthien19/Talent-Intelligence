@@ -210,7 +210,15 @@
     "noData": "データなし",
     "noDataDesc": "表示するデータがありません",
     "error": "エラーが発生しました",
-    "refresh": "更新"
+    "refresh": "更新",
+    "viewDetail": "詳細を見る",
+    "deleteAll": "すべて削除",
+    "viewMore": "もっと見る",
+    "unread": "未読",
+    "back": "戻る",
+    "additionalInfo": "追加情報",
+    "readAt": "既読日時",
+    "notifications": "通知"
   },
   "profile": {
     "title": "プロフィール",
@@ -359,7 +367,21 @@
     "noMessagesDesc": "AIとの会話を開始しましょう",
     "welcomeMessage": "こんにちは！私はAI面接アシスタントです。\n\n実際の面接のように面接練習をお手伝いします。以下のことができます：\n\n- 自然な会話：実際の面接のように私の質問に答える\n- Q&A：面接に関する質問は何でも聞いてください\n- フィードバック：回答を評価し、改善点をフィードバックします\n\nまずは自己紹介から始めましょう！"
   },
+  "candidate": {
+    "notifications": "通知",
+    "noNotifications": "新しい通知はありません",
+    "checkLater": "新しい通知は後で確認してください",
+    "markAllRead": "すべて既読にする",
+    "markAsRead": "既読にする",
+    "viewAllNotifications": "すべての通知を見る",
+    "selectNotification": "通知を選択して表示",
+    "clickNotificationToView": "左側の通知をクリックして詳細を表示"
+  },
   "hr": {
+    "selectNotification": "通知を選択して表示",
+    "clickNotificationToView": "左側の通知をクリックして詳細を表示",
+    "viewAllNotifications": "すべての通知を見る",
+    "markAsRead": "既読にする",
     "thisWeek": "今週",
     "needReview": "要確認",
     "shortlisted": "選考通過",
