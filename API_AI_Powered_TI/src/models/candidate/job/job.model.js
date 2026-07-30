@@ -52,15 +52,15 @@ const jobModel = {
       paramIndex++
     }
 
+    // 👉 SỬA: Lọc theo salary_range
     if (min_salary) {
       conditions.push(`(jd.salary_range->>'min')::numeric >= $${paramIndex}`)
-      params.push(min_salary)
+      params.push(parseFloat(min_salary))
       paramIndex++
     }
-
     if (max_salary) {
       conditions.push(`(jd.salary_range->>'max')::numeric <= $${paramIndex}`)
-      params.push(max_salary)
+      params.push(parseFloat(max_salary))
       paramIndex++
     }
 
@@ -72,26 +72,28 @@ const jobModel = {
 
     const whereClause = `WHERE ${conditions.join(' AND ')}`
 
+    // Đếm tổng
     const countQuery = `
-      SELECT COUNT(*) as total
-      FROM job_descriptions jd
-      ${whereClause}
-    `
+    SELECT COUNT(*) as total
+    FROM job_descriptions jd
+    ${whereClause}
+  `
     const countParams = [...params]
     const countResult = await pool.query(countQuery, countParams)
     const total = parseInt(countResult.rows[0]?.total || 0)
 
+    // Lấy dữ liệu
     const dataQuery = `
-      SELECT jd.*, c.name as company_name, c.logo as company_logo, 
-             c.address as company_address, c.id as company_id,
-             cat.name as category_name, cat.slug as category_slug
-      FROM job_descriptions jd
-      LEFT JOIN companies c ON jd.company_id = c.id
-      LEFT JOIN category_job cat ON jd.category_id = cat.id
-      ${whereClause}
-      ORDER BY jd.created_at DESC
-      LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
-    `
+    SELECT jd.*, c.name as company_name, c.logo as company_logo, 
+           c.address as company_address, c.id as company_id,
+           cat.name as category_name, cat.slug as category_slug
+    FROM job_descriptions jd
+    LEFT JOIN companies c ON jd.company_id = c.id
+    LEFT JOIN category_job cat ON jd.category_id = cat.id
+    ${whereClause}
+    ORDER BY jd.created_at DESC
+    LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
+  `
     const dataParams = [...params, limit, offset]
     const result = await pool.query(dataQuery, dataParams)
 
