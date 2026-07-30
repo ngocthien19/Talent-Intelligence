@@ -184,7 +184,18 @@
     "skillsMatch": "スキル",
     "cultureFit": "カルチャー",
     "retention": "定着性",
-    "detailTitle": "応募詳細"
+    "detailTitle": "応募詳細",
+    "status": {
+      "pending": "保留中",
+      "analyzing": "分析中",
+      "analyzed": "分析済み",
+      "reviewing": "審査中",
+      "shortlisted": "選考通過",
+      "rejected": "不合格",
+      "hired": "採用",
+      "interviewed": "面接済み",
+      "offered": "オファー済み"
+    }
   },
   "pagination": {
     "previous": "前へ",

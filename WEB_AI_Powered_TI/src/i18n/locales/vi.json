@@ -184,7 +184,18 @@
     "skillsMatch": "Kỹ năng",
     "cultureFit": "Văn hóa",
     "retention": "Gắn bó",
-    "detailTitle": "Xem chi tiết hồ sơ"
+    "detailTitle": "Xem chi tiết hồ sơ",
+    "status": {
+      "pending": "Đang chờ",
+      "analyzing": "Đang phân tích",
+      "analyzed": "Đã phân tích",
+      "reviewing": "Đang xem xét",
+      "shortlisted": "Đã lọc",
+      "rejected": "Từ chối",
+      "hired": "Đã nhận",
+      "interviewed": "Đã phỏng vấn",
+      "offered": "Đã đề xuất"
+    }
   },
   "pagination": {
     "previous": "Trước",

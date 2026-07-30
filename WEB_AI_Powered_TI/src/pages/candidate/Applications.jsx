@@ -49,45 +49,6 @@ const itemVariants = {
     }
   })
 }
-
-const statusConfig = {
-  pending: {
-    icon: FaHourglassHalf,
-    color: 'text-yellow-500',
-    bg: 'bg-yellow-50 dark:bg-yellow-950/20',
-    border: 'border-yellow-200 dark:border-yellow-800',
-    label: 'Đang chờ'
-  },
-  reviewing: {
-    icon: FaClock,
-    color: 'text-blue-500',
-    bg: 'bg-blue-50 dark:bg-blue-950/20',
-    border: 'border-blue-200 dark:border-blue-800',
-    label: 'Đang xem xét'
-  },
-  shortlisted: {
-    icon: FaCheckCircle,
-    color: 'text-emerald-500',
-    bg: 'bg-emerald-50 dark:bg-emerald-950/20',
-    border: 'border-emerald-200 dark:border-emerald-800',
-    label: 'Đã lọc'
-  },
-  rejected: {
-    icon: FaTimesCircle,
-    color: 'text-red-500',
-    bg: 'bg-red-50 dark:bg-red-950/20',
-    border: 'border-red-200 dark:border-red-800',
-    label: 'Từ chối'
-  },
-  hired: {
-    icon: FaCheckCircle,
-    color: 'text-green-500',
-    bg: 'bg-green-50 dark:bg-green-950/20',
-    border: 'border-green-200 dark:border-green-800',
-    label: 'Đã nhận'
-  }
-}
-
 const getFileIcon = (mimeType) => {
   if (mimeType?.includes('pdf')) {
     return FaFilePdf
@@ -105,6 +66,72 @@ const Applications = () => {
   const { isAuthenticated } = useAuth()
   const [applications, setApplications] = useState([])
   const [isLoading, setIsLoading] = useState(true)
+
+  const getStatusConfig = useCallback(() => ({
+    pending: {
+      icon: FaHourglassHalf,
+      color: 'text-yellow-500',
+      bg: 'bg-yellow-50 dark:bg-yellow-950/20',
+      border: 'border-yellow-200 dark:border-yellow-800',
+      label: t('applications.status.pending') || 'Đang chờ'
+    },
+    analyzing: {
+      icon: FaClock,
+      color: 'text-blue-500',
+      bg: 'bg-blue-50 dark:bg-blue-950/20',
+      border: 'border-blue-200 dark:border-blue-800',
+      label: t('applications.status.analyzing') || 'Đang phân tích'
+    },
+    analyzed: {
+      icon: FaCheckCircle,
+      color: 'text-emerald-500',
+      bg: 'bg-emerald-50 dark:bg-emerald-950/20',
+      border: 'border-emerald-200 dark:border-emerald-800',
+      label: t('applications.status.analyzed') || 'Đã phân tích'
+    },
+    reviewing: {
+      icon: FaClock,
+      color: 'text-blue-500',
+      bg: 'bg-blue-50 dark:bg-blue-950/20',
+      border: 'border-blue-200 dark:border-blue-800',
+      label: t('applications.status.reviewing') || 'Đang xem xét'
+    },
+    shortlisted: {
+      icon: FaCheckCircle,
+      color: 'text-emerald-500',
+      bg: 'bg-emerald-50 dark:bg-emerald-950/20',
+      border: 'border-emerald-200 dark:border-emerald-800',
+      label: t('applications.status.shortlisted') || 'Đã lọc'
+    },
+    interviewed: {
+      icon: FaCalendarAlt,
+      color: 'text-purple-500',
+      bg: 'bg-purple-50 dark:bg-purple-950/20',
+      border: 'border-purple-200 dark:border-purple-800',
+      label: t('applications.status.interviewed') || 'Đã phỏng vấn'
+    },
+    offered: {
+      icon: FaCheckCircle,
+      color: 'text-indigo-500',
+      bg: 'bg-indigo-50 dark:bg-indigo-950/20',
+      border: 'border-indigo-200 dark:border-indigo-800',
+      label: t('applications.status.offered') || 'Đã đề xuất'
+    },
+    hired: {
+      icon: FaCheckCircle,
+      color: 'text-green-500',
+      bg: 'bg-green-50 dark:bg-green-950/20',
+      border: 'border-green-200 dark:border-green-800',
+      label: t('applications.status.hired') || 'Đã nhận'
+    },
+    rejected: {
+      icon: FaTimesCircle,
+      color: 'text-red-500',
+      bg: 'bg-red-50 dark:bg-red-950/20',
+      border: 'border-red-200 dark:border-red-800',
+      label: t('applications.status.rejected') || 'Từ chối'
+    }
+  }), [t])
 
   const fetchApplications = useCallback(async () => {
     if (!isAuthenticated) return
@@ -127,6 +154,7 @@ const Applications = () => {
   }, [fetchApplications])
 
   const getStatusBadge = (status) => {
+    const statusConfig = getStatusConfig()
     const config = statusConfig[status?.toLowerCase()] || statusConfig.pending
     const Icon = config.icon
 
@@ -143,7 +171,6 @@ const Applications = () => {
     e.preventDefault()
     e.stopPropagation()
     if (cvUrl) {
-    // Sử dụng Google Docs Viewer để xem PDF
       const viewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(cvUrl)}&embedded=true`
       window.open(viewerUrl, '_blank')
     }
@@ -175,6 +202,8 @@ const Applications = () => {
       </motion.div>
     )
   }
+
+  const statusConfig = getStatusConfig()
 
   return (
     <motion.div

@@ -30,7 +30,7 @@ const DEFAULT_FILTERS = {
   employmentType: '',
   isActive: '',
   categoryId: '',
-  location,
+  location: '',
   sortBy: 'created_at',
   sortOrder: 'DESC',
   page: 1,
