@@ -1,5 +1,16 @@
-import { motion } from 'framer-motion'
-import { FaEye, FaEdit, FaCalendarAlt, FaUser, FaBriefcase, FaClock, FaTimesCircle } from 'react-icons/fa'
+import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import {
+  FaEye,
+  FaEdit,
+  FaCalendarAlt,
+  FaUser,
+  FaBriefcase,
+  FaClock,
+  FaTimesCircle,
+  FaChevronDown,
+  FaBan
+} from 'react-icons/fa'
 import {
   Tooltip,
   TooltipContent,
@@ -10,6 +21,24 @@ import { useLanguage } from '~/hooks/useLanguage'
 import InterviewStatusBadge from './InterviewStatusBadge'
 import { formatDate } from '~/utils/format'
 
+const STATUS_OPTIONS = [
+  { value: 'scheduled', label: 'Đã lên lịch' },
+  { value: 'confirmed', label: 'Đã xác nhận' },
+  { value: 'completed', label: 'Đã hoàn thành' },
+  { value: 'cancelled', label: 'Đã hủy' },
+  { value: 'no_show', label: 'Vắng mặt' }
+]
+
+const TERMINAL_STATUSES = ['completed', 'cancelled', 'no_show']
+
+const STATUS_FLOW = {
+  'scheduled': ['confirmed', 'cancelled'],
+  'confirmed': ['completed', 'cancelled', 'no_show'],
+  'completed': [],
+  'cancelled': [],
+  'no_show': []
+}
+
 const InterviewRow = ({
   interview,
   isSelected,
@@ -17,9 +46,11 @@ const InterviewRow = ({
   onView,
   onEdit,
   onDelete,
+  onUpdateStatus,
   index
 }) => {
   const { t } = useLanguage()
+  const [isStatusOpen, setIsStatusOpen] = useState(false)
 
   const interviewDate = new Date(interview.interview_date)
   const isPast = interviewDate < new Date()
@@ -29,8 +60,16 @@ const InterviewRow = ({
   const isEditable = interview.status === 'scheduled' || interview.status === 'confirmed'
   const isDeletable = interview.status === 'scheduled'
 
+  const isStatusUpdatable = !TERMINAL_STATUSES.includes(interview.status)
+
   // Lấy avatar URL
   const avatarUrl = interview?.avatar?.secure_url || null
+
+  const getAvailableStatuses = (currentStatus) => {
+    return STATUS_FLOW[currentStatus] || []
+  }
+
+  const availableStatuses = getAvailableStatuses(interview.status)
 
   return (
     <motion.tr
@@ -57,7 +96,6 @@ const InterviewRow = ({
       {/* Candidate - Căn trái */}
       <td className="px-3 py-3 text-left">
         <div className="flex items-center gap-3">
-          {/* Avatar - ưu tiên ảnh nếu có */}
           {avatarUrl ? (
             <img
               src={avatarUrl}
@@ -65,14 +103,11 @@ const InterviewRow = ({
               className="w-8 h-8 rounded-full object-cover border-2 border-brand-light/30 dark:border-gray-700 flex-shrink-0"
             />
           ) : null}
-
-          {/* Fallback - hiển thị chữ cái đầu */}
           <div
             className={`w-8 h-8 rounded-full bg-gradient-brand flex items-center justify-center text-white font-semibold text-xs flex-shrink-0 fallback-avatar ${avatarUrl ? 'hidden' : ''}`}
           >
             {interview.candidate_name?.charAt(0)?.toUpperCase() || 'U'}
           </div>
-
           <div>
             <p className="font-medium text-brand-secondary dark:text-white truncate max-w-[150px]">
               {interview.candidate_name || '--'}
@@ -126,9 +161,67 @@ const InterviewRow = ({
         </div>
       </td>
 
-      {/* Status */}
+      {/* Status - Có thể click để cập nhật */}
       <td className="px-3 py-3 text-center">
-        <InterviewStatusBadge status={interview.status} />
+        <div className="relative inline-block">
+          <button
+            onClick={() => isStatusUpdatable && setIsStatusOpen(!isStatusOpen)}
+            className={`flex items-center gap-1 transition-all duration-200 ${isStatusUpdatable ? 'hover:opacity-80 cursor-pointer group' : 'cursor-default'}`}
+            disabled={!isStatusUpdatable}
+          >
+            <InterviewStatusBadge status={interview.status} />
+            {isStatusUpdatable && (
+              <span className={`text-brand-text/40 dark:text-gray-500 transition-transform duration-200 ${isStatusOpen ? 'rotate-180' : ''}`}>
+                <FaChevronDown size={10} />
+              </span>
+            )}
+          </button>
+
+          <AnimatePresence>
+            {isStatusOpen && isStatusUpdatable && (
+              <motion.div
+                initial={{ opacity: 0, y: -8, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -8, scale: 0.95 }}
+                transition={{ duration: 0.15, ease: [0.25, 0.46, 0.45, 0.94] }}
+                className="absolute left-1/2 -translate-x-1/2 top-full mt-1 z-10 min-w-[150px] bg-white dark:bg-gray-900 rounded-lg shadow-xl border border-brand-light/50 dark:border-gray-700 overflow-hidden"
+              >
+                {STATUS_OPTIONS.map((opt) => {
+                  const isAvailable = availableStatuses.includes(opt.value)
+                  const isCurrent = interview.status === opt.value
+
+                  return (
+                    <button
+                      key={opt.value}
+                      onClick={() => {
+                        if (isAvailable) {
+                          onUpdateStatus(interview.id, opt.value)
+                          setIsStatusOpen(false)
+                        }
+                      }}
+                      disabled={!isAvailable}
+                      className={`w-full text-left px-3 py-2.5 text-sm transition-all duration-150 flex items-center justify-between ${
+                        isCurrent
+                          ? 'bg-brand-primary/10 text-brand-primary dark:bg-brand-primary/20 font-medium cursor-default'
+                          : isAvailable
+                            ? 'hover:bg-brand-light/30 dark:hover:bg-gray-800 cursor-pointer text-brand-text dark:text-gray-300 hover:text-brand-secondary dark:hover:text-white'
+                            : 'text-brand-text/30 dark:text-gray-600 cursor-not-allowed'
+                      }`}
+                    >
+                      <span>{t(`hr.interview.statuses.${opt.value}`) || opt.label}</span>
+                      {isCurrent && (
+                        <span className="text-brand-primary">✓</span>
+                      )}
+                      {!isAvailable && !isCurrent && (
+                        <FaBan size={14} className="text-brand-text/20 dark:text-gray-600 flex-shrink-0" />
+                      )}
+                    </button>
+                  )
+                })}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </td>
 
       {/* Actions */}

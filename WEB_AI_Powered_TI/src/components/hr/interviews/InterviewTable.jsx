@@ -17,6 +17,7 @@ const InterviewTable = ({
   onView,
   onEdit,
   onDelete,
+  onUpdateStatus,
   onPageChange,
   isLoading,
   onBulkDelete
@@ -189,6 +190,7 @@ const InterviewTable = ({
                     onView={onView}
                     onEdit={onEdit}
                     onDelete={() => openDeleteConfirm(interview.id)}
+                    onUpdateStatus={onUpdateStatus}
                     index={index}
                   />
                 ))

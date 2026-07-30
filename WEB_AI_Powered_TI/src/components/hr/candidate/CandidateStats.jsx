@@ -1,10 +1,13 @@
+// CandidateStats.jsx - phiên bản giữ nguyên kích thước
 import {
   FaUsers,
   FaClock,
   FaCheckCircle,
   FaStar,
   FaAward,
-  FaTimesCircle
+  FaTimesCircle,
+  FaCalendarCheck,
+  FaFileAlt
 } from 'react-icons/fa'
 import { useLanguage } from '~/hooks/useLanguage'
 import { formatCompactNumber } from '~/utils/format'
@@ -15,7 +18,9 @@ const iconMap = {
   CheckCircle: FaCheckCircle,
   Star: FaStar,
   Award: FaAward,
-  XCircle: FaTimesCircle
+  XCircle: FaTimesCircle,
+  CalendarCheck: FaCalendarCheck,
+  FileAlt: FaFileAlt
 }
 
 const colorMap = {
@@ -24,7 +29,9 @@ const colorMap = {
   green: 'text-green-500 bg-green-50 dark:bg-green-950/20',
   purple: 'text-purple-500 bg-purple-50 dark:bg-purple-950/20',
   emerald: 'text-emerald-500 bg-emerald-50 dark:bg-emerald-950/20',
-  red: 'text-red-500 bg-red-50 dark:bg-red-950/20'
+  red: 'text-red-500 bg-red-50 dark:bg-red-950/20',
+  indigo: 'text-indigo-500 bg-indigo-50 dark:bg-indigo-950/20',
+  teal: 'text-teal-500 bg-teal-50 dark:bg-teal-950/20'
 }
 
 const getTitleKey = (id) => {
@@ -33,6 +40,8 @@ const getTitleKey = (id) => {
     'pending': 'hr.candidate.pending',
     'analyzed': 'hr.candidate.analyzed',
     'shortlisted': 'hr.candidate.shortlisted',
+    'interviewed': 'hr.candidate.interviewed',
+    'offered': 'hr.candidate.offered',
     'hired': 'hr.candidate.hired',
     'rejected': 'hr.candidate.rejected'
   }
@@ -47,7 +56,8 @@ const getLabelKey = (label) => {
     'đã phân tích': 'hr.analyzed',
     'shortlist': 'hr.shortlisted',
     'tỷ lệ trúng tuyển': 'hr.hireRate',
-    'tỷ lệ từ chối': 'hr.rejectRate'
+    'tỷ lệ từ chối': 'hr.rejectRate',
+    '% tổng ứng viên': 'hr.percentOfTotal'
   }
   return labelMap[label] || label
 }
@@ -57,8 +67,8 @@ const CandidateStats = ({ widgets }) => {
 
   if (!widgets || widgets.length === 0) {
     return (
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4">
-        {[1, 2, 3, 4, 5, 6].map(i => (
+      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
+        {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
           <div key={i} className="bg-white dark:bg-gray-800 rounded-xl shadow-custom p-4 border border-brand-light/30 dark:border-gray-700/50 animate-pulse">
             <div className="h-4 w-20 bg-gray-200 dark:bg-gray-700 rounded mb-2" />
             <div className="h-8 w-16 bg-gray-200 dark:bg-gray-700 rounded" />
@@ -69,7 +79,7 @@ const CandidateStats = ({ widgets }) => {
   }
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4">
+    <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
       {widgets.map((widget, index) => {
         const Icon = iconMap[widget.icon] || FaUsers
         const colorClass = colorMap[widget.color] || 'text-gray-500 bg-gray-50 dark:bg-gray-800'
@@ -86,6 +96,9 @@ const CandidateStats = ({ widgets }) => {
           label = translatedLabel !== labelKey ? translatedLabel : label
         }
 
+        const changeValue = widget.change?.value || 0
+        const isPercentage = widget.change?.type === 'percentage'
+
         return (
           <div
             key={widget.id || index}
@@ -95,9 +108,19 @@ const CandidateStats = ({ widgets }) => {
               <div className={`p-2 rounded-xl ${colorClass}`}>
                 <Icon size={16} />
               </div>
-              {widget.change && widget.change.value > 0 && (
-                <span className="text-xs font-medium text-emerald-500 flex items-center gap-0.5">
-                  ↑ {widget.change.value}{widget.change.type === 'percentage' ? '%' : ''}
+              {changeValue > 0 && !isPercentage && (
+                <span className="text-xs font-medium text-emerald-500">
+                  ↑ {changeValue}
+                </span>
+              )}
+              {changeValue > 0 && isPercentage && (
+                <span className="text-xs font-medium text-emerald-500">
+                  ↑ {changeValue}%
+                </span>
+              )}
+              {changeValue < 0 && (
+                <span className="text-xs font-medium text-red-500">
+                  ↓ {Math.abs(changeValue)}%
                 </span>
               )}
             </div>
@@ -108,7 +131,7 @@ const CandidateStats = ({ widgets }) => {
               {title}
             </p>
             {widget.change && widget.change.label && (
-              <p className="text-[10px] text-brand-text/40 dark:text-gray-500 mt-0.5">
+              <p className="text-[10px] text-brand-text/40 dark:text-gray-500 mt-0.5 truncate">
                 {label}
               </p>
             )}
