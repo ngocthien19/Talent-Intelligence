@@ -3,13 +3,12 @@ import { emitToUser, emitToCandidate, emitToCompany } from '~/providers/socket.p
 import candidateProfileModel from '~/models/candidate/candidate-profile.model'
 
 const notificationService = {
-  // Gửi thông báo cho Candidate - CẬP NHẬT
+  // Gửi thông báo cho Candidate
   sendToCandidate: async (userId, data) => {
     // Tìm candidate profile từ user_id
     const profile = await candidateProfileModel.findByUserId(userId)
 
     if (!profile) {
-      // Nếu chưa có profile, tạo notification với user_id thay vì candidate_id
       const notification = await notificationModel.create({
         userId, // Dùng user_id
         type: data.type || 'system',
@@ -125,14 +124,15 @@ const notificationService = {
     }
   },
 
-  getByHR: async (userId, limit = 20, page = 1) => {
+  getByHR: async (userId, companyId, limit = 20, page = 1) => {
     const offset = (page - 1) * limit
     const notifications = await notificationModel.getByUser(
       userId,
+      companyId,
       parseInt(limit),
       parseInt(offset)
     )
-    const unreadCount = await notificationModel.countUnreadByUser(userId)
+    const unreadCount = await notificationModel.countUnreadByUser(userId, companyId)
 
     return {
       notifications,
@@ -145,29 +145,29 @@ const notificationService = {
     }
   },
 
-  getUnread: async (userId, role) => {
+  getUnread: async (userId, role, companyId) => {
     if (role === 'candidate') {
       return await notificationModel.getUnreadByCandidate(userId)
     }
-    return await notificationModel.getUnreadByUser(userId)
+    return await notificationModel.getUnreadByUser(userId, companyId)
   },
 
-  countUnread: async (userId, role) => {
+  countUnread: async (userId, role, companyId) => {
     if (role === 'candidate') {
       return await notificationModel.countUnreadByCandidate(userId)
     }
-    return await notificationModel.countUnreadByUser(userId)
+    return await notificationModel.countUnreadByUser(userId, companyId)
   },
 
   markAsRead: async (id) => {
     return await notificationModel.markAsRead(id)
   },
 
-  markAllAsRead: async (userId, role) => {
+  markAllAsRead: async (userId, role, companyId) => {
     if (role === 'candidate') {
       return await notificationModel.markAllAsReadByCandidate(userId)
     }
-    return await notificationModel.markAllAsReadByUser(userId)
+    return await notificationModel.markAllAsReadByUser(userId, companyId)
   },
 
   delete: async (id) => {

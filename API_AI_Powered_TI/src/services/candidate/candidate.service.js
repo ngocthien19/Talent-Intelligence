@@ -1,14 +1,14 @@
 import candidateProfileModel from '~/models/candidate/candidate-profile.model'
 import applicationModel from '~/models/candidate/application.model'
 import jobModel from '~/models/candidate/job/job.model'
-import userModel from '~/models/user.model' // THÊM IMPORT
+import userModel from '~/models/user.model'
 import parseService from '~/services/parse.service'
 import { CloudinaryProvider } from '~/providers/cloudinary.provider'
 import notificationService from '~/services/notification/notification.service'
 import { comparePassword, hashPassword } from '~/utils/bcrypt'
 
 const candidateService = {
-  // Đảm bảo profile tồn tại - SỬA: dùng userModel
+  // Đảm bảo profile tồn tại
   ensureProfileExists: async (userId) => {
     // Lấy thông tin user từ userModel
     const user = await userModel.findById(userId)
@@ -82,9 +82,8 @@ const candidateService = {
       jd_text: job.description
     })
 
-    // 6. Gửi thông báo
-    if (job.user_id) {
-      await notificationService.sendToHR(job.user_id, {
+    if (job.company_id) {
+      await notificationService.sendToCompany(job.company_id, {
         type: 'new_application',
         title: `Ứng viên mới: ${profile.name}`,
         content: `${profile.name} vừa ứng tuyển vào vị trí "${job.title}"`,
@@ -196,7 +195,7 @@ const candidateService = {
     return await candidateProfileModel.update(profile.id, { avatar: avatarData })
   },
 
-  // Đổi mật khẩu - SỬA: dùng userModel
+  // Đổi mật khẩu
   changePassword: async (userId, data) => {
     const { currentPassword, newPassword } = data
     const user = await userModel.findById(userId)

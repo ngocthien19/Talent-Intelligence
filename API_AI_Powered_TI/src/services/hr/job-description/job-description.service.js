@@ -228,7 +228,7 @@ async function sendToMatchedCandidates(job, data, companyName) {
 
     // Gửi notification real-time
     try {
-      await notificationService.sendToCandidate(candidate.application_id, {
+      await notificationService.sendToCandidate(candidate.user_id, {
         type: 'new_job_opportunity_matched',
         title: `Việc làm phù hợp với bạn: ${data.title}`,
         content: `Công ty ${companyName} đang tuyển vị trí "${data.title}". Bạn có ${matchCount}/${totalRequired} kỹ năng phù hợp!`,

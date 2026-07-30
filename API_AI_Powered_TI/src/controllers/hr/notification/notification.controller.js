@@ -5,10 +5,12 @@ const hrNotificationController = {
   getNotifications: async (req, res) => {
     try {
       const userId = req.user.id
+      const companyId = req.user.companyId
       const { limit = 20, page = 1 } = req.query
 
       const result = await notificationService.getByHR(
         userId,
+        companyId,
         parseInt(limit),
         parseInt(page)
       )
@@ -29,9 +31,10 @@ const hrNotificationController = {
   getUnread: async (req, res) => {
     try {
       const userId = req.user.id
+      const companyId = req.user.companyId
 
-      const notifications = await notificationService.getUnread(userId, 'hr')
-      const count = await notificationService.countUnread(userId, 'hr')
+      const notifications = await notificationService.getUnread(userId, 'hr', companyId)
+      const count = await notificationService.countUnread(userId, 'hr', companyId)
 
       return res.status(200).json({
         success: true,
@@ -52,8 +55,9 @@ const hrNotificationController = {
   countUnread: async (req, res) => {
     try {
       const userId = req.user.id
+      const companyId = req.user.companyId
 
-      const count = await notificationService.countUnread(userId, 'hr')
+      const count = await notificationService.countUnread(userId, 'hr', companyId)
 
       return res.status(200).json({
         success: true,
@@ -91,8 +95,9 @@ const hrNotificationController = {
   markAllAsRead: async (req, res) => {
     try {
       const userId = req.user.id
+      const companyId = req.user.companyId
 
-      const result = await notificationService.markAllAsRead(userId, 'hr')
+      const result = await notificationService.markAllAsRead(userId, 'hr', companyId)
 
       return res.status(200).json({
         success: true,
@@ -126,7 +131,6 @@ const hrNotificationController = {
     }
   },
 
-  // Xóa tất cả thông báo
   deleteAll: async (req, res) => {
     try {
       const userId = req.user.id
