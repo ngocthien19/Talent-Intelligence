@@ -47,7 +47,7 @@ const STATUS_LABELS = {
   confirmed: 'hr.interview.statuses.confirmed',
   completed: 'hr.interview.statuses.completed',
   cancelled: 'hr.interview.statuses.cancelled',
-  no_show: 'hr.interview.statuses.noShow'
+  no_show: 'hr.interview.statuses.no_show'
 }
 
 const InterviewStatusBadge = ({ status, className = '' }) => {

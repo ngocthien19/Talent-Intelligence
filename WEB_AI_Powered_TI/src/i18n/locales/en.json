@@ -396,6 +396,7 @@
     "clickNotificationToView": "Click a notification on the left to view details"
   },
   "hr": {
+    "percentOfTotal": "% of total",
     "selectNotification": "Select a notification to view",
     "clickNotificationToView": "Click a notification on the left to view details",
     "viewAllNotifications": "View all notifications",
@@ -925,7 +926,7 @@
         "confirmed": "Confirmed",
         "completed": "Completed",
         "cancelled": "Cancelled",
-        "noShow": "No Show"
+        "no_show": "No Show"
       },
       "validation": {
         "candidateRequired": "Please select a candidate",

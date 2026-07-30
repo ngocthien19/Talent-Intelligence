@@ -396,6 +396,7 @@
     "clickNotificationToView": "Nhấn vào một thông báo bên trái để xem chi tiết"
   },
   "hr": {
+    "percentOfTotal": "% tổng ứng viên",
     "selectNotification": "Chọn một thông báo để xem",
     "clickNotificationToView": "Nhấn vào một thông báo bên trái để xem chi tiết",
     "viewAllNotifications": "Xem tất cả thông báo",
@@ -925,7 +926,7 @@
         "confirmed": "Đã xác nhận",
         "completed": "Đã hoàn thành",
         "cancelled": "Đã hủy",
-        "noShow": "Vắng mặt"
+        "no_show": "Vắng mặt"
       },
       "validation": {
         "candidateRequired": "Vui lòng chọn ứng viên",

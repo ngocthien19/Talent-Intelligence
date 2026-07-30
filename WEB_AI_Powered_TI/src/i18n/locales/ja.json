@@ -389,6 +389,7 @@
     "clickNotificationToView": "左側の通知をクリックして詳細を表示"
   },
   "hr": {
+    "percentOfTotal": "% 全体",
     "selectNotification": "通知を選択して表示",
     "clickNotificationToView": "左側の通知をクリックして詳細を表示",
     "viewAllNotifications": "すべての通知を見る",
@@ -918,7 +919,7 @@
         "confirmed": "確定",
         "completed": "完了",
         "cancelled": "キャンセル",
-        "noShow": "欠席"
+        "no_show": "欠席"
       },
       "validation": {
         "candidateRequired": "応募者を選択してください",
