@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useLanguage } from '~/hooks/useLanguage'
 import { useAuth } from '~/hooks/useAuth'
@@ -73,44 +73,6 @@ const fadeUp = {
   }
 }
 
-const statusConfig = {
-  pending: {
-    icon: FaHourglassHalf,
-    color: 'text-yellow-500',
-    bg: 'bg-yellow-50 dark:bg-yellow-950/20',
-    border: 'border-yellow-200 dark:border-yellow-800',
-    label: 'Đang chờ'
-  },
-  reviewing: {
-    icon: FaClock,
-    color: 'text-blue-500',
-    bg: 'bg-blue-50 dark:bg-blue-950/20',
-    border: 'border-blue-200 dark:border-blue-800',
-    label: 'Đang xem xét'
-  },
-  shortlisted: {
-    icon: FaCheckCircle,
-    color: 'text-emerald-500',
-    bg: 'bg-emerald-50 dark:bg-emerald-950/20',
-    border: 'border-emerald-200 dark:border-emerald-800',
-    label: 'Đã lọc'
-  },
-  rejected: {
-    icon: FaTimesCircle,
-    color: 'text-red-500',
-    bg: 'bg-red-50 dark:bg-red-950/20',
-    border: 'border-red-200 dark:border-red-800',
-    label: 'Từ chối'
-  },
-  hired: {
-    icon: FaCheckCircle,
-    color: 'text-green-500',
-    bg: 'bg-green-50 dark:bg-green-950/20',
-    border: 'border-green-200 dark:border-green-800',
-    label: 'Đã nhận'
-  }
-}
-
 const getFileIcon = (mimeType) => {
   if (mimeType?.includes('pdf')) {
     return FaFilePdf
@@ -129,6 +91,72 @@ const ApplicationDetail = () => {
   const { isAuthenticated } = useAuth()
   const [application, setApplication] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
+
+  const getStatusConfig = useCallback(() => ({
+    pending: {
+      icon: FaHourglassHalf,
+      color: 'text-yellow-500',
+      bg: 'bg-yellow-50 dark:bg-yellow-950/20',
+      border: 'border-yellow-200 dark:border-yellow-800',
+      label: t('applications.status.pending') || 'Đang chờ'
+    },
+    analyzing: {
+      icon: FaClock,
+      color: 'text-blue-500',
+      bg: 'bg-blue-50 dark:bg-blue-950/20',
+      border: 'border-blue-200 dark:border-blue-800',
+      label: t('applications.status.analyzing') || 'Đang phân tích'
+    },
+    analyzed: {
+      icon: FaCheckCircle,
+      color: 'text-emerald-500',
+      bg: 'bg-emerald-50 dark:bg-emerald-950/20',
+      border: 'border-emerald-200 dark:border-emerald-800',
+      label: t('applications.status.analyzed') || 'Đã phân tích'
+    },
+    reviewing: {
+      icon: FaClock,
+      color: 'text-blue-500',
+      bg: 'bg-blue-50 dark:bg-blue-950/20',
+      border: 'border-blue-200 dark:border-blue-800',
+      label: t('applications.status.reviewing') || 'Đang xem xét'
+    },
+    shortlisted: {
+      icon: FaCheckCircle,
+      color: 'text-emerald-500',
+      bg: 'bg-emerald-50 dark:bg-emerald-950/20',
+      border: 'border-emerald-200 dark:border-emerald-800',
+      label: t('applications.status.shortlisted') || 'Đã lọc'
+    },
+    interviewed: {
+      icon: FaCalendarAlt,
+      color: 'text-purple-500',
+      bg: 'bg-purple-50 dark:bg-purple-950/20',
+      border: 'border-purple-200 dark:border-purple-800',
+      label: t('applications.status.interviewed') || 'Đã phỏng vấn'
+    },
+    offered: {
+      icon: FaCheckCircle,
+      color: 'text-indigo-500',
+      bg: 'bg-indigo-50 dark:bg-indigo-950/20',
+      border: 'border-indigo-200 dark:border-indigo-800',
+      label: t('applications.status.offered') || 'Đã đề xuất'
+    },
+    hired: {
+      icon: FaCheckCircle,
+      color: 'text-green-500',
+      bg: 'bg-green-50 dark:bg-green-950/20',
+      border: 'border-green-200 dark:border-green-800',
+      label: t('applications.status.hired') || 'Đã nhận'
+    },
+    rejected: {
+      icon: FaTimesCircle,
+      color: 'text-red-500',
+      bg: 'bg-red-50 dark:bg-red-950/20',
+      border: 'border-red-200 dark:border-red-800',
+      label: t('applications.status.rejected') || 'Từ chối'
+    }
+  }), [t])
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -163,6 +191,7 @@ const ApplicationDetail = () => {
   }
 
   const getStatusBadge = (status) => {
+    const statusConfig = getStatusConfig()
     const config = statusConfig[status?.toLowerCase()] || statusConfig.pending
     const Icon = config.icon
 
@@ -307,7 +336,7 @@ const ApplicationDetail = () => {
               </div>
             </motion.div>
 
-            {/* Candidate Info - SỬA: dùng candidate_name và candidate_email */}
+            {/* Candidate Info */}
             <motion.div
               variants={slideLeft}
               className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 p-4 bg-brand-bg/50 dark:bg-gray-800/50 rounded-xl"
@@ -356,7 +385,7 @@ const ApplicationDetail = () => {
                       size={24}
                       className={`${application.cv_mime_type?.includes('pdf') ? 'text-red-500' : application.cv_mime_type?.includes('word') ? 'text-blue-500' : 'text-brand-text/60'}`}
                     />
-                    <div className="min-w-0">{t('applications.coverLetter') || 'Thư giới thiệu'}
+                    <div className="min-w-0">
                       <p className="text-sm font-medium text-brand-secondary dark:text-white truncate">
                         {application.cv_original_name || 'CV.pdf'}
                       </p>

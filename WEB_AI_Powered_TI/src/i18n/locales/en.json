@@ -184,7 +184,18 @@
     "skillsMatch": "Skills",
     "cultureFit": "Culture",
     "retention": "Retention",
-    "detailTitle": "Application Details"
+    "detailTitle": "Application Details",
+    "status": {
+      "pending": "Pending",
+      "analyzing": "Analyzing",
+      "analyzed": "Analyzed",
+      "reviewing": "Reviewing",
+      "shortlisted": "Shortlisted",
+      "rejected": "Rejected",
+      "hired": "Hired",
+      "interviewed": "Interviewed",
+      "offered": "Offered"
+    }
   },
   "pagination": {
     "previous": "Previous",

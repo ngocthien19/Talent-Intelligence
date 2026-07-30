@@ -18,7 +18,9 @@ const AverageScores = ({ scores }) => {
           className="bg-white dark:bg-gray-800 rounded-xl shadow-custom p-4 border border-brand-light/30 dark:border-gray-700/50 hover:shadow-glow transition-all duration-300"
         >
           <p className="text-xs text-brand-text/60 dark:text-gray-400">{t(item.labelKey)}</p>
-          <p className="text-2xl font-bold text-brand-secondary dark:text-white">{item.value}%</p>
+          <p className="text-2xl font-bold text-brand-secondary dark:text-white">
+            {typeof item.value === 'number' ? item.value.toFixed(2) : item.value}%
+          </p>
         </div>
       ))}
     </div>
