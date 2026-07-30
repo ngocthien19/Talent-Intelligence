@@ -29,6 +29,7 @@ import {
 } from 'react-icons/fa'
 import { useLanguage } from '~/hooks/useLanguage'
 import { candidateNotificationApi } from '~/api/candidate/candidateNotification.api'
+import useNotificationSocket from '~/hooks/useNotificationSocket'
 import { toast } from 'react-toastify'
 import { formatDistanceToNow } from '~/utils/format'
 
@@ -108,6 +109,17 @@ const CandidateNotificationDropdown = ({ onUnreadCountChange }) => {
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
+
+  // Real-time: nhận thông báo mới qua Socket.IO
+  useNotificationSocket((newNotification) => {
+    setNotifications(prev => [newNotification, ...prev])
+    setUnreadCount(prev => {
+      const next = prev + 1
+      if (onUnreadCountChange) onUnreadCountChange(next)
+      return next
+    })
+    toast.info(newNotification.title)
+  })
 
   const handleMarkAsRead = async (id) => {
     try {

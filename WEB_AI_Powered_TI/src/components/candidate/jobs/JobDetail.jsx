@@ -34,7 +34,7 @@ const JobDetail = ({ job, onBack, formatSalary, getExperienceLabel }) => {
   const { favoriteIds, isLoading } = useSelector((state) => state.favorite)
   const [isFavorite, setIsFavorite] = useState(false)
   const [isToggling, setIsToggling] = useState(false)
-  const [showApplyModal, setShowApplyModal] = useState(false) // THÊM STATE
+  const [showApplyModal, setShowApplyModal] = useState(false)
 
   useEffect(() => {
     if (job?.id && favoriteIds) {

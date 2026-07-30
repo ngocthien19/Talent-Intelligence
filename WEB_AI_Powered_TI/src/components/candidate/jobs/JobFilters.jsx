@@ -26,6 +26,7 @@ import {
   EXPERIENCE_LEVELS,
   EMPLOYMENT_TYPES,
   SALARY_RANGES,
+  getLocationLabel,
   getExperienceLabel,
   getEmploymentLabel,
   getSalaryLabel
@@ -49,17 +50,16 @@ const JobFilters = ({ filters, onFilterChange, onClearFilters, onClearFilter }) 
 
   const activeCount = getActiveFilterCount()
 
-  // Lấy label cho từng filter - SỬ DỤNG HÀM TỪ CONSTANT
+  // Lấy label cho từng filter
   const getCategoryLabel = (value) => {
     if (!value) return t('jobs.category') || 'Danh mục'
     const category = filterOptions.categories?.find(c => c.id === value)
     return category ? category.name : t('jobs.category') || 'Danh mục'
   }
 
-  const getLocationLabel = (value) => {
-    if (!value) return t('jobs.location') || 'Địa điểm'
-    const location = LOCATIONS.find(l => l.value === value)
-    return location ? location.label : value
+  // SỬA: Dùng getLocationLabel từ constant
+  const getLocationLabelText = (value) => {
+    return getLocationLabel(value, t)
   }
 
   const getExperienceLabelText = (value) => {
@@ -128,7 +128,7 @@ const JobFilters = ({ filters, onFilterChange, onClearFilters, onClearFilter }) 
             )}
             {activeFilters.location && (
               <Badge
-                label={getLocationLabel(activeFilters.location)}
+                label={getLocationLabelText(activeFilters.location)}
                 onRemove={() => onClearFilter('location')}
               />
             )}
@@ -196,12 +196,12 @@ const JobFilters = ({ filters, onFilterChange, onClearFilters, onClearFilter }) 
           </DropdownMenu>
         )}
 
-        {/* Location filter */}
+        {/* Location filter - SỬA: dùng LOCATIONS và getLocationLabelText */}
         <DropdownMenu>
           <DropdownMenuTrigger className="px-3 py-2 text-sm border border-brand-light dark:border-gray-700 rounded-lg hover:bg-brand-light dark:hover:bg-gray-700 transition-all duration-200 flex items-center gap-2 cursor-pointer">
             <FaMapMarkerAlt size={14} className="text-brand-text/60 dark:text-gray-400" />
             <span className="text-brand-text dark:text-gray-300">
-              {getLocationLabel(activeFilters.location)}
+              {getLocationLabelText(activeFilters.location)}
             </span>
             <FaChevronDown size={12} className="text-brand-text/40 dark:text-gray-500" />
           </DropdownMenuTrigger>
@@ -215,7 +215,7 @@ const JobFilters = ({ filters, onFilterChange, onClearFilters, onClearFilter }) 
                   onClick={() => onFilterChange('location', location.value)}
                   className={`cursor-pointer transition-all duration-200 ${activeFilters.location === location.value ? 'text-brand-primary font-medium' : ''}`}
                 >
-                  {location.label}
+                  {getLocationLabelText(location.value)}
                   {activeFilters.location === location.value && (
                     <FaCheck className="ml-auto text-brand-primary" size={14} />
                   )}
