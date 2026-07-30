@@ -49,18 +49,26 @@ const notificationModel = {
   },
 
   // Lấy thông báo của user (HR)
-  getByUser: async (userId, limit = 20, offset = 0) => {
-    const result = await pool.query(
-      `SELECT * FROM notifications
-       WHERE user_id = $1
-       ORDER BY created_at DESC
-       LIMIT $2 OFFSET $3`,
-      [userId, limit, offset]
-    )
+  getByUser: async (userId, companyId, limit = 20, offset = 0) => {
+    const result = companyId
+      ? await pool.query(
+        `SELECT * FROM notifications
+         WHERE user_id = $1 OR company_id = $2
+         ORDER BY created_at DESC
+         LIMIT $3 OFFSET $4`,
+        [userId, companyId, limit, offset]
+      )
+      : await pool.query(
+        `SELECT * FROM notifications
+         WHERE user_id = $1
+         ORDER BY created_at DESC
+         LIMIT $2 OFFSET $3`,
+        [userId, limit, offset]
+      )
     return result.rows
   },
 
-  // Lấy thông báo của company (tất cả HR trong công ty)
+  // Lấy thông báo của company
   getByCompany: async (companyId, limit = 20, offset = 0) => {
     const result = await pool.query(
       `SELECT * FROM notifications
@@ -84,13 +92,20 @@ const notificationModel = {
   },
 
   // Lấy thông báo chưa đọc của user (HR)
-  getUnreadByUser: async (userId) => {
-    const result = await pool.query(
-      `SELECT * FROM notifications
-       WHERE user_id = $1 AND is_read = false
-       ORDER BY created_at DESC`,
-      [userId]
-    )
+  getUnreadByUser: async (userId, companyId) => {
+    const result = companyId
+      ? await pool.query(
+        `SELECT * FROM notifications
+         WHERE (user_id = $1 OR company_id = $2) AND is_read = false
+         ORDER BY created_at DESC`,
+        [userId, companyId]
+      )
+      : await pool.query(
+        `SELECT * FROM notifications
+         WHERE user_id = $1 AND is_read = false
+         ORDER BY created_at DESC`,
+        [userId]
+      )
     return result.rows
   },
 
@@ -105,12 +120,18 @@ const notificationModel = {
   },
 
   // Đếm chưa đọc của user (HR)
-  countUnreadByUser: async (userId) => {
-    const result = await pool.query(
-      `SELECT COUNT(*) as count FROM notifications
-       WHERE user_id = $1 AND is_read = false`,
-      [userId]
-    )
+  countUnreadByUser: async (userId, companyId) => {
+    const result = companyId
+      ? await pool.query(
+        `SELECT COUNT(*) as count FROM notifications
+         WHERE (user_id = $1 OR company_id = $2) AND is_read = false`,
+        [userId, companyId]
+      )
+      : await pool.query(
+        `SELECT COUNT(*) as count FROM notifications
+         WHERE user_id = $1 AND is_read = false`,
+        [userId]
+      )
     return parseInt(result.rows[0]?.count || 0)
   },
 
@@ -138,15 +159,23 @@ const notificationModel = {
     return result.rows
   },
 
-  // Đánh dấu tất cả đã đọc (user)
-  markAllAsReadByUser: async (userId) => {
-    const result = await pool.query(
-      `UPDATE notifications
-       SET is_read = true, read_at = CURRENT_TIMESTAMP
-       WHERE user_id = $1 AND is_read = false
-       RETURNING *`,
-      [userId]
-    )
+  // Đánh dấu tất cả đã đọc (user/HR)
+  markAllAsReadByUser: async (userId, companyId) => {
+    const result = companyId
+      ? await pool.query(
+        `UPDATE notifications
+         SET is_read = true, read_at = CURRENT_TIMESTAMP
+         WHERE (user_id = $1 OR company_id = $2) AND is_read = false
+         RETURNING *`,
+        [userId, companyId]
+      )
+      : await pool.query(
+        `UPDATE notifications
+         SET is_read = true, read_at = CURRENT_TIMESTAMP
+         WHERE user_id = $1 AND is_read = false
+         RETURNING *`,
+        [userId]
+      )
     return result.rows
   },
 
@@ -168,7 +197,6 @@ const notificationModel = {
     return true
   },
 
-  // Xóa tất cả thông báo của user
   deleteAllByUser: async (userId) => {
     await pool.query(
       'DELETE FROM notifications WHERE user_id = $1',

@@ -1,10 +1,16 @@
 import notificationService from '~/services/notification/notification.service'
+import candidateProfileModel from '~/models/candidate/candidate-profile.model'
+
+const resolveCandidateId = async (userId) => {
+  const profile = await candidateProfileModel.findByUserId(userId)
+  return profile ? profile.id : userId
+}
 
 const candidateNotificationController = {
   // Lấy danh sách thông báo
   getNotifications: async (req, res) => {
     try {
-      const candidateId = req.user.id
+      const candidateId = await resolveCandidateId(req.user.id)
       const { limit = 20, page = 1 } = req.query
 
       const result = await notificationService.getByCandidate(
@@ -28,7 +34,7 @@ const candidateNotificationController = {
   // Lấy thông báo chưa đọc
   getUnread: async (req, res) => {
     try {
-      const candidateId = req.user.id
+      const candidateId = await resolveCandidateId(req.user.id)
 
       const notifications = await notificationService.getUnread(candidateId, 'candidate')
       const count = await notificationService.countUnread(candidateId, 'candidate')
@@ -51,7 +57,7 @@ const candidateNotificationController = {
   // Đếm thông báo chưa đọc
   countUnread: async (req, res) => {
     try {
-      const candidateId = req.user.id
+      const candidateId = await resolveCandidateId(req.user.id)
 
       const count = await notificationService.countUnread(candidateId, 'candidate')
 
@@ -67,7 +73,6 @@ const candidateNotificationController = {
     }
   },
 
-  // Đánh dấu đã đọc
   markAsRead: async (req, res) => {
     try {
       const { id } = req.params
@@ -90,7 +95,7 @@ const candidateNotificationController = {
   // Đánh dấu tất cả đã đọc
   markAllAsRead: async (req, res) => {
     try {
-      const candidateId = req.user.id
+      const candidateId = await resolveCandidateId(req.user.id)
 
       const result = await notificationService.markAllAsRead(candidateId, 'candidate')
 
@@ -107,7 +112,6 @@ const candidateNotificationController = {
     }
   },
 
-  // Xóa thông báo
   delete: async (req, res) => {
     try {
       const { id } = req.params
@@ -129,7 +133,7 @@ const candidateNotificationController = {
   // Xóa tất cả thông báo
   deleteAll: async (req, res) => {
     try {
-      const candidateId = req.user.id
+      const candidateId = await resolveCandidateId(req.user.id)
 
       await notificationService.deleteAll(candidateId, 'candidate')
 

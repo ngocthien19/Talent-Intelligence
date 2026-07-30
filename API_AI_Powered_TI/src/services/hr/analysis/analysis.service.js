@@ -2,6 +2,7 @@ import analysisModel from '~/models/hr/analysis/analysis.model'
 import { generateStructuredContent } from '~/providers/gemini.provider'
 import { createQueue, addJob, getJobStatus } from '~/providers/queue.provider'
 import notificationService from '~/services/notification/notification.service'
+import applicationModel from '~/models/candidate/application.model'
 
 // Tạo queue
 const analysisQueue = createQueue('analysis')
@@ -103,6 +104,10 @@ Vui lòng phân tích và trả về kết quả dưới dạng JSON với cấu
     }
 
     const updatedCandidate = await analysisModel.updateApplicationScores(candidateId, scores)
+
+    await applicationModel.updateStatus(candidateId, 'analyzed')
+
+    await applicationModel.updateAnalysisResult(candidateId, result)
 
     // Gửi thông báo
     await notificationService.sendToCompany(candidate.company_id, {

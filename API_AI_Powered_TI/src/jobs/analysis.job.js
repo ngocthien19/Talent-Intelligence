@@ -1,6 +1,7 @@
 import analysisModel from '~/models/hr/analysis/analysis.model'
 import { generateStructuredContent } from '~/providers/gemini.provider'
 import notificationService from '~/services/notification/notification.service'
+import applicationModel from '~/models/candidate/application.model'
 
 export const analysisWorker = async (job) => {
   const { candidateId, companyId, userId } = job.data
@@ -102,6 +103,10 @@ Vui lòng phân tích và trả về kết quả dưới dạng JSON với cấu
     }
 
     await analysisModel.updateApplicationScores(candidateId, scores)
+
+    await applicationModel.updateStatus(candidateId, 'analyzed')
+
+    await applicationModel.updateAnalysisResult(candidateId, result)
 
     // Gửi thông báo cho HR
     if (userId) {
