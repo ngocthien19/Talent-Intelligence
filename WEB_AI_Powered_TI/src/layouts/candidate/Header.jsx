@@ -160,30 +160,39 @@ const Header = () => {
               </Tooltip>
             </TooltipProvider>
 
-            {/* Language switcher */}
-            <DropdownMenu>
-              <DropdownMenuTrigger className="cursor-pointer p-2 rounded-full hover:bg-brand-light dark:hover:bg-gray-800 transition-all duration-300 ease-in-out flex items-center gap-1.5 focus:outline-none group">
-                <FaGlobe size={20} className="text-brand-text dark:text-gray-300 group-hover:text-brand-primary transition-colors duration-200" />
-                <span className="text-sm font-semibold text-brand-text dark:text-gray-300 hidden lg:inline group-hover:text-brand-primary transition-colors duration-200">
-                  {language.toUpperCase()}
-                </span>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-40 animate-in slide-in-from-top-2 duration-200">
-                {languages.map((lang) => (
-                  <DropdownMenuItem
-                    key={lang.code}
-                    onClick={() => changeLanguage(lang.code)}
-                    className={`cursor-pointer transition-colors duration-200 ${language === lang.code ? 'bg-brand-light dark:bg-gray-700 text-brand-primary font-medium' : ''}`}
-                  >
-                    <span className="mr-2 text-lg">{lang.flag}</span>
-                    {lang.label}
-                    {language === lang.code && <span className="ml-auto text-brand-primary">✓</span>}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
+            {/* Language switcher - THÊM TOOLTIP */}
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger className="cursor-pointer p-2 rounded-full hover:bg-brand-light dark:hover:bg-gray-800 transition-all duration-300 ease-in-out flex items-center gap-1.5 focus:outline-none group">
+                      <FaGlobe size={20} className="text-brand-text dark:text-gray-300 group-hover:text-brand-primary transition-colors duration-200" />
+                      <span className="text-sm font-semibold text-brand-text dark:text-gray-300 hidden lg:inline group-hover:text-brand-primary transition-colors duration-200">
+                        {language.toUpperCase()}
+                      </span>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-40 animate-in slide-in-from-top-2 duration-200">
+                      {languages.map((lang) => (
+                        <DropdownMenuItem
+                          key={lang.code}
+                          onClick={() => changeLanguage(lang.code)}
+                          className={`cursor-pointer transition-colors duration-200 ${language === lang.code ? 'bg-brand-light dark:bg-gray-700 text-brand-primary font-medium' : ''}`}
+                        >
+                          <span className="mr-2 text-lg">{lang.flag}</span>
+                          {lang.label}
+                          {language === lang.code && <span className="ml-auto text-brand-primary">✓</span>}
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">
+                  <p>{t('header.selectLanguage') || 'Chọn ngôn ngữ'}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
 
-            {/* Notifications - Sử dụng CandidateNotificationDropdown */}
+            {/* Notifications - Sử dụng CandidateNotificationDropdown (đã có tooltip bên trong) */}
             {isAuthenticated && (
               <CandidateNotificationDropdown onUnreadCountChange={handleUnreadCountChange} />
             )}

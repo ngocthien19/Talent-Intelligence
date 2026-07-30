@@ -1,4 +1,3 @@
-// src/components/hr/notification/HRNotificationDropdown.jsx
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
@@ -21,6 +20,7 @@ import {
 } from 'react-icons/fa'
 import { useLanguage } from '~/hooks/useLanguage'
 import { notificationApi } from '~/api/hr/notification.api'
+import useNotificationSocket from '~/hooks/useNotificationSocket'
 import { toast } from 'react-toastify'
 import { formatDistanceToNow } from '~/utils/format'
 
@@ -101,6 +101,17 @@ const HRNotificationDropdown = ({ onUnreadCountChange }) => {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
+  // Real-time: nhận thông báo mới qua Socket.IO
+  useNotificationSocket((newNotification) => {
+    setNotifications(prev => [newNotification, ...prev])
+    setUnreadCount(prev => {
+      const next = prev + 1
+      if (onUnreadCountChange) onUnreadCountChange(next)
+      return next
+    })
+    toast.info(newNotification.title)
+  })
+
   const handleMarkAsRead = async (id) => {
     try {
       const response = await notificationApi.markAsRead(id)
@@ -129,6 +140,7 @@ const HRNotificationDropdown = ({ onUnreadCountChange }) => {
         if (onUnreadCountChange) {
           onUnreadCountChange(0)
         }
+        toast.success('Đã đánh dấu tất cả đã đọc')
       }
     } catch (error) {
       toast.error('Không thể đánh dấu tất cả đã đọc')

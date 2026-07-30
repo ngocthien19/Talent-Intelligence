@@ -1,5 +1,4 @@
-// src/utils/constant.js
-import i18n from '~/i18n' // hoặc từ hook useLanguage
+import i18n from '~/i18n'
 
 export const DEV_API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
 export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'

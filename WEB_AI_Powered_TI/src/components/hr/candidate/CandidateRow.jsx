@@ -139,7 +139,7 @@ const CandidateRow = ({
         {hasCV ? (
           <button
             onClick={(e) => handleViewCV(candidate.cv_url, e)}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-brand-primary hover:text-white border border-brand-primary hover:bg-brand-primary rounded-lg transition-all duration-200 cursor-pointer hover:scale-105 active:scale-95"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-brand-primary hover:!text-white border border-brand-primary hover:bg-brand-primary rounded-lg transition-all duration-200 cursor-pointer hover:scale-105 active:scale-95"
             title={t('applications.viewCV') || 'Xem CV'}
           >
             <FileIcon size={14} className="flex-shrink-0" />
