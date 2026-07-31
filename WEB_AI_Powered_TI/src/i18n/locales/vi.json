@@ -47,6 +47,7 @@
     "rights": "All rights reserved."
   },
   "home": {
+    "title": "Trang chủ",
     "heroBadge": "Hơn {{count}}+ việc làm đang chờ bạn",
     "heroTitle": "Tìm việc làm phù hợp",
     "heroSubtitle": "Nhanh chóng - Thông minh - Chính xác",
@@ -127,6 +128,7 @@
     }
   },
   "job": {
+    "detailTitle": "Chi tiết việc làm: {value}",
     "allExperience": "Tất cả kinh nghiệm",
     "allEmployment": "Tất cả loại hình",
     "fresher": "Mới tốt nghiệp",
@@ -408,6 +410,8 @@
     "clickNotificationToView": "Nhấn vào một thông báo bên trái để xem chi tiết"
   },
   "hr": {
+    "searchTitle": "Tìm kiếm ứng viên",
+    "profileTitle": "Hồ sơ HR",
     "percentOfTotal": "% tổng ứng viên",
     "selectNotification": "Chọn một thông báo để xem",
     "clickNotificationToView": "Nhấn vào một thông báo bên trái để xem chi tiết",
@@ -488,6 +492,7 @@
     "last30Days": "30 ngày qua",
     "custom": "Tùy chọn",
     "candidate": {
+      "detailTitle": "Chi tiết ứng viên: {value}",
       "cv": "CV",
       "viewCV": "Xem CV",
       "noCV": "Chưa có CV",
@@ -649,6 +654,7 @@
       "changePasswordDesc": "Cập nhật mật khẩu để bảo mật tài khoản của bạn"
     },
     "job": {
+      "detail": "Chi tiết công việc: {value}",
       "totalJobs": "Tổng công việc",
       "noResults": "Không tìm thấy công việc nào",
       "viewDetail": "Xem chi tiết",

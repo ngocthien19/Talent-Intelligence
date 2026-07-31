@@ -112,14 +112,12 @@ const JobDetailSidebar = ({ job, getExperienceLabel }) => {
             animate="visible"
             className="space-y-3"
           >
-            <motion.button
-              whileHover={{ scale: 1.02, y: -2 }}
-              whileTap={{ scale: 0.98 }}
+            <button
               onClick={() => setShowApplyModal(true)}
-              className="w-full px-6 py-3 bg-gradient-brand text-white rounded-xl font-medium transition-all duration-300 cursor-pointer hover:shadow-glow"
+              className="w-full px-6 py-3 bg-gradient-brand text-white rounded-xl font-medium transition-all duration-300 cursor-pointer hover:shadow-glow hover:scale-[1.02] active:scale-[0.98]"
             >
               {t('jobs.applyNow') || 'Ứng tuyển ngay'}
-            </motion.button>
+            </button>
           </motion.div>
         </div>
       </motion.div>

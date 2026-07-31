@@ -9,6 +9,7 @@ import CTASection from '~/components/candidate/home/CTASection'
 import { formatSalary, getDaysAgo } from '~/utils/format'
 import { getExperienceLabel } from '~/utils/constant'
 import { useScrollToTop } from '~/hooks/useScrollToTop'
+import usePageTitle from '~/hooks/usePageTitle'
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 40 },
@@ -21,6 +22,7 @@ const fadeInUp = {
 
 const Home = () => {
   useScrollToTop()
+  usePageTitle('home.title', 'Trang chủ')
   const { t } = useLanguage()
   const [featuredJobs, setFeaturedJobs] = useState([])
   const [jobCount, setJobCount] = useState(0)

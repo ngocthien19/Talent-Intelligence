@@ -11,6 +11,7 @@ import InterviewFilters from '~/components/hr/interviews/InterviewFilters'
 import InterviewTable from '~/components/hr/interviews/InterviewTable'
 import InterviewFormModal from '~/components/hr/interviews/InterviewFormModal'
 import InterviewDetailModal from '~/components/hr/interviews/InterviewDetailModal'
+import usePageTitle from '~/hooks/usePageTitle'
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -25,7 +26,7 @@ const containerVariants = {
 
 const Interviews = () => {
   const { t } = useLanguage()
-
+  usePageTitle('hr.interviews', 'Lịch phỏng vấn')
   // State
   const [isLoading, setIsLoading] = useState(true)
   const [interviews, setInterviews] = useState([])

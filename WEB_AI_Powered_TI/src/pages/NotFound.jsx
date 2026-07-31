@@ -10,8 +10,10 @@ import {
 } from 'react-icons/fa'
 import { useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
+import usePageTitle from '~/hooks/usePageTitle'
 
 const NotFound = () => {
+  usePageTitle('notFound.title', 'Không tìm thấy trang')
   const { t } = useLanguage()
   const canvasRef = useRef(null)
 

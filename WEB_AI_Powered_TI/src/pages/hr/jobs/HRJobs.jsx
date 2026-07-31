@@ -12,6 +12,7 @@ import JobTable from '~/components/hr/jobs/JobTable'
 import JobStats from '~/components/hr/jobs/JobStats'
 import JobEmptyState from '~/components/hr/jobs/JobEmptyState'
 import JobFormModal from '~/components/hr/jobs/JobFormModal'
+import usePageTitle from '~/hooks/usePageTitle'
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -38,6 +39,7 @@ const DEFAULT_FILTERS = {
 }
 
 const HRJobs = () => {
+  usePageTitle('hr.jobs', 'Việc làm')
   const { t } = useLanguage()
   const [searchParams, setSearchParams] = useSearchParams()
   const skipAutoFetch = useRef(false)

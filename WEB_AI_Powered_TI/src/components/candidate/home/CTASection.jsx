@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { useLanguage } from '~/hooks/useLanguage'
 import { motion } from 'framer-motion'
 import { FaRobot, FaRocket, FaSearch, FaComments, FaArrowRight } from 'react-icons/fa'
+import ctaBg from '~/assets/cta-bg.jpg'
 
 const CTASection = () => {
   const { t } = useLanguage()
@@ -22,6 +23,8 @@ const CTASection = () => {
           transition={{ duration: 0.6, delay: 0.2 }}
           className="relative cta-section rounded-[2rem] overflow-hidden p-8 md:p-16 text-center text-white shadow-2xl"
         >
+          {/* Gradient Overlay */}
+          <div className="absolute inset-0 z-0 bg-gradient-to-r from-brand-primary via-brand-primary/90 to-brand-accent"></div>
           {/* Background Image */}
           <motion.div
             initial={{ scale: 1.1 }}
@@ -29,11 +32,8 @@ const CTASection = () => {
             viewport={{ once: true }}
             transition={{ duration: 1.5, ease: 'easeOut' }}
             className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-40 mix-blend-overlay"
-            style={{ backgroundImage: 'url(\'https://images.unsplash.com/photo-1573164713988-8665fc963095?q=80&w=2069&auto=format&fit=crop\')' }}
+            style={{ backgroundImage: `url(${ctaBg})` }}
           />
-
-          {/* Gradient Overlay */}
-          <div className="absolute inset-0 z-0 bg-gradient-to-r from-brand-primary via-brand-primary/90 to-brand-accent"></div>
 
           <div className="relative z-10 flex flex-col items-center">
             <motion.div

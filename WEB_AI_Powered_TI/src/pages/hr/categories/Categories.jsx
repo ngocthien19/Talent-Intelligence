@@ -12,6 +12,7 @@ import CategoryFilters from '~/components/hr/category/CategoryFilters'
 import CategoryTable from '~/components/hr/category/CategoryTable'
 import CategoryEmptyState from '~/components/hr/category/CategoryEmptyState'
 import CategoryFormModal from '~/components/hr/category/CategoryFormModal'
+import usePageTitle from '~/hooks/usePageTitle'
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -34,6 +35,7 @@ const DEFAULT_FILTERS = {
 }
 
 const Categories = () => {
+  usePageTitle('hr.categories', 'Danh mục')
   const { t } = useLanguage()
   const [searchParams, setSearchParams] = useSearchParams()
   const skipAutoFetch = useRef(false)

@@ -2,12 +2,13 @@ import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { useLanguage } from '~/hooks/useLanguage'
+import { useScrollToTop } from '~/hooks/useScrollToTop'
 import { useAuth } from '~/hooks/useAuth'
 import { toast } from 'react-toastify'
 import AuthLayout from '~/layouts/auth/AuthLayout'
 
 const VerifyOtp = () => {
-  // Logic giữ nguyên như cũ[cite: 12]
+  useScrollToTop()
   const navigate = useNavigate()
   const location = useLocation()
   const { t } = useLanguage()

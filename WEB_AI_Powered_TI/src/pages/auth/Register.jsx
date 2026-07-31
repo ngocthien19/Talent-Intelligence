@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { useLanguage } from '~/hooks/useLanguage'
+import { useScrollToTop } from '~/hooks/useScrollToTop'
 import { useAuth } from '~/hooks/useAuth'
 import { toast } from 'react-toastify'
 import { FaEye, FaEyeSlash, FaUser, FaEnvelope, FaPhone, FaMapMarkerAlt, FaLock } from 'react-icons/fa'
@@ -21,6 +22,7 @@ const InputGroup = ({
   showPwd,
   setShowPwd
 }) => {
+  useScrollToTop()
   const [isFocused, setIsFocused] = useState(false)
 
   return (

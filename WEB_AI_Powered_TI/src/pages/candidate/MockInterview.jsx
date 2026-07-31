@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useLanguage } from '~/hooks/useLanguage'
 import { useAuth } from '~/hooks/useAuth'
+import usePageTitle from '~/hooks/usePageTitle'
+import { useScrollToTop } from '~/hooks/useScrollToTop'
 import { mockInterviewApi } from '~/api/candidate/mock-interview.api'
 import ConfirmModal from '~/components/common/ConfirmModal'
 import {
@@ -63,7 +65,9 @@ const fadeInUp = {
 }
 
 const MockInterviewChat = () => {
+  useScrollToTop()
   const { t } = useLanguage()
+  usePageTitle('mockInterview.title', 'Phỏng vấn thử với AI')
   const { user, isAuthenticated } = useAuth()
 
   const [sessions, setSessions] = useState([])

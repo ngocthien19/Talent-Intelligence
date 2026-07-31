@@ -13,6 +13,7 @@ import StatusDistribution from '~/components/hr/dashboard/StatusDistribution'
 import TopSkills from '~/components/hr/dashboard/TopSkills'
 import RecentCandidates from '~/components/hr/dashboard/RecentCandidates'
 import QuickActions from '~/components/hr/dashboard/QuickActions'
+import usePageTitle from '~/hooks/usePageTitle'
 
 // Animation variants
 const containerVariants = {
@@ -32,6 +33,8 @@ const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(true)
   const [dashboardData, setDashboardData] = useState(null)
   const [error, setError] = useState(null)
+
+  usePageTitle('hr.dashboard', 'Dashboard')
 
   // Đọc từ URL params
   const initialPeriod = searchParams.get('period') || '30days'

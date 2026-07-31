@@ -1,4 +1,3 @@
-// src/pages/hr/jobs/JobDetail.jsx
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
@@ -12,6 +11,7 @@ import JobDetailStats from '~/components/hr/jobs/detail/JobDetailStats'
 import JobDetailInfo from '~/components/hr/jobs/detail/JobDetailInfo'
 import JobDetailSkills from '~/components/hr/jobs/detail/JobDetailSkills'
 import JobDetailCandidates from '~/components/hr/jobs/detail/JobDetailCandidates'
+import usePageTitle from '~/hooks/usePageTitle'
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -46,6 +46,8 @@ const JobDetail = () => {
   const [candidates, setCandidates] = useState([])
   const [stats, setStats] = useState(null)
   const [error, setError] = useState(null)
+
+  usePageTitle('hr.job.detail', 'Chi tiết công việc', job?.title || '')
 
   useEffect(() => {
     fetchJobDetail()
