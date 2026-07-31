@@ -2,6 +2,8 @@ import { Server } from 'socket.io'
 import jwt from 'jsonwebtoken'
 import { env } from '~/config/environment'
 import { corsOptions } from '~/config/corsOptions'
+import candidateProfileModel from '~/models/candidate/candidate-profile.model'
+import { ROLES } from '~/utils/constants'
 
 let io = null
 const userSocketMap = {}
@@ -44,9 +46,20 @@ export const initSocket = (server) => {
     }
   })
 
-  io.on('connection', (socket) => {
+  io.on('connection', async (socket) => {
     const userId = socket.userId
     userSocketMap[userId] = socket.id
+
+    if (socket.userRole === ROLES.CANDIDATE) {
+      try {
+        const profile = await candidateProfileModel.findByUserId(userId)
+        if (profile) {
+          socket.join(`candidate:${profile.id}`)
+        }
+      } catch (error) {
+        console.error('Không thể tự join candidate room:', error.message)
+      }
+    }
 
     // User joins room
     socket.on('join', (userId) => {
@@ -55,7 +68,6 @@ export const initSocket = (server) => {
       }
     })
 
-    // Candidate joins their own room
     socket.on('join-candidate', (candidateId) => {
       if (candidateId) {
         socket.join(`candidate:${candidateId}`)
