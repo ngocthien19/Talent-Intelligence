@@ -2,6 +2,7 @@
   "header": {
     "home": "ホーム",
     "jobs": "求人",
+    "mockInterview": "模擬面接",
     "applications": "応募履歴",
     "searchPlaceholder": "求人を検索...",
     "search": "検索",
@@ -68,6 +69,8 @@
     "uploadCVComingSoon": "CVアップロード機能は開発中です！後でもう一度お試しください！"
   },
   "jobs": {
+    "minSalary": "最低",
+    "maxSalary": "最高",
     "title": "求人",
     "found": "見つかりました",
     "jobs": "件の求人",
@@ -132,7 +135,10 @@
     "internship": "インターン",
     "freelance": "フリーランス",
     "allLocations": "すべての場所",
-    "selectLocation": "場所を選択..."
+    "selectLocation": "場所を選択...",
+    "experience": "経験",
+    "level": "レベル",
+    "employmentType": "雇用形態"
   },
   "salary": {
     "all": "すべての給与帯",

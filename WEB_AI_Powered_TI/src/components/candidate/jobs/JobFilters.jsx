@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useLanguage } from '~/hooks/useLanguage'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -25,11 +25,9 @@ import {
   LOCATIONS,
   EXPERIENCE_LEVELS,
   EMPLOYMENT_TYPES,
-  SALARY_RANGES,
   getLocationLabel,
   getExperienceLabel,
-  getEmploymentLabel,
-  getSalaryLabel
+  getEmploymentLabel
 } from '~/utils/constant'
 
 const JobFilters = ({ filters, onFilterChange, onClearFilters, onClearFilter }) => {
@@ -38,26 +36,35 @@ const JobFilters = ({ filters, onFilterChange, onClearFilters, onClearFilter }) 
   const filterOptions = filters.options || {}
   const activeFilters = filters.active || {}
 
+  const [salaryMin, setSalaryMin] = useState(activeFilters.minSalary || '')
+  const [salaryMax, setSalaryMax] = useState(activeFilters.maxSalary || '')
+
+  useEffect(() => {
+    setSalaryMin(activeFilters.minSalary || '')
+  }, [activeFilters.minSalary])
+
+  useEffect(() => {
+    setSalaryMax(activeFilters.maxSalary || '')
+  }, [activeFilters.maxSalary])
+
   const getActiveFilterCount = () => {
     let count = 0
     if (activeFilters.category_id) count++
     if (activeFilters.location) count++
     if (activeFilters.experience_level) count++
     if (activeFilters.employment_type) count++
-    if (activeFilters.salary_range) count++
+    if (activeFilters.minSalary || activeFilters.maxSalary) count++
     return count
   }
 
   const activeCount = getActiveFilterCount()
 
-  // Lấy label cho từng filter
   const getCategoryLabel = (value) => {
     if (!value) return t('jobs.category') || 'Danh mục'
     const category = filterOptions.categories?.find(c => c.id === value)
     return category ? category.name : t('jobs.category') || 'Danh mục'
   }
 
-  // SỬA: Dùng getLocationLabel từ constant
   const getLocationLabelText = (value) => {
     return getLocationLabel(value, t)
   }
@@ -70,8 +77,41 @@ const JobFilters = ({ filters, onFilterChange, onClearFilters, onClearFilter }) 
     return getEmploymentLabel(value, t)
   }
 
-  const getSalaryLabelText = (value) => {
-    return getSalaryLabel(value, t)
+  const handleApplySalaryFilter = () => {
+    const min = salaryMin ? parseFloat(salaryMin) : ''
+    const max = salaryMax ? parseFloat(salaryMax) : ''
+
+    // Validate: min không được lớn hơn max
+    if (min && max && min > max) {
+      return
+    }
+
+    onFilterChange('minSalary', min)
+    onFilterChange('maxSalary', max)
+  }
+
+  const handleClearSalary = () => {
+    setSalaryMin('')
+    setSalaryMax('')
+    onFilterChange('minSalary', '')
+    onFilterChange('maxSalary', '')
+  }
+
+  const formatNumberInput = (value) => {
+    if (!value) return ''
+    const num = parseFloat(value.toString().replace(/[^0-9]/g, ''))
+    if (isNaN(num)) return ''
+    return num.toLocaleString('vi-VN')
+  }
+
+  const handleSalaryMinChange = (e) => {
+    const raw = e.target.value.replace(/[^0-9]/g, '')
+    setSalaryMin(raw)
+  }
+
+  const handleSalaryMaxChange = (e) => {
+    const raw = e.target.value.replace(/[^0-9]/g, '')
+    setSalaryMax(raw)
   }
 
   return (
@@ -144,10 +184,10 @@ const JobFilters = ({ filters, onFilterChange, onClearFilters, onClearFilter }) 
                 onRemove={() => onClearFilter('employment_type')}
               />
             )}
-            {activeFilters.salary_range && (
+            {(activeFilters.minSalary || activeFilters.maxSalary) && (
               <Badge
-                label={getSalaryLabelText(activeFilters.salary_range)}
-                onRemove={() => onClearFilter('salary_range')}
+                label={`Lương: ${activeFilters.minSalary || 0} - ${activeFilters.maxSalary || '∞'} VND`}
+                onRemove={handleClearSalary}
               />
             )}
           </motion.div>
@@ -196,7 +236,7 @@ const JobFilters = ({ filters, onFilterChange, onClearFilters, onClearFilter }) 
           </DropdownMenu>
         )}
 
-        {/* Location filter - SỬA: dùng LOCATIONS và getLocationLabelText */}
+        {/* Location filter */}
         <DropdownMenu>
           <DropdownMenuTrigger className="px-3 py-2 text-sm border border-brand-light dark:border-gray-700 rounded-lg hover:bg-brand-light dark:hover:bg-gray-700 transition-all duration-200 flex items-center gap-2 cursor-pointer">
             <FaMapMarkerAlt size={14} className="text-brand-text/60 dark:text-gray-400" />
@@ -283,34 +323,33 @@ const JobFilters = ({ filters, onFilterChange, onClearFilters, onClearFilter }) 
           </DropdownMenuContent>
         </DropdownMenu>
 
-        {/* Salary range filter */}
-        <DropdownMenu>
-          <DropdownMenuTrigger className="px-3 py-2 text-sm border border-brand-light dark:border-gray-700 rounded-lg hover:bg-brand-light dark:hover:bg-gray-700 transition-all duration-200 flex items-center gap-2 cursor-pointer">
-            <FaMoneyBillWave size={14} className="text-brand-text/60 dark:text-gray-400" />
-            <span className="text-brand-text dark:text-gray-300">
-              {getSalaryLabelText(activeFilters.salary_range)}
-            </span>
-            <FaChevronDown size={12} className="text-brand-text/40 dark:text-gray-500" />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="w-48">
-            <DropdownMenuGroup>
-              <DropdownMenuLabel>{t('jobs.salary') || 'Mức lương'}</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {SALARY_RANGES.map((range) => (
-                <DropdownMenuItem
-                  key={range.value}
-                  onClick={() => onFilterChange('salary_range', range.value)}
-                  className={`cursor-pointer transition-all duration-200 ${activeFilters.salary_range === range.value ? 'text-brand-primary font-medium' : ''}`}
-                >
-                  {getSalaryLabelText(range.value)}
-                  {activeFilters.salary_range === range.value && (
-                    <FaCheck className="ml-auto text-brand-primary" size={14} />
-                  )}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuGroup>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        {/* 👉 Salary range filter - 2 input thay vì dropdown */}
+        <div className="flex items-center gap-2 px-3 py-1 border border-brand-light dark:border-gray-700 rounded-lg hover:border-brand-primary/50 transition-all duration-200">
+          <FaMoneyBillWave size={14} className="text-brand-text/60 dark:text-gray-400 flex-shrink-0" />
+          <div className="flex items-center gap-1">
+            <input
+              type="text"
+              value={salaryMin ? formatNumberInput(salaryMin) : ''}
+              onChange={handleSalaryMinChange}
+              placeholder={t('jobs.minSalary') || 'Tối thiểu'}
+              className="w-20 sm:w-24 py-1.5 text-sm bg-transparent border-0 focus:outline-none focus:ring-0 text-brand-secondary dark:text-white placeholder:text-brand-text/40 dark:placeholder:text-gray-500"
+            />
+            <span className="text-brand-text/40 dark:text-gray-500">-</span>
+            <input
+              type="text"
+              value={salaryMax ? formatNumberInput(salaryMax) : ''}
+              onChange={handleSalaryMaxChange}
+              placeholder={t('jobs.maxSalary') || 'Tối đa'}
+              className="w-20 sm:w-24 py-1.5 text-sm bg-transparent border-0 focus:outline-none focus:ring-0 text-brand-secondary dark:text-white placeholder:text-brand-text/40 dark:placeholder:text-gray-500"
+            />
+            <button
+              onClick={handleApplySalaryFilter}
+              className="ml-1 px-2 py-1 text-xs font-medium text-white bg-brand-primary rounded hover:bg-brand-primary/90 transition-all duration-200 cursor-pointer"
+            >
+              {t('common.apply') || 'Áp dụng'}
+            </button>
+          </div>
+        </div>
       </div>
     </motion.div>
   )

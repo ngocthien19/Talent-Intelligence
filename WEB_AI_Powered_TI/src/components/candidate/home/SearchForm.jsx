@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useLanguage } from '~/hooks/useLanguage'
 import { categoryApi } from '~/api/candidate/category.api'
-import { LOCATIONS } from '~/utils/constant'
+import { LOCATIONS, getLocationLabel } from '~/utils/constant'
 import { FaSearch, FaMapMarkerAlt, FaTag, FaCheck } from 'react-icons/fa'
 
 const SearchForm = ({ onSearch, initialKeyword = '' }) => {
@@ -17,7 +17,7 @@ const SearchForm = ({ onSearch, initialKeyword = '' }) => {
     searchParams.get('location') || ''
   )
   const [searchCategory, setSearchCategory] = useState(
-    searchParams.get('category') || ''
+    searchParams.get('category_id') || ''
   )
   const [isLocationOpen, setIsLocationOpen] = useState(false)
   const [isCategoryOpen, setIsCategoryOpen] = useState(false)
@@ -29,7 +29,7 @@ const SearchForm = ({ onSearch, initialKeyword = '' }) => {
   useEffect(() => {
     const keyword = searchParams.get('keyword') || ''
     const location = searchParams.get('location') || ''
-    const category = searchParams.get('category') || ''
+    const category = searchParams.get('category_id') || ''
 
     if (keyword !== searchKeyword) setSearchKeyword(keyword)
     if (location !== searchLocation) setSearchLocation(location)
@@ -41,7 +41,7 @@ const SearchForm = ({ onSearch, initialKeyword = '' }) => {
       try {
         const response = await categoryApi.getAllCategories()
         if (response.success) {
-          setCategories([{ id: '', name: 'Tất cả danh mục' }, ...response.data])
+          setCategories([{ id: '', name: t('jobs.all') || 'Tất cả danh mục' }, ...response.data])
         }
       } catch (error) {
         console.error('Fetch categories error:', error)
@@ -50,7 +50,7 @@ const SearchForm = ({ onSearch, initialKeyword = '' }) => {
       }
     }
     fetchCategories()
-  }, [])
+  }, [t])
 
   // Đóng dropdown khi click outside
   useEffect(() => {
@@ -71,7 +71,7 @@ const SearchForm = ({ onSearch, initialKeyword = '' }) => {
     const params = new URLSearchParams()
     if (searchKeyword) params.append('keyword', searchKeyword)
     if (searchLocation) params.append('location', searchLocation)
-    if (searchCategory) params.append('category', searchCategory)
+    if (searchCategory) params.append('category_id', searchCategory)
 
     const queryString = params.toString()
     const url = `/jobs${queryString ? `?${queryString}` : ''}`
@@ -84,9 +84,14 @@ const SearchForm = ({ onSearch, initialKeyword = '' }) => {
 
   // Lấy tên category theo id
   const getCategoryName = (id) => {
-    if (!id) return 'Danh mục'
+    if (!id) return t('jobs.all') || 'Tất cả danh mục'
     const found = categories.find(c => c.id === id)
-    return found ? found.name : 'Danh mục'
+    return found ? found.name : t('jobs.all') || 'Tất cả danh mục'
+  }
+
+  const getLocationDisplay = (value) => {
+    if (!value) return t('home.locationPlaceholder') || 'Địa điểm...'
+    return getLocationLabel(value, t)
   }
 
   return (
@@ -136,7 +141,7 @@ const SearchForm = ({ onSearch, initialKeyword = '' }) => {
           <div className="absolute z-50 left-0 right-0 mt-1 max-h-60 overflow-y-auto bg-white dark:bg-gray-800 rounded-xl shadow-bold border border-brand-light dark:border-gray-700 py-1 animate-fade-in">
             {isCategoriesLoading ? (
               <div className="px-4 py-3 text-sm text-brand-text/60 dark:text-gray-400">
-                Đang tải...
+                {t('common.loading') || 'Đang tải...'}
               </div>
             ) : (
               categories.map((category) => (
@@ -178,7 +183,7 @@ const SearchForm = ({ onSearch, initialKeyword = '' }) => {
         >
           <FaMapMarkerAlt className="text-brand-text/40 dark:text-gray-400 flex-shrink-0" size={18} />
           <span className="flex-1 truncate">
-            {searchLocation || (t('home.locationPlaceholder') || 'Địa điểm...')}
+            {getLocationDisplay(searchLocation)}
           </span>
           <svg
             className={`w-4 h-4 text-brand-text/40 dark:text-gray-400 transition-transform duration-200 ${isLocationOpen ? 'rotate-180' : ''}`}
@@ -207,7 +212,7 @@ const SearchForm = ({ onSearch, initialKeyword = '' }) => {
                     : 'text-brand-secondary dark:text-gray-300'
                 }`}
               >
-                {location.label}
+                {getLocationDisplay(location.value)}
                 {searchLocation === location.value && (
                   <FaCheck className="float-right mt-0.5 text-brand-primary" size={14} />
                 )}

@@ -2,6 +2,7 @@
   "header": {
     "home": "Trang chủ",
     "jobs": "Việc làm",
+    "mockInterview": "Phỏng vấn với AI",
     "applications": "Hồ sơ đã ứng tuyển",
     "searchPlaceholder": "Tìm kiếm việc làm...",
     "search": "Tìm",
@@ -68,6 +69,8 @@
     "uploadCVComingSoon": "Tính năng Upload CV đang được phát triển! Hãy quay lại sau nhé!"
   },
   "jobs": {
+    "minSalary": "Tối thiểu",
+    "maxSalary": "Tối đa",
     "title": "Việc làm",
     "found": "Tìm thấy",
     "jobs": "việc làm",
@@ -132,7 +135,10 @@
     "internship": "Thực tập",
     "freelance": "Freelance",
     "allLocations": "Tất cả địa điểm",
-    "selectLocation": "Chọn địa điểm..."
+    "selectLocation": "Chọn địa điểm...",
+    "experience": "Kinh nghiệm",
+    "level": "Cấp bậc",
+    "employmentType": "Loại hình"
   },
   "salary": {
     "all": "Tất cả mức lương",

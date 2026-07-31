@@ -2,6 +2,7 @@
   "header": {
     "home": "Home",
     "jobs": "Jobs",
+    "mockInterview": "Mock Interview",
     "applications": "Applications",
     "searchPlaceholder": "Search jobs...",
     "search": "Search",
@@ -68,6 +69,8 @@
     "uploadCVComingSoon": "Upload CV feature is under development! Please check back later!"
   },
   "jobs": {
+    "minSalary": "Min",
+    "maxSalary": "Max",
     "title": "Jobs",
     "found": "Found",
     "jobs": "jobs",
@@ -132,7 +135,10 @@
     "internship": "Internship",
     "freelance": "Freelance",
     "allLocations": "All locations",
-    "selectLocation": "Select location..."
+    "selectLocation": "Select location...",
+    "experience": "Experience",
+    "level": "Level",
+    "employmentType": "Employment Type"
   },
   "salary": {
     "all": "All salary ranges",
