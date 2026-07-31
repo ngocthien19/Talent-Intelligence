@@ -46,15 +46,15 @@
     "socket.io": "^4.8.3",
     "socket.io-client": "^4.8.3",
     "unpdf": "^1.6.2",
-    "uuid": "^14.0.1"
-  },
-  "devDependencies": {
+    "uuid": "^14.0.1",
     "@babel/cli": "^7.29.7",
     "@babel/core": "^7.29.0",
     "@babel/node": "^7.29.0",
     "@babel/preset-env": "^7.29.5",
+    "babel-plugin-module-resolver": "^5.0.3"
+  },
+  "devDependencies": {
     "@eslint/js": "^9.39.4",
-    "babel-plugin-module-resolver": "^5.0.3",
     "eslint": "^9.39.4",
     "globals": "^15.15.0",
     "nodemon": "^3.1.14"
