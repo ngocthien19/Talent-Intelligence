@@ -67,7 +67,7 @@ const Applications = () => {
   const { isAuthenticated } = useAuth()
   const [applications, setApplications] = useState([])
   const [isLoading, setIsLoading] = useState(true)
-
+  // title
   usePageTitle('applications.title', 'Hồ sơ đã ứng tuyển')
 
   const getStatusConfig = useCallback(() => ({
