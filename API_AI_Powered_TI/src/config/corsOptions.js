@@ -3,7 +3,7 @@ export const corsOptions = {
     // Danh sách các origin được phép
     const allowedOrigins = [
       'http://localhost:5173',
-      'https://shoes-ecommerce-platform.vercel.app'
+      'https://talent-intel-platform.vercel.app'
       // Thêm các domain khác nếu cần
     ]
 
