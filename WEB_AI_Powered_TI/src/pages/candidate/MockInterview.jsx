@@ -203,7 +203,6 @@ const MockInterviewChat = () => {
         setTimeout(() => scrollToBottom(), 100)
 
         await loadSessions()
-        toast.success(t('mockInterview.startSuccess'))
 
         setTimeout(() => inputRef.current?.focus(), 100)
 
@@ -351,12 +350,23 @@ const MockInterviewChat = () => {
     e?.stopPropagation()
 
     const session = sessions.find(s => s.id === sessionId)
-    const sessionTitle = session?.title ||
-      `${t('mockInterview.session')} ${new Date(session?.created_at).toLocaleDateString('vi-VN')}`
+
+    let sessionTitle = session?.title
+    if (!sessionTitle) {
+      const date = new Date(session?.created_at)
+      sessionTitle = `${t('mockInterview.session')} ${date.toLocaleDateString('vi-VN', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      })}`
+    }
+
+    const messageTemplate = t('mockInterview.deleteConfirmMessage') || 'Bạn có chắc chắn muốn xóa phiên "{title}"? Hành động này không thể hoàn tác.'
+    const message = messageTemplate.replace(/\{title\}/g, sessionTitle)
 
     showConfirmModal(
       t('mockInterview.deleteConfirm'),
-      t('mockInterview.deleteConfirmMessage', { title: sessionTitle }),
+      message,
       t('mockInterview.deleteConfirmButton'),
       'danger',
       async () => {
