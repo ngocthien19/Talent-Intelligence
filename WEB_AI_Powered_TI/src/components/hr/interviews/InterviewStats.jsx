@@ -70,7 +70,7 @@ const InterviewStats = ({ stats }) => {
       bg: 'bg-red-50 dark:bg-red-950/20'
     },
     {
-      label: t('hr.interview.statuses.noShow') || 'Vắng mặt',
+      label: t('hr.interview.statuses.no_show') || 'Vắng mặt',
       value: stats.no_show || 0,
       icon: FaUserSlash,
       color: 'text-orange-500',
