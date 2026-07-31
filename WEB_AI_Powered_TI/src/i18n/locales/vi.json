@@ -1,4 +1,10 @@
 {
+  "notFound": {
+    "title": "Không tìm thấy trang",
+    "description": "Trang bạn đang tìm kiếm không tồn tại hoặc đã bị di chuyển.",
+    "backHome": "Về trang chủ",
+    "goBack": "Quay lại"
+  },
   "header": {
     "home": "Trang chủ",
     "jobs": "Việc làm",

@@ -51,6 +51,10 @@ const Candidates = () => {
   const skipAutoFetch = useRef(false)
   const pollTimerRef = useRef(null)
   const pollAttemptsRef = useRef(0)
+  // Luôn đọc được giá trị mới nhất ngay khi set, không bị stale closure
+  // như khi so sánh qua state `analysisModalCandidate` bên trong 1 setInterval
+  // đã được tạo ra từ trước đó.
+  const activeModalCandidateIdRef = useRef(null)
 
   // State
   const [isLoading, setIsLoading] = useState(true)
@@ -374,7 +378,7 @@ const Candidates = () => {
         fetchCandidates()
         fetchWidgets()
 
-        if (analysisModalCandidate?.id === candidateId) {
+        if (activeModalCandidateIdRef.current === candidateId) {
           await loadAnalysisData(candidateId)
           setAnalysisModalData(prev => ({ ...prev, isLoading: false }))
         }
@@ -386,7 +390,7 @@ const Candidates = () => {
       console.debug('Analysis result not ready yet')
       return false
     }
-  }, [fetchCandidates, fetchWidgets, analysisModalCandidate, loadAnalysisData])
+  }, [fetchCandidates, fetchWidgets, loadAnalysisData])
 
   // Hàm bắt đầu polling nền
   const startBackgroundPolling = useCallback((candidateId) => {
@@ -434,6 +438,7 @@ const Candidates = () => {
     if (!candidate) return
 
     const candidateId = candidate.id
+    activeModalCandidateIdRef.current = candidateId
     setAnalysisModalCandidate(candidate)
     setAnalysisModalData({ analysis: null, enrichment: null, reportSent: false, isLoading: true })
     setIsAnalysisModalOpen(true)
@@ -442,7 +447,6 @@ const Candidates = () => {
       const response = await analysisApi.analyzeCandidate(candidateId)
       if (response.success) {
         toast.info('Đang phân tích CV...')
-        // Bắt đầu polling nền - khi có kết quả sẽ tự động cập nhật modal
         startBackgroundPolling(candidateId)
       } else {
         toast.error(response.message || 'Phân tích thất bại')
@@ -454,18 +458,17 @@ const Candidates = () => {
     }
   }, [startBackgroundPolling])
 
-  // Nhấn nút "Xem phân tích"
   const handleViewAnalysis = useCallback(async (candidate) => {
+    activeModalCandidateIdRef.current = candidate.id
     setAnalysisModalCandidate(candidate)
     setIsAnalysisModalOpen(true)
     await loadAnalysisData(candidate.id)
   }, [loadAnalysisData])
 
-  // Đóng modal - KHÔNG clear polling
   const handleCloseAnalysisModal = () => {
+    activeModalCandidateIdRef.current = null
     setIsAnalysisModalOpen(false)
     setAnalysisModalCandidate(null)
-    // KHÔNG clear interval ở đây - polling vẫn chạy nền
   }
 
   const handleSendReport = async (candidateId) => {

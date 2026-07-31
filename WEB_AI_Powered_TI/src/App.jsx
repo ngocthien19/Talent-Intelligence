@@ -5,6 +5,11 @@ import { useDispatch, useSelector } from 'react-redux'
 import { getProfile, syncFavorites } from '~/redux/slices/auth.slice'
 import { getFavorites } from '~/redux/slices/favorite.slice'
 
+import ProtectedRoute from '~/components/common/ProtectedRoute'
+import PublicRoute from '~/components/common/PublicRoute'
+import RedirectHRRoute from '~/components/common/RedirectHRRoute'
+import NotFound from '~/pages/NotFound'
+
 import CandidateLayout from '~/layouts/candidate/CandidateLayout'
 import Home from '~/pages/candidate/Home'
 import Jobs from '~/pages/candidate/Jobs'
@@ -35,7 +40,7 @@ import ForgotPassword from '~/pages/auth/ForgotPassword'
 import ResetPassword from '~/pages/auth/ResetPassword'
 import ThemeInitializer from '~/components/common/ThemeInitializer'
 import LanguageInitializer from '~/components/common/LanguageInitializer'
-import { ROLES } from './utils/constant'
+import { ROLES } from '~/utils/constant'
 
 function App() {
   const dispatch = useDispatch()
@@ -63,42 +68,48 @@ function App() {
       <ThemeInitializer />
       <LanguageInitializer />
       <Routes>
-        {/* Auth routes */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/verify-otp" element={<VerifyOtp />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
-
-        {/* Candidate routes */}
-        <Route path="/" element={<CandidateLayout />}>
-          <Route index element={<Home />} />
-          <Route path="jobs" element={<Jobs />} />
-          <Route path="jobs/:id" element={<JobDetailPage />} />
-          <Route path="favorites" element={<Favorites />} />
-          <Route path="applications" element={<Applications />} />
-          <Route path="applications/:id" element={<ApplicationDetail />} />
-          <Route path="profile" element={<Profile />} />
-          <Route path="mock-interview" element={<MockInterview />} />
-          <Route path="notifications" element={<CandidateNotifications />} />
-
+        {/* AUTH ROUTES */}
+        <Route element={<PublicRoute />}>
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/verify-otp" element={<VerifyOtp />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
         </Route>
 
-        {/* HR routes */}
-        <Route path="/hr" element={<HRLayout />}>
-          <Route index element={<Dashboard />} />
-          <Route path="dashboard" element={<Dashboard />} />
-          <Route path="applications" element={<Candidates />} />
-          <Route path="applications/:id" element={<CandidateDetail />} />
-          <Route path="jobs" element={<HRJobs />} />
-          <Route path="jobs/:id" element={<JobDetail />} />
-          <Route path="interviews" element={<Interviews />} />
-          <Route path="search" element={<SemanticSearch />} />
-          <Route path="categories" element={<Categories />} />
-          <Route path="profile" element={<HRProfile />} />
-          <Route path="notifications" element={<HRNotifications />} />
-
+        {/* CANDIDATE ROUTES */}
+        <Route element={<RedirectHRRoute />}>
+          <Route path="/" element={<CandidateLayout />}>
+            <Route index element={<Home />} />
+            <Route path="jobs" element={<Jobs />} />
+            <Route path="jobs/:id" element={<JobDetailPage />} />
+            <Route path="favorites" element={<Favorites />} />
+            <Route path="applications" element={<Applications />} />
+            <Route path="applications/:id" element={<ApplicationDetail />} />
+            <Route path="profile" element={<Profile />} />
+            <Route path="mock-interview" element={<MockInterview />} />
+            <Route path="notifications" element={<CandidateNotifications />} />
+          </Route>
         </Route>
+
+        {/* HR ROUTES */}
+        <Route element={<ProtectedRoute allowedRoles={[ROLES.HR]} />}>
+          <Route path="/hr" element={<HRLayout />}>
+            <Route index element={<Dashboard />} />
+            <Route path="dashboard" element={<Dashboard />} />
+            <Route path="applications" element={<Candidates />} />
+            <Route path="applications/:id" element={<CandidateDetail />} />
+            <Route path="jobs" element={<HRJobs />} />
+            <Route path="jobs/:id" element={<JobDetail />} />
+            <Route path="interviews" element={<Interviews />} />
+            <Route path="search" element={<SemanticSearch />} />
+            <Route path="categories" element={<Categories />} />
+            <Route path="profile" element={<HRProfile />} />
+            <Route path="notifications" element={<HRNotifications />} />
+          </Route>
+        </Route>
+
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </>
   )

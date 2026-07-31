@@ -1,4 +1,10 @@
 {
+  "notFound": {
+    "title": "ページが見つかりません",
+    "description": "お探しのページは存在しないか、移動しました。",
+    "backHome": "ホームに戻る",
+    "goBack": "戻る"
+  },
   "header": {
     "home": "ホーム",
     "jobs": "求人",

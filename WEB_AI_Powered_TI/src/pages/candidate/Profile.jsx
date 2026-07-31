@@ -103,7 +103,7 @@ const Profile = () => {
               profile={profile}
               activeTab={activeTab}
               onTabChange={setActiveTab}
-              isGoogleLogin={isGoogleLogin} // Truyền prop
+              isGoogleLogin={isGoogleLogin}
             />
           </div>
 
@@ -115,7 +115,7 @@ const Profile = () => {
                 onUpdateSuccess={handleUpdateSuccess}
               />
             ) : (
-              <ChangePassword isGoogleLogin={isGoogleLogin} /> // Truyền prop
+              <ChangePassword isGoogleLogin={isGoogleLogin} />
             )}
           </div>
         </div>
