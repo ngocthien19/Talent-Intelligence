@@ -93,18 +93,24 @@ export const getEmploymentLabel = (value, t) => {
 }
 
 export const SALARY_RANGES = [
-  { value: '', labelKey: 'salary.all' },
-  { value: '0-5000000', labelKey: 'salary.below5M' },
-  { value: '5000000-10000000', labelKey: 'salary.5to10M' },
-  { value: '10000000-15000000', labelKey: 'salary.10to15M' },
-  { value: '15000000-20000000', labelKey: 'salary.15to20M' },
-  { value: '20000000-30000000', labelKey: 'salary.20to30M' },
-  { value: '30000000-50000000', labelKey: 'salary.30to50M' },
-  { value: '50000000-100000000', labelKey: 'salary.above50M' }
+  { value: '', labelKey: 'salary.all', min: null, max: null },
+  { value: '0-5000000', labelKey: 'salary.below5M', min: 0, max: 5000000 },
+  { value: '5000000-10000000', labelKey: 'salary.5to10M', min: 5000000, max: 10000000 },
+  { value: '10000000-15000000', labelKey: 'salary.10to15M', min: 10000000, max: 15000000 },
+  { value: '15000000-20000000', labelKey: 'salary.15to20M', min: 15000000, max: 20000000 },
+  { value: '20000000-30000000', labelKey: 'salary.20to30M', min: 20000000, max: 30000000 },
+  { value: '30000000-50000000', labelKey: 'salary.30to50M', min: 30000000, max: 50000000 },
+  { value: '50000000-100000000', labelKey: 'salary.above50M', min: 50000000, max: 100000000 }
 ]
 
 export const getSalaryLabel = (value, t) => {
   const option = SALARY_RANGES.find(opt => opt.value === value)
   if (!option) return value || t?.('salary.all') || 'Tất cả mức lương'
   return t?.(option.labelKey) || option.labelKey
+}
+
+export const getSalaryRangeValues = (value) => {
+  const option = SALARY_RANGES.find(opt => opt.value === value)
+  if (!option) return { min: null, max: null }
+  return { min: option.min, max: option.max }
 }

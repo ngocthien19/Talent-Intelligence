@@ -1,5 +1,6 @@
+// Jobs.jsx
 import { useState, useEffect, useCallback } from 'react'
-import { useSearchParams, useLocation } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
 import { useLanguage } from '~/hooks/useLanguage'
 import { jobApi } from '~/api/candidate/job.api'
 import { useDispatch } from 'react-redux'
@@ -7,7 +8,7 @@ import { getFavorites } from '~/redux/slices/favorite.slice'
 import { syncFavorites } from '~/redux/slices/auth.slice'
 import { useAuth } from '~/hooks/useAuth'
 import { motion } from 'framer-motion'
-import SearchForm from '~/components/candidate/home/SearchForm'
+import { FaSearch } from 'react-icons/fa'
 import JobFilters from '~/components/candidate/jobs/JobFilters'
 import JobList from '~/components/candidate/jobs/JobList'
 import JobDetail from '~/components/candidate/jobs/JobDetail'
@@ -28,12 +29,12 @@ const Jobs = () => {
   const dispatch = useDispatch()
   const { isAuthenticated } = useAuth()
   const [searchParams, setSearchParams] = useSearchParams()
-  const location = useLocation() // THÊM
 
   const [jobs, setJobs] = useState([])
   const [selectedJob, setSelectedJob] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
   const [filterOptions, setFilterOptions] = useState({})
+  const [searchInput, setSearchInput] = useState(searchParams.get('keyword') || '')
 
   // Lấy page từ URL params, mặc định là 1
   const currentPage = parseInt(searchParams.get('page') || '1', 10)
@@ -48,27 +49,59 @@ const Jobs = () => {
   const [activeFilters, setActiveFilters] = useState({
     keyword: searchParams.get('keyword') || '',
     location: searchParams.get('location') || '',
-    category_id: searchParams.get('category') || '',
+    category_id: searchParams.get('category_id') || '',
     experience_level: searchParams.get('experience_level') || '',
     employment_type: searchParams.get('employment_type') || '',
-    salary_range: searchParams.get('salary_range') || ''
+    minSalary: searchParams.get('minSalary') || '',
+    maxSalary: searchParams.get('maxSalary') || ''
   })
 
+  // 👉 Lắng nghe URL params thay đổi
   useEffect(() => {
-    if (!searchParams.has('page')) {
-      const newParams = new URLSearchParams(searchParams)
-      newParams.set('page', '1')
-      setSearchParams(newParams, { replace: true })
-    }
-  }, [])
+    const keyword = searchParams.get('keyword') || ''
+    const location = searchParams.get('location') || ''
+    const category_id = searchParams.get('category_id') || ''
+    const experience_level = searchParams.get('experience_level') || ''
+    const employment_type = searchParams.get('employment_type') || ''
+    const minSalary = searchParams.get('minSalary') || ''
+    const maxSalary = searchParams.get('maxSalary') || ''
 
-  // Đồng bộ currentPage khi URL thay đổi
-  useEffect(() => {
+    setActiveFilters(prev => ({
+      ...prev,
+      keyword,
+      location,
+      category_id,
+      experience_level,
+      employment_type,
+      minSalary,
+      maxSalary
+    }))
+    setSearchInput(keyword)
+
     const page = parseInt(searchParams.get('page') || '1', 10)
     setPagination(prev => ({
       ...prev,
       currentPage: page
     }))
+  }, [searchParams])
+
+  // 👉 Đồng bộ URL với activeFilters
+  useEffect(() => {
+    const params = new URLSearchParams()
+    Object.keys(activeFilters).forEach(key => {
+      if (activeFilters[key]) {
+        params.set(key, activeFilters[key])
+      }
+    })
+    if (pagination.currentPage > 1) {
+      params.set('page', pagination.currentPage)
+    }
+    setSearchParams(params, { replace: true })
+  }, [activeFilters, pagination.currentPage, setSearchParams])
+
+  // 👉 Fetch khi URL thay đổi
+  useEffect(() => {
+    fetchJobs()
   }, [searchParams])
 
   // Fetch filter options
@@ -108,7 +141,8 @@ const Jobs = () => {
         category_id: activeFilters.category_id || undefined,
         experience_level: activeFilters.experience_level || undefined,
         employment_type: activeFilters.employment_type || undefined,
-        salary_range: activeFilters.salary_range || undefined,
+        min_salary: activeFilters.minSalary || undefined,
+        max_salary: activeFilters.maxSalary || undefined,
         limit: pagination.limit,
         offset: (pagination.currentPage - 1) * pagination.limit
       }
@@ -136,15 +170,19 @@ const Jobs = () => {
       }
     } catch (error) {
       toast.error('Không thể tải danh sách công việc')
-      console.error('Fetch jobs error:', error)
     } finally {
       setIsLoading(false)
     }
   }, [activeFilters, pagination.currentPage, pagination.limit])
 
-  useEffect(() => {
-    fetchJobs()
-  }, [fetchJobs])
+  // 👉 Xử lý search
+  const handleSearch = (e) => {
+    e.preventDefault()
+    setActiveFilters(prev => ({
+      ...prev,
+      keyword: searchInput.trim()
+    }))
+  }
 
   // Handle filter change
   const handleFilterChange = (key, value) => {
@@ -152,14 +190,6 @@ const Jobs = () => {
       ...prev,
       [key]: value
     }))
-    const newParams = new URLSearchParams(searchParams)
-    if (value) {
-      newParams.set(key, value)
-    } else {
-      newParams.delete(key)
-    }
-    newParams.set('page', '1')
-    setSearchParams(newParams)
   }
 
   // Handle clear all filters
@@ -170,38 +200,26 @@ const Jobs = () => {
       category_id: '',
       experience_level: '',
       employment_type: '',
-      salary_range: ''
+      minSalary: '',
+      maxSalary: ''
     })
-    const newParams = new URLSearchParams()
-    newParams.set('page', '1')
-    setSearchParams(newParams)
+    setSearchInput('')
   }
 
   // Handle clear single filter
   const handleClearFilter = (key) => {
-    handleFilterChange(key, '')
-  }
-
-  // Handle search from SearchForm
-  const handleSearch = (keyword) => {
     setActiveFilters(prev => ({
       ...prev,
-      keyword: keyword || ''
+      [key]: ''
     }))
-    const newParams = new URLSearchParams()
-    if (keyword) {
-      newParams.set('keyword', keyword)
-    }
-    newParams.set('page', '1')
-    setSearchParams(newParams)
   }
 
   // Handle page change
   const handlePageChange = (page) => {
-    const newParams = new URLSearchParams(searchParams)
-    newParams.set('page', String(page))
-    setSearchParams(newParams)
-
+    setPagination(prev => ({
+      ...prev,
+      currentPage: page
+    }))
     setTimeout(() => {
       window.scrollTo({ top: 0, behavior: 'smooth' })
     }, 100)
@@ -223,9 +241,26 @@ const Jobs = () => {
       transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
       className="app-container animate-fade-in py-6"
     >
-      {/* Search Form */}
+      {/* Search Bar */}
       <div className="mb-6">
-        <SearchForm onSearch={handleSearch} initialKeyword={activeFilters.keyword} />
+        <form onSubmit={handleSearch} className="max-w-2xl mx-auto">
+          <div className="relative">
+            <input
+              type="text"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              placeholder={t('home.searchPlaceholder') || 'Tìm kiếm việc làm...'}
+              className="w-full pl-12 pr-20 py-3.5 bg-white dark:bg-gray-800 border border-brand-light dark:border-gray-700 rounded-xl shadow-custom focus:ring-2 focus:ring-brand-primary/50 focus:border-brand-primary outline-none transition-all duration-300 text-brand-secondary dark:text-white placeholder:text-brand-text/40 dark:placeholder:text-gray-500"
+            />
+            <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-text/40 dark:text-gray-400" size={18} />
+            <button
+              type="submit"
+              className="absolute right-2 top-1/2 -translate-y-1/2 px-4 py-1.5 bg-gradient-brand text-white rounded-lg font-medium hover:shadow-glow transition-all duration-300 cursor-pointer hover:scale-105 active:scale-95"
+            >
+              {t('home.search') || 'Tìm kiếm'}
+            </button>
+          </div>
+        </form>
       </div>
 
       {/* Filters */}

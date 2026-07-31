@@ -23,6 +23,26 @@ import {
   TooltipTrigger
 } from '~/components/ui/tooltip'
 
+const EXPERIENCE_LABEL_MAP = {
+  'Mới tốt nghiệp': 'Fresher',
+  'Junior (1-3 years)': 'Junior',
+  'Mid-Level (3-5 years)': 'Mid-Level',
+  'Senior (5-7 years)': 'Senior',
+  'Lead (7-10 years)': 'Lead',
+  'Manager (10+ years)': 'Manager',
+  'Fresher': 'Fresher',
+  'Junior': 'Junior',
+  'Mid-Level': 'Mid-Level',
+  'Senior': 'Senior',
+  'Lead': 'Lead',
+  'Manager': 'Manager'
+}
+
+const getDisplayExperience = (value) => {
+  if (!value) return null
+  return EXPERIENCE_LABEL_MAP[value] || value
+}
+
 const JobCard = ({
   job,
   isSelected = false,
@@ -94,6 +114,12 @@ const JobCard = ({
   const styles = variantClasses[variant] || variantClasses.default
   const Wrapper = onClick ? 'div' : Link
   const wrapperProps = onClick ? { onClick: () => onClick(job.id) } : { to: `/jobs/${job.id}` }
+
+  // 👉 Lấy experience label hiển thị
+  const displayExperience = getDisplayExperience(job.experience_level)
+  const experienceLabel = displayExperience
+    ? getExperienceLabel(displayExperience, t)
+    : null
 
   return (
     <Wrapper
@@ -183,7 +209,7 @@ const JobCard = ({
         {job.experience_level && (
           <span className="inline-flex items-center gap-1 text-xs bg-brand-light dark:bg-gray-700 text-brand-text dark:text-gray-300 px-2 py-1 rounded-full">
             <FaClock size={12} />
-            {getExperienceLabel(job.experience_level)}
+            {experienceLabel || displayExperience || job.experience_level}
           </span>
         )}
         {job.salary_range && (

@@ -44,7 +44,7 @@ const JobDetail = ({ job, onBack, formatSalary, getExperienceLabel }) => {
 
   const handleToggleFavorite = async () => {
     if (!isAuthenticated) {
-      toast.warning('Vui lòng đăng nhập để lưu việc làm')
+      toast.warning(t('common.loginRequired') || 'Vui lòng đăng nhập để lưu việc làm')
       return
     }
 
@@ -61,9 +61,12 @@ const JobDetail = ({ job, onBack, formatSalary, getExperienceLabel }) => {
         : favoriteIds.filter(id => id !== job.id)
       dispatch(syncFavorites(updatedFavorites))
 
-      toast.success(result.action === 'added' ? 'Đã thêm vào yêu thích' : 'Đã xóa khỏi yêu thích')
+      toast.success(result.action === 'added'
+        ? (t('common.addedToFavorites') || 'Đã thêm vào yêu thích')
+        : (t('common.removedFromFavorites') || 'Đã xóa khỏi yêu thích')
+      )
     } catch (error) {
-      toast.error(error || 'Thao tác thất bại')
+      toast.error(error || t('common.error') || 'Thao tác thất bại')
     } finally {
       setIsToggling(false)
     }
@@ -78,11 +81,30 @@ const JobDetail = ({ job, onBack, formatSalary, getExperienceLabel }) => {
         className="bg-white dark:bg-gray-800 rounded-xl shadow-custom dark:shadow-gray-800/30 p-8 text-center border-t-4 border-brand-primary dark:border-brand-primary"
       >
         <p className="text-brand-text dark:text-gray-400">
-          Chọn một công việc để xem chi tiết
+          {t('jobs.selectJob') || 'Chọn một công việc để xem chi tiết'}
         </p>
       </motion.div>
     )
   }
+
+  const metaItems = [
+    {
+      label: t('jobs.postedOn') || 'Ngày đăng',
+      value: new Date(job.created_at).toLocaleDateString('vi-VN')
+    },
+    {
+      label: t('job.employmentType') || 'Loại hình',
+      value: job.employment_type || 'Full-time'
+    },
+    {
+      label: t('job.experience') || 'Kinh nghiệm',
+      value: job.experience_level
+    },
+    {
+      label: t('job.level') || 'Cấp bậc',
+      value: job.experience_level
+    }
+  ]
 
   return (
     <>
@@ -100,7 +122,7 @@ const JobDetail = ({ job, onBack, formatSalary, getExperienceLabel }) => {
           className="md:hidden flex items-center gap-2 text-brand-text dark:text-gray-400 hover:text-brand-primary dark:hover:text-brand-primary transition-colors duration-200 mb-4 cursor-pointer"
         >
           <FaArrowLeft size={16} />
-          <span>Quay lại</span>
+          <span>{t('common.back') || 'Quay lại'}</span>
         </motion.button>
 
         {/* Header */}
@@ -215,7 +237,7 @@ const JobDetail = ({ job, onBack, formatSalary, getExperienceLabel }) => {
               className="inline-flex items-center gap-1 text-sm bg-brand-light/70 dark:bg-gray-700 text-brand-text dark:text-gray-300 px-3 py-1 rounded-full cursor-default"
             >
               <FaClock size={14} className="dark:text-gray-400" />
-              {getExperienceLabel(job.experience_level)}
+              {job.experience_level}
             </motion.span>
           )}
           {job.salary_range && (
@@ -254,12 +276,7 @@ const JobDetail = ({ job, onBack, formatSalary, getExperienceLabel }) => {
           transition={{ delay: 0.2, duration: 0.4 }}
           className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6 p-4 bg-brand-bg dark:bg-gray-800/50 rounded-xl"
         >
-          {[
-            { label: 'Ngày đăng', value: new Date(job.created_at).toLocaleDateString('vi-VN') },
-            { label: 'Loại hình', value: job.employment_type || 'Full-time' },
-            { label: 'Kinh nghiệm', value: getExperienceLabel(job.experience_level) },
-            { label: 'Cấp bậc', value: job.experience_level || 'Không yêu cầu' }
-          ].map((item, index) => (
+          {metaItems.map((item, index) => (
             <motion.div
               key={index}
               initial={{ opacity: 0, y: 10 }}
@@ -281,7 +298,7 @@ const JobDetail = ({ job, onBack, formatSalary, getExperienceLabel }) => {
           className="mb-6"
         >
           <h3 className="text-lg font-semibold text-brand-secondary dark:text-white mb-3">
-            Mô tả công việc
+            {t('jobs.jobDescription') || 'Mô tả công việc'}
           </h3>
           <p className="text-brand-text dark:text-gray-300 whitespace-pre-line">
             {job.description}
@@ -297,7 +314,7 @@ const JobDetail = ({ job, onBack, formatSalary, getExperienceLabel }) => {
             className="mb-6"
           >
             <h3 className="text-lg font-semibold text-brand-secondary dark:text-white mb-3">
-              Yêu cầu
+              {t('jobs.requirements') || 'Yêu cầu'}
             </h3>
             <p className="text-brand-text dark:text-gray-300 whitespace-pre-line">
               {job.requirements}
@@ -314,7 +331,7 @@ const JobDetail = ({ job, onBack, formatSalary, getExperienceLabel }) => {
             className="mb-6"
           >
             <h3 className="text-lg font-semibold text-brand-secondary dark:text-white mb-3">
-              Quyền lợi
+              {t('jobs.benefits') || 'Quyền lợi'}
             </h3>
             <p className="text-brand-text dark:text-gray-300 whitespace-pre-line">
               {job.benefits}
@@ -331,7 +348,7 @@ const JobDetail = ({ job, onBack, formatSalary, getExperienceLabel }) => {
             className="mb-6"
           >
             <h3 className="text-lg font-semibold text-brand-secondary dark:text-white mb-3">
-              Kỹ năng yêu cầu
+              {t('jobs.requiredSkills') || 'Kỹ năng yêu cầu'}
             </h3>
             <div className="flex flex-wrap gap-2">
               {job.required_skills.map((skill, index) => (
@@ -359,7 +376,7 @@ const JobDetail = ({ job, onBack, formatSalary, getExperienceLabel }) => {
             className="mb-6"
           >
             <h3 className="text-lg font-semibold text-brand-secondary dark:text-white mb-3">
-              Kỹ năng thêm
+              {t('jobs.niceToHaveSkills') || 'Kỹ năng thêm'}
             </h3>
             <div className="flex flex-wrap gap-2">
               {job.nice_to_have_skills.map((skill, index) => (

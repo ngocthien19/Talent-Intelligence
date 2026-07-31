@@ -90,7 +90,7 @@ const Header = () => {
   const navLinks = [
     { to: '/', label: t('header.home') || 'Trang chủ', icon: FaHome },
     { to: '/jobs', label: t('header.jobs') || 'Việc làm', icon: FaBriefcase },
-    { to: '/mock-interview', label: 'Phỏng vấn với AI', icon: FaRobot }
+    { to: '/mock-interview', label: t('header.mockInterview') || 'Phỏng vấn với AI', icon: FaRobot }
   ]
 
   const avatarUrl = getAvatarUrl(user?.avatar)
