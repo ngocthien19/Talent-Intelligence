@@ -10,8 +10,12 @@ import SocialLogin from '~/layouts/auth/SocialLogin'
 import { useDispatch } from 'react-redux'
 import { setUser } from '~/redux/slices/auth.slice'
 import { ROLES } from '~/utils/constant'
+import { useScrollToTop } from '~/hooks/useScrollToTop'
+import usePageTitle from '~/hooks/usePageTitle'
 
 const Login = () => {
+  usePageTitle('auth.login', 'Đăng nhập')
+  useScrollToTop()
   const navigate = useNavigate()
   const location = useLocation()
   const dispatch = useDispatch()

@@ -18,6 +18,7 @@ import {
   getExperienceLabel
 } from '~/utils/constant'
 import { useScrollToTop } from '~/hooks/useScrollToTop'
+import usePageTitle from '~/hooks/usePageTitle'
 
 const Favorites = () => {
   useScrollToTop()
@@ -27,7 +28,8 @@ const Favorites = () => {
   const { favorites, isLoading, total, totalPages } = useSelector((state) => state.favorite)
   const [currentPage, setCurrentPage] = useState(1)
   const [isClearing, setIsClearing] = useState(false)
-  const [showConfirmModal, setShowConfirmModal] = useState(false) // State cho modal
+  const [showConfirmModal, setShowConfirmModal] = useState(false)
+  usePageTitle('favorites.title', 'Công việc đã lưu')
 
   const fetchFavorites = useCallback(async (page = 1) => {
     if (!isAuthenticated) return

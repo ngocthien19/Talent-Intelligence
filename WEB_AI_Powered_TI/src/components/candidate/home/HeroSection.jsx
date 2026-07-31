@@ -3,6 +3,7 @@ import { FaLightbulb, FaBriefcase, FaSearch } from 'react-icons/fa'
 import { useLanguage } from '~/hooks/useLanguage'
 import { Link } from 'react-router-dom'
 import SearchForm from './SearchForm'
+import heroBg from '~/assets/hero-bg.jpg'
 
 const HeroSection = ({ jobCount }) => {
   const { t } = useLanguage()
@@ -41,7 +42,7 @@ const HeroSection = ({ jobCount }) => {
           animate={{ scale: 1 }}
           transition={{ duration: 1.5, ease: 'easeOut' }}
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: 'url(\'https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=2070&auto=format&fit=crop\')' }}
+          style={{ backgroundImage: `url(${heroBg})` }}
         />
         <div className="absolute inset-0 bg-[rgba(0,0,0,0.2)] dark:bg-[rgba(0,0,0,0.4)] backdrop-blur-[2px]" />
       </div>

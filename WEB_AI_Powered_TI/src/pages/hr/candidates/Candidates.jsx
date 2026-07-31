@@ -16,6 +16,7 @@ import CandidateTable from '~/components/hr/candidate/CandidateTable'
 import CandidateEmptyState from '~/components/hr/candidate/CandidateEmptyState'
 import ComparisonModal from '~/components/hr/comparison/ComparisonModal'
 import AnalysisResultModal from '~/components/hr/candidate/AnalysisResultModal'
+import usePageTitle from '~/hooks/usePageTitle'
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -45,15 +46,13 @@ const ANALYSIS_POLL_INTERVAL_MS = 1200
 const ANALYSIS_POLL_MAX_ATTEMPTS = 30
 
 const Candidates = () => {
+  usePageTitle('hr.applications', 'Đơn ứng tuyển')
   const { t } = useLanguage()
   const [searchParams, setSearchParams] = useSearchParams()
 
   const skipAutoFetch = useRef(false)
   const pollTimerRef = useRef(null)
   const pollAttemptsRef = useRef(0)
-  // Luôn đọc được giá trị mới nhất ngay khi set, không bị stale closure
-  // như khi so sánh qua state `analysisModalCandidate` bên trong 1 setInterval
-  // đã được tạo ra từ trước đó.
   const activeModalCandidateIdRef = useRef(null)
 
   // State

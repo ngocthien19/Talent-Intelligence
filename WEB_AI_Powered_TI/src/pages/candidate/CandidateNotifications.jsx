@@ -31,6 +31,8 @@ import {
   FaThumbsUp
 } from 'react-icons/fa'
 import { formatDistanceToNow } from '~/utils/format'
+import usePageTitle from '~/hooks/usePageTitle'
+import { useScrollToTop } from '~/hooks/useScrollToTop'
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -257,6 +259,7 @@ const ExtraDataField = ({ fieldKey, value }) => {
 }
 
 const CandidateNotifications = () => {
+  useScrollToTop()
   const { t } = useLanguage()
   const [searchParams, setSearchParams] = useSearchParams()
   const [notifications, setNotifications] = useState([])
@@ -266,7 +269,7 @@ const CandidateNotifications = () => {
   const [pagination, setPagination] = useState({ page: 1, limit: 20, total: 0 })
   const [isMobileDetailOpen, setIsMobileDetailOpen] = useState(false)
   const listRef = useRef(null)
-
+  usePageTitle('candidate.notifications', 'Thông báo')
   const notificationIdFromUrl = searchParams.get('id')
 
   const fetchNotifications = useCallback(async (page = 1, append = false) => {

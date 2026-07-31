@@ -17,6 +17,12 @@ import { useDispatch, useSelector } from 'react-redux'
 import { toggleFavorite } from '~/redux/slices/favorite.slice'
 import { syncFavorites } from '~/redux/slices/auth.slice'
 import { useState, useEffect } from 'react'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger
+} from '~/components/ui/tooltip'
 
 const JobDetailContent = ({
   job,
@@ -171,38 +177,53 @@ const JobDetailContent = ({
               </p>
             </div>
           </div>
-          <motion.button
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            onClick={handleToggleFavorite}
-            disabled={isToggling || isLoading}
-            className="p-2 rounded-lg hover:bg-brand-light dark:hover:bg-gray-700 transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-            aria-label={isFavorite ? 'Bỏ yêu thích' : 'Thêm yêu thích'}
-          >
-            <AnimatePresence mode="wait">
-              {isFavorite ? (
-                <motion.div
-                  key="favorite"
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  exit={{ scale: 0 }}
-                  transition={{ duration: 0.2 }}
+
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={handleToggleFavorite}
+                  disabled={isToggling || isLoading}
+                  className="p-2 rounded-lg hover:bg-brand-light dark:hover:bg-gray-700 transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  aria-label={isFavorite ? 'Bỏ yêu thích' : 'Thêm yêu thích'}
                 >
-                  <FaBookmark size={20} className="text-brand-primary transition-colors duration-200" />
-                </motion.div>
-              ) : (
-                <motion.div
-                  key="not-favorite"
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  exit={{ scale: 0 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <FaRegBookmark size={20} className="text-brand-text/60 dark:text-gray-500 transition-colors duration-200" />
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </motion.button>
+                  <AnimatePresence mode="wait">
+                    {isFavorite ? (
+                      <motion.div
+                        key="favorite"
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        exit={{ scale: 0 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <FaBookmark size={20} className="text-brand-primary transition-colors duration-200" />
+                      </motion.div>
+                    ) : (
+                      <motion.div
+                        key="not-favorite"
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        exit={{ scale: 0 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <FaRegBookmark size={20} className="text-brand-text/60 dark:text-gray-500 transition-colors duration-200" />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>
+                  {isFavorite
+                    ? (t('common.removeFromFavorites') || 'Xóa khỏi yêu thích')
+                    : (t('common.addToFavorites') || 'Thêm vào yêu thích')
+                  }
+                </p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
 
         {/* Tags */}

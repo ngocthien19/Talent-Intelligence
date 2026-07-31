@@ -47,6 +47,7 @@
     "rights": "All rights reserved."
   },
   "home": {
+    "title": "Home",
     "heroBadge": "{{count}}+ jobs waiting for you",
     "heroTitle": "Find the right job",
     "heroSubtitle": "Fast - Smart - Accurate",
@@ -127,6 +128,7 @@
     }
   },
   "job": {
+    "detailTitle": "Job Detail: {value}",
     "allExperience": "All experience",
     "allEmployment": "All types",
     "fresher": "Fresher",
@@ -408,6 +410,8 @@
     "clickNotificationToView": "Click a notification on the left to view details"
   },
   "hr": {
+    "searchTitle": "Search Candidates",
+    "profileTitle": "HR Profile",
     "percentOfTotal": "% of total",
     "selectNotification": "Select a notification to view",
     "clickNotificationToView": "Click a notification on the left to view details",
@@ -488,6 +492,7 @@
     "last30Days": "Last 30 days",
     "custom": "Custom",
     "candidate": {
+      "detailTitle": "Candidate Detail: {value}",
       "cv": "CV",
       "viewCV": "View CV",
       "noCV": "No CV",
@@ -649,6 +654,7 @@
       "changePasswordDesc": "Update your password to secure your account"
     },
     "job": {
+      "detail": "Job Detail: {value}",
       "totalJobs": "Total Jobs",
       "noResults": "No jobs found",
       "viewDetail": "View Details",

@@ -10,6 +10,7 @@ import HRProfileSidebar from '~/components/hr/profile/HRProfileSidebar'
 import HRProfileInfo from '~/components/hr/profile/HRProfileInfo'
 import HRChangePassword from '~/components/hr/profile/HRChangePassword'
 import HRCompanyInfo from '~/components/hr/profile/HRCompanyInfo'
+import usePageTitle from '~/hooks/usePageTitle'
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -27,6 +28,7 @@ const ACTIVE_TAB_KEY = 'hr_profile_active_tab'
 
 const HRProfile = () => {
   useScrollToTop()
+  usePageTitle('hr.profileTitle', 'Hồ sơ HR')
   const { t } = useLanguage()
   const { user, fetchProfile, isGoogleLogin } = useAuth()
   const [isLoading, setIsLoading] = useState(true)

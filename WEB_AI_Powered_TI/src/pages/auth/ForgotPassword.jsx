@@ -2,11 +2,13 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { useLanguage } from '~/hooks/useLanguage'
+import { useScrollToTop } from '~/hooks/useScrollToTop'
 import { useAuth } from '~/hooks/useAuth'
 import { toast } from 'react-toastify'
 import AuthLayout from '~/layouts/auth/AuthLayout'
 
 const ForgotPassword = () => {
+  useScrollToTop()
   const navigate = useNavigate()
   const { t } = useLanguage()
   const { forgotPassword, isLoading } = useAuth()

@@ -12,6 +12,7 @@ import SemanticSearchFilters from '~/components/hr/semanticSearch/SemanticSearch
 import SemanticSearchResults from '~/components/hr/semanticSearch/SemanticSearchResults'
 import SemanticSearchEmptyState from '~/components/hr/semanticSearch/SemanticSearchEmptyState'
 import SemanticSearchLoading from '~/components/hr/semanticSearch/SemanticSearchLoading'
+import usePageTitle from '~/hooks/usePageTitle'
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -36,6 +37,7 @@ const SemanticSearch = () => {
   const { t } = useLanguage()
   const [searchParams, setSearchParams] = useSearchParams()
   const skipAutoFetch = useRef(false)
+  usePageTitle('hr.searchTitle', 'Tìm kiếm ứng viên')
 
   // Lấy initial values từ URL params
   const initialQuery = searchParams.get('q') || ''

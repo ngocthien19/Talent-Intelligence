@@ -21,6 +21,7 @@ import {
   getExperienceLabel
 } from '~/utils/constant'
 import { syncFavorites } from '~/redux/slices/auth.slice'
+import usePageTitle from '~/hooks/usePageTitle'
 
 const JobDetailPage = () => {
   const { id } = useParams()
@@ -34,6 +35,7 @@ const JobDetailPage = () => {
   const [isLoading, setIsLoading] = useState(true)
   const [isRelatedLoading, setIsRelatedLoading] = useState(true)
 
+  usePageTitle('job.detailTitle', 'Chi tiết việc làm', job?.title || '')
   useEffect(() => {
     fetchJobDetail()
     window.scrollTo({ top: 0, behavior: 'smooth' })

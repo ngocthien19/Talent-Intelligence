@@ -1,4 +1,3 @@
-// Jobs.jsx
 import { useState, useEffect, useCallback } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useLanguage } from '~/hooks/useLanguage'
@@ -22,9 +21,11 @@ import {
   getExperienceLabel
 } from '~/utils/constant'
 import { useScrollToTop } from '~/hooks/useScrollToTop'
+import usePageTitle from '~/hooks/usePageTitle'
 
 const Jobs = () => {
   useScrollToTop()
+  usePageTitle('jobs.title', 'Việc làm')
   const { t } = useLanguage()
   const dispatch = useDispatch()
   const { isAuthenticated } = useAuth()
@@ -56,7 +57,6 @@ const Jobs = () => {
     maxSalary: searchParams.get('maxSalary') || ''
   })
 
-  // 👉 Lắng nghe URL params thay đổi
   useEffect(() => {
     const keyword = searchParams.get('keyword') || ''
     const location = searchParams.get('location') || ''

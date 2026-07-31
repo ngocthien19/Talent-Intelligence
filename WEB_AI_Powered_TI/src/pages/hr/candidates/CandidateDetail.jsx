@@ -12,6 +12,7 @@ import CandidateDetailInfo from '~/components/hr/candidate/detail/CandidateDetai
 import CandidateDetailJob from '~/components/hr/candidate/detail/CandidateDetailJob'
 import CandidateDetailSkills from '~/components/hr/candidate/detail/CandidateDetailSkills'
 import CandidateDetailTimeline from '~/components/hr/candidate/detail/CandidateDetailTimeline'
+import usePageTitle from '~/hooks/usePageTitle'
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -50,6 +51,8 @@ const CandidateDetail = () => {
   const [isLoading, setIsLoading] = useState(true)
   const [candidate, setCandidate] = useState(null)
   const [error, setError] = useState(null)
+
+  usePageTitle('hr.candidate.detailTitle', 'Chi tiết ứng viên', candidate?.name || '')
 
   useEffect(() => {
     fetchCandidateDetail()

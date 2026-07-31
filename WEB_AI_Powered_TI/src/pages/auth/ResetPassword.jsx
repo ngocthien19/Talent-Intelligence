@@ -2,12 +2,14 @@ import { useState, useEffect } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { useLanguage } from '~/hooks/useLanguage'
+import { useScrollToTop } from '~/hooks/useScrollToTop'
 import { useAuth } from '~/hooks/useAuth'
 import { toast } from 'react-toastify'
 import { FaEye, FaEyeSlash } from 'react-icons/fa'
 import AuthLayout from '~/layouts/auth/AuthLayout'
 
 const ResetPassword = () => {
+  useScrollToTop()
   const navigate = useNavigate()
   const location = useLocation()
   const { t } = useLanguage()

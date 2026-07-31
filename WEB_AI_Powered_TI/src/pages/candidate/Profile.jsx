@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useLanguage } from '~/hooks/useLanguage'
 import { useAuth } from '~/hooks/useAuth'
 import { useScrollToTop } from '~/hooks/useScrollToTop'
+import usePageTitle from '~/hooks/usePageTitle'
 import { motion } from 'framer-motion'
 import { toast } from 'react-toastify'
 import { profileApi } from '~/api/candidate/profile.api'
@@ -26,6 +27,7 @@ const containerVariants = {
 const Profile = () => {
   useScrollToTop()
   const { t } = useLanguage()
+  usePageTitle('profile.title', 'Hồ sơ của tôi')
   const { user, fetchProfile, isGoogleLogin } = useAuth()
   const [isLoading, setIsLoading] = useState(true)
   const [profile, setProfile] = useState(null)

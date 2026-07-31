@@ -47,6 +47,7 @@
     "rights": "All rights reserved."
   },
   "home": {
+    "title": "ホーム",
     "heroBadge": "{{count}}+件の求人があなたを待っています",
     "heroTitle": "適切な仕事を見つける",
     "heroSubtitle": "迅速 - スマート - 正確",
@@ -127,6 +128,7 @@
     }
   },
   "job": {
+    "detailTitle": "求人詳細: {value}",
     "allExperience": "すべての経験",
     "allEmployment": "すべての雇用形態",
     "fresher": "新卒",
@@ -401,6 +403,8 @@
     "clickNotificationToView": "左側の通知をクリックして詳細を表示"
   },
   "hr": {
+    "searchTitle": "候補者検索",
+    "profileTitle": "HRプロフィール",
     "percentOfTotal": "% 全体",
     "selectNotification": "通知を選択して表示",
     "clickNotificationToView": "左側の通知をクリックして詳細を表示",
@@ -481,6 +485,7 @@
     "last30Days": "過去30日間",
     "custom": "カスタム",
     "candidate": {
+      "detailTitle": "候補者詳細: {value}",
       "cv": "CV",
       "viewCV": "CVを見る",
       "noCV": "CVなし",
@@ -642,6 +647,7 @@
       "changePasswordDesc": "アカウントを保護するためにパスワードを更新してください"
     },
     "job": {
+      "detail": "求人詳細: {value}",
       "totalJobs": "総求人数",
       "noResults": "求人が見つかりません",
       "viewDetail": "詳細を見る",

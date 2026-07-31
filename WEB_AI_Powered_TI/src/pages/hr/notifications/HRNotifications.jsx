@@ -31,6 +31,7 @@ import {
   FaThumbsUp
 } from 'react-icons/fa'
 import { formatDistanceToNow } from '~/utils/format'
+import usePageTitle from '~/hooks/usePageTitle'
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -267,6 +268,7 @@ const HRNotifications = () => {
   const [isMobileDetailOpen, setIsMobileDetailOpen] = useState(false)
   const listRef = useRef(null)
 
+  usePageTitle('hr.notifications', 'Thông báo')
   // Lấy ID từ URL query param
   const notificationIdFromUrl = searchParams.get('id')
 

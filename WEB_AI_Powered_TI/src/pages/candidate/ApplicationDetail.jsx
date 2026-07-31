@@ -25,6 +25,7 @@ import {
 import { applicationApi } from '~/api/candidate/application.api'
 import { toast } from 'react-toastify'
 import { useScrollToTop } from '~/hooks/useScrollToTop'
+import usePageTitle from '~/hooks/usePageTitle'
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -91,6 +92,12 @@ const ApplicationDetail = () => {
   const { isAuthenticated } = useAuth()
   const [application, setApplication] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
+
+  const pageTitle = application?.job_title
+    ? `${t('applications.detailTitle') || 'Chi tiết hồ sơ'}: ${application.job_title}`
+    : t('applications.detailTitle') || 'Chi tiết hồ sơ'
+
+  usePageTitle('', pageTitle)
 
   const getStatusConfig = useCallback(() => ({
     pending: {
