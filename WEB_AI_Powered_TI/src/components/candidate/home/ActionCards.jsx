@@ -28,11 +28,11 @@ const ActionCards = () => {
       action: t('home.exploreNow') || 'Khám phá ngay →'
     },
     {
-      to: '/upload-cv',
+      to: '/jobs', // 👈 Sửa: Chuyển đến trang Jobs thay vì /upload-cv
       icon: FaUpload,
       title: t('home.uploadCV') || 'Upload CV',
       desc: t('home.uploadCVDesc') || 'Tải lên CV để AI phân tích và gợi ý công việc phù hợp nhất với bạn',
-      action: t('home.uploadNow') || 'Tải lên ngay →'
+      action: t('home.uploadNow') || 'Tìm việc ngay →'
     },
     {
       to: '/mock-interview',

@@ -140,7 +140,6 @@ const HRNotificationDropdown = ({ onUnreadCountChange }) => {
         if (onUnreadCountChange) {
           onUnreadCountChange(0)
         }
-        toast.success('Đã đánh dấu tất cả đã đọc')
       }
     } catch (error) {
       toast.error('Không thể đánh dấu tất cả đã đọc')

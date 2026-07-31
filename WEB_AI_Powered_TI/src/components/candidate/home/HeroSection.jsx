@@ -1,9 +1,8 @@
 import { motion } from 'framer-motion'
-import { FaLightbulb, FaBriefcase, FaUpload } from 'react-icons/fa'
+import { FaLightbulb, FaBriefcase, FaSearch } from 'react-icons/fa'
 import { useLanguage } from '~/hooks/useLanguage'
 import { Link } from 'react-router-dom'
 import SearchForm from './SearchForm'
-import { toast } from 'react-toastify'
 
 const HeroSection = ({ jobCount }) => {
   const { t } = useLanguage()
@@ -26,20 +25,6 @@ const HeroSection = ({ jobCount }) => {
       y: 0,
       transition: { duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }
     }
-  }
-
-  const handleUploadCV = (e) => {
-    e.preventDefault()
-    toast.info(
-      t('home.uploadCVComingSoon') || 'Tính năng Upload CV đang được phát triển! Hãy quay lại sau nhé!',
-      {
-        autoClose: 4000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true
-      }
-    )
   }
 
   return (
@@ -118,18 +103,18 @@ const HeroSection = ({ jobCount }) => {
             </Link>
           </motion.div>
           <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-            <button
-              onClick={handleUploadCV}
+            <Link
+              to="/jobs"
               className="group text-sm font-semibold text-gray-800 dark:text-gray-300 hover:text-brand-primary dark:hover:text-brand-primary transition-all duration-300 flex items-center gap-2 cursor-pointer bg-white/60 dark:bg-gray-800/40 px-4 py-2 rounded-full backdrop-blur-sm drop-shadow-sm"
             >
               <motion.span
                 whileHover={{ y: -3 }}
                 transition={{ duration: 0.3 }}
               >
-                <FaUpload size={14} />
+                <FaSearch size={14} />
               </motion.span>
-              {t('home.uploadCV') || 'Upload CV để được gợi ý'}
-            </button>
+              {t('home.findJobs') || 'Tìm việc ngay'}
+            </Link>
           </motion.div>
         </motion.div>
       </div>

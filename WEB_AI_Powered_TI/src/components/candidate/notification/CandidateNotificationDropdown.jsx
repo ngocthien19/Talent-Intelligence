@@ -18,13 +18,6 @@ import {
   FaArrowRight,
   FaEye,
   FaBriefcase,
-  FaMapMarkerAlt,
-  FaPercentage,
-  FaTags,
-  FaBuilding,
-  FaUser,
-  FaHashtag,
-  FaInfoCircle,
   FaThumbsUp
 } from 'react-icons/fa'
 import { useLanguage } from '~/hooks/useLanguage'
@@ -149,7 +142,6 @@ const CandidateNotificationDropdown = ({ onUnreadCountChange }) => {
         if (onUnreadCountChange) {
           onUnreadCountChange(0)
         }
-        toast.success('Đã đánh dấu tất cả đã đọc')
       }
     } catch (error) {
       toast.error('Không thể đánh dấu tất cả đã đọc')

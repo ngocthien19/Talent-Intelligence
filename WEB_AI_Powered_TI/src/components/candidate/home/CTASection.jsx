@@ -1,25 +1,10 @@
 import { Link } from 'react-router-dom'
 import { useLanguage } from '~/hooks/useLanguage'
 import { motion } from 'framer-motion'
-import { FaRobot, FaRocket, FaUpload, FaComments, FaArrowRight } from 'react-icons/fa'
-import { toast } from 'react-toastify'
+import { FaRobot, FaRocket, FaSearch, FaComments, FaArrowRight } from 'react-icons/fa'
 
 const CTASection = () => {
   const { t } = useLanguage()
-
-  const handleUploadCV = (e) => {
-    e.preventDefault()
-    toast.info(
-      t('home.uploadCVComingSoon') || 'Tính năng Upload CV đang được phát triển! Hãy quay lại sau nhé!',
-      {
-        autoClose: 4000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true
-      }
-    )
-  }
 
   return (
     <motion.section
@@ -89,7 +74,7 @@ const CTASection = () => {
               transition={{ duration: 0.5, delay: 0.5 }}
               className="text-lg md:text-xl text-white/90 mb-10 max-w-2xl mx-auto leading-relaxed drop-shadow-sm"
             >
-              {t('home.ctaDesc') || 'Upload CV của bạn, AI sẽ phân tích và gợi ý những công việc phù hợp nhất với kỹ năng và kinh nghiệm của bạn.'}
+              {t('home.ctaDesc') || 'Tìm kiếm và ứng tuyển vào những công việc phù hợp với kỹ năng và kinh nghiệm của bạn. AI sẽ giúp bạn phân tích và gợi ý.'}
             </motion.p>
 
             <motion.div
@@ -100,19 +85,19 @@ const CTASection = () => {
               className="flex flex-col sm:flex-row items-center justify-center gap-5 w-full sm:w-auto"
             >
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <button
-                  onClick={handleUploadCV}
+                <Link
+                  to="/jobs"
                   className="group flex items-center justify-center gap-2 px-8 py-4 bg-white text-brand-primary rounded-xl font-bold hover:shadow-glow hover:-translate-y-1 transition-all duration-300 cursor-pointer w-full sm:w-auto"
                 >
-                  <FaUpload size={18} />
-                  {t('home.uploadCV') || 'Upload CV ngay'}
+                  <FaSearch size={18} />
+                  {t('home.findJobs') || 'Tìm việc ngay'}
                   <motion.span
                     whileHover={{ x: 5 }}
                     transition={{ duration: 0.3 }}
                   >
                     <FaArrowRight size={16} />
                   </motion.span>
-                </button>
+                </Link>
               </motion.div>
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                 <Link
