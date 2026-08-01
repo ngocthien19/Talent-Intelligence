@@ -39,6 +39,7 @@ import resumeEnrichmentRoutes from '~/routes/hr/resume-enrichment/resume-enrichm
 import calendarRoutes from '~/routes/hr/calendar/calendar.routes'
 import rediscoveryRoutes from '~/routes/hr/rediscovery/rediscovery.routes'
 import categoryRoutes from '~/routes/hr/category/category.routes'
+import hrFavoriteRoutes from '~/routes/hr/favorite/favorite.routes'
 
 import candidateNotificationRoutes from '~/routes/candidate/notification/notification.routes'
 import hrNotificationRoutes from '~/routes/hr/notification/notification.routes'
@@ -88,6 +89,7 @@ app.use('/api/hr/resume', resumeEnrichmentRoutes)
 app.use('/api/hr/calendar', calendarRoutes)
 app.use('/api/hr/rediscovery', rediscoveryRoutes)
 app.use('/api/hr', categoryRoutes)
+app.use('/api/hr', hrFavoriteRoutes)
 
 app.use('/api/candidate', candidateNotificationRoutes)
 app.use('/api/hr', hrNotificationRoutes)
