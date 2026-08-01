@@ -8,6 +8,13 @@ const favoriteController = {
       const { jobId } = req.params
       const { limit = 20, page = 1, keyword } = req.query
 
+      if (!jobId) {
+        return res.status(400).json({
+          success: false,
+          message: 'Job ID is required'
+        })
+      }
+
       const offset = (page - 1) * limit
 
       const result = await favoriteService.getCandidatesByJobId(jobId, companyId, {
@@ -34,6 +41,13 @@ const favoriteController = {
     try {
       const companyId = req.user.companyId
       const { jobId } = req.params
+
+      if (!jobId) {
+        return res.status(400).json({
+          success: false,
+          message: 'Job ID is required'
+        })
+      }
 
       const count = await favoriteService.getFavoriteCount(jobId, companyId)
 

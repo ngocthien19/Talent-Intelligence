@@ -7,6 +7,10 @@ const favoriteService = {
       throw new Error('Job ID is required')
     }
 
+    if (!companyId) {
+      throw new Error('Company ID is required')
+    }
+
     // Kiểm tra job có thuộc company không
     const jobExists = await favoriteModel.checkJobBelongsToCompany(jobId, companyId)
     if (!jobExists) {
@@ -26,6 +30,10 @@ const favoriteService = {
   getFavoriteCount: async (jobId, companyId) => {
     if (!jobId) {
       throw new Error('Job ID is required')
+    }
+
+    if (!companyId) {
+      throw new Error('Company ID is required')
     }
 
     // Kiểm tra job có thuộc company không
