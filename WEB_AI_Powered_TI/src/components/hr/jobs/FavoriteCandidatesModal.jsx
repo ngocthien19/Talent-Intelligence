@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { FaTimes, FaSpinner, FaUser, FaEnvelope, FaPhone, FaCalendar, FaSearch } from 'react-icons/fa'
+import { FaTimes, FaSpinner, FaUser, FaEnvelope, FaPhone, FaCalendar } from 'react-icons/fa'
 import { useLanguage } from '~/hooks/useLanguage'
 import { jobApi } from '~/api/hr/job.api'
 import { formatDate } from '~/utils/format'
@@ -16,8 +16,6 @@ const FavoriteCandidatesModal = ({ isOpen, onClose, jobId, jobTitle }) => {
     page: 1,
     totalPages: 0
   })
-  const [keyword, setKeyword] = useState('')
-  const [searchInput, setSearchInput] = useState('')
 
   useEffect(() => {
     if (isOpen && jobId) {
@@ -30,8 +28,7 @@ const FavoriteCandidatesModal = ({ isOpen, onClose, jobId, jobTitle }) => {
     try {
       const response = await jobApi.getFavoriteCandidates(jobId, {
         page,
-        limit: 20,
-        keyword: keyword || undefined
+        limit: 20
       })
 
       if (response.success) {
@@ -50,20 +47,8 @@ const FavoriteCandidatesModal = ({ isOpen, onClose, jobId, jobTitle }) => {
     }
   }
 
-  const handleSearch = (e) => {
-    e.preventDefault()
-    setKeyword(searchInput)
-    fetchCandidates(1)
-  }
-
   const handlePageChange = (page) => {
     fetchCandidates(page)
-  }
-
-  const handleClearSearch = () => {
-    setSearchInput('')
-    setKeyword('')
-    fetchCandidates(1)
   }
 
   if (!isOpen) return null
@@ -106,37 +91,6 @@ const FavoriteCandidatesModal = ({ isOpen, onClose, jobId, jobTitle }) => {
           </button>
         </div>
 
-        {/* Search */}
-        <div className="px-6 py-3 border-b border-brand-light/50 dark:border-gray-700/50 flex-shrink-0">
-          <form onSubmit={handleSearch} className="flex gap-2">
-            <div className="relative flex-1">
-              <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-text/40 dark:text-gray-500" size={16} />
-              <input
-                type="text"
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
-                placeholder={t('hr.job.searchCandidates') || 'Tìm kiếm ứng viên theo tên hoặc email...'}
-                className="w-full pl-10 pr-4 py-2 bg-brand-bg dark:bg-gray-800 border border-brand-light dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary/50 focus:border-brand-primary transition-all duration-200 text-brand-secondary dark:text-white placeholder:text-brand-text/40 dark:placeholder:text-gray-500"
-              />
-            </div>
-            <button
-              type="submit"
-              className="px-4 py-2 bg-gradient-brand text-white rounded-lg font-medium hover:shadow-glow transition-all duration-200 cursor-pointer hover:scale-[1.02] active:scale-95"
-            >
-              {t('common.search') || 'Tìm kiếm'}
-            </button>
-            {keyword && (
-              <button
-                type="button"
-                onClick={handleClearSearch}
-                className="px-4 py-2 text-brand-text/60 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition-all duration-200 cursor-pointer"
-              >
-                {t('common.clear') || 'Xóa'}
-              </button>
-            )}
-          </form>
-        </div>
-
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6">
           {isLoading ? (
@@ -157,10 +111,7 @@ const FavoriteCandidatesModal = ({ isOpen, onClose, jobId, jobTitle }) => {
                 {t('hr.job.noFavoriteCandidates') || 'Chưa có ứng viên yêu thích'}
               </h4>
               <p className="text-sm text-brand-text/60 dark:text-gray-400">
-                {keyword
-                  ? t('hr.job.noSearchResults') || 'Không tìm thấy ứng viên phù hợp với từ khóa tìm kiếm'
-                  : t('hr.job.noFavoriteCandidatesDesc') || 'Chưa có ứng viên nào yêu thích công việc này'
-                }
+                {t('hr.job.noFavoriteCandidatesDesc') || 'Chưa có ứng viên nào yêu thích công việc này'}
               </p>
             </div>
           ) : (

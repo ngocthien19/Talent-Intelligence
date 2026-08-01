@@ -739,11 +739,16 @@
       "freelance": "Freelance",
       "validation": {
         "titleRequired": "Vui lòng nhập tiêu đề",
+        "titleMin": "Tiêu đề phải có ít nhất 3 ký tự",
+        "titleMax": "Tiêu đề không được vượt quá 255 ký tự",
         "descriptionRequired": "Vui lòng nhập mô tả",
-        "categoryRequired": "Vui lòng chọn danh mục",
+        "descriptionMin": "Mô tả phải có ít nhất 10 ký tự",
+        "requirementsRequired": "Vui lòng nhập yêu cầu công việc",
+        "requirementsMin": "Yêu cầu phải có ít nhất 10 ký tự",
+        "benefitsRequired": "Vui lòng nhập quyền lợi công việc",
+        "benefitsMin": "Quyền lợi phải có ít nhất 10 ký tự",
         "skillsRequired": "Vui lòng thêm ít nhất 1 kỹ năng bắt buộc",
-        "salaryMinMax": "Mức lương tối thiểu không được lớn hơn tối đa",
-        "salaryPositive": "Mức lương phải là số dương"
+        "categoryRequired": "Vui lòng chọn danh mục"
       },
       "backToList": "Quay lại danh sách",
       "totalApplications": "Tổng ứng viên",
