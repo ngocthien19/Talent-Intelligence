@@ -288,175 +288,187 @@ const CandidateNotificationDropdown = ({ onUnreadCountChange }) => {
 
       <AnimatePresence>
         {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: -10 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: -10 }}
-            transition={{ duration: 0.2 }}
-            className="absolute right-0 mt-2 w-[340px] sm:w-[400px] bg-white dark:bg-gray-900 rounded-xl shadow-2xl border border-brand-light/50 dark:border-gray-700 overflow-hidden z-50"
-          >
-            <div className="px-4 py-3.5 border-b border-brand-light/50 dark:border-gray-700 flex items-center justify-between bg-gray-50/50 dark:bg-gray-800/50">
-              <h4 className="font-semibold text-sm text-brand-secondary dark:text-white flex items-center gap-2">
-                <FaBell size={14} className="text-brand-primary" />
-                {t('candidate.notifications') || 'Thông báo'}
-                {unreadCount > 0 && (
-                  <span className="text-xs font-medium px-2.5 py-0.5 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-full">
-                    {unreadCount} {t('common.unread') || 'chưa đọc'}
-                  </span>
-                )}
-              </h4>
-              <div className="flex items-center gap-1">
-                {unreadCount > 0 && (
-                  <button
-                    onClick={handleMarkAllAsRead}
-                    className="text-xs font-medium text-brand-primary hover:text-brand-secondary dark:hover:text-white transition-colors px-2.5 py-1 rounded-lg hover:bg-brand-light/30 dark:hover:bg-gray-700 cursor-pointer"
-                  >
-                    {t('candidate.markAllRead') || 'Đọc tất cả'}
-                  </button>
-                )}
-                {notifications.length > 0 && (
-                  <button
-                    onClick={handleDeleteAll}
-                    className="text-xs font-medium text-red-500 hover:text-red-600 transition-colors px-2.5 py-1 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 cursor-pointer"
-                  >
-                    {t('common.deleteAll') || 'Xóa tất cả'}
-                  </button>
-                )}
-              </div>
-            </div>
+          <>
+            {/* Overlay chỉ hiện trên mobile để bấm ra ngoài đóng dropdown + tránh scroll nền */}
+            <div
+              className="fixed inset-0 z-40 sm:hidden"
+              onClick={() => setIsOpen(false)}
+              aria-hidden="true"
+            />
 
-            <div className="max-h-[400px] sm:max-h-[440px] overflow-y-auto">
-              {isLoading ? (
-                <div className="flex items-center justify-center py-12">
-                  <FaSpinner className="animate-spin text-brand-primary" size={28} />
-                </div>
-              ) : notifications.length > 0 ? (
-                <ul className="py-1">
-                  {notifications.map((notification) => (
-                    <li
-                      key={notification.id}
-                      className={`group px-4 py-4 hover:bg-brand-light/30 dark:hover:bg-gray-800 transition-all duration-200 border-b border-brand-light/20 dark:border-gray-700/50 last:border-0 ${
-                        !notification.is_read ? 'bg-brand-primary/5 dark:bg-brand-primary/10' : ''
-                      }`}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: -10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: -10 }}
+              transition={{ duration: 0.2 }}
+              className="fixed left-3 right-3 top-[68px] max-h-[80vh]
+                sm:absolute sm:left-auto sm:top-auto sm:right-[-8px] sm:mt-2
+                w-auto sm:w-[400px] sm:max-w-[400px] max-w-none
+                bg-white dark:bg-gray-900 rounded-xl shadow-2xl border border-brand-light/50 dark:border-gray-700 overflow-hidden z-50"
+            >
+              <div className="px-3 sm:px-4 py-3 border-b border-brand-light/50 dark:border-gray-700 flex items-center justify-between bg-gray-50/50 dark:bg-gray-800/50">
+                <h4 className="font-semibold text-sm text-brand-secondary dark:text-white flex items-center gap-2">
+                  <FaBell size={14} className="text-brand-primary" />
+                  {t('candidate.notifications') || 'Thông báo'}
+                  {unreadCount > 0 && (
+                    <span className="text-xs font-medium px-2 py-0.5 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-full">
+                      {unreadCount} {t('common.unread') || 'chưa đọc'}
+                    </span>
+                  )}
+                </h4>
+                <div className="flex items-center gap-1">
+                  {unreadCount > 0 && (
+                    <button
+                      onClick={handleMarkAllAsRead}
+                      className="text-xs font-medium text-brand-primary hover:text-brand-secondary dark:hover:text-white transition-colors px-2 py-1 rounded-lg hover:bg-brand-light/30 dark:hover:bg-gray-700 cursor-pointer"
                     >
-                      <div className="flex items-start gap-3">
-                        <div className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-300 ${getIconBgColor(notification.type)}`}>
-                          {getNotificationIcon(notification.type)}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between gap-2">
-                            <p className={`text-sm transition-colors duration-200 ${
-                              !notification.is_read
-                                ? 'font-semibold text-brand-secondary dark:text-white'
-                                : 'text-brand-text dark:text-gray-300 group-hover:text-brand-secondary dark:group-hover:text-white'
-                            }`}>
-                              {notification.title}
-                            </p>
-                            <div className="flex items-center gap-1 flex-shrink-0 opacity-60 group-hover:opacity-100 transition-opacity duration-200">
-                              {!notification.is_read && (
+                      {t('candidate.markAllRead') || 'Đọc tất cả'}
+                    </button>
+                  )}
+                  {notifications.length > 0 && (
+                    <button
+                      onClick={handleDeleteAll}
+                      className="text-xs font-medium text-red-500 hover:text-red-600 transition-colors px-2 py-1 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 cursor-pointer"
+                    >
+                      {t('common.deleteAll') || 'Xóa tất cả'}
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              <div className="max-h-[calc(80vh-120px)] sm:max-h-[440px] overflow-y-auto">
+                {isLoading ? (
+                  <div className="flex items-center justify-center py-12">
+                    <FaSpinner className="animate-spin text-brand-primary" size={28} />
+                  </div>
+                ) : notifications.length > 0 ? (
+                  <ul className="py-1">
+                    {notifications.map((notification) => (
+                      <li
+                        key={notification.id}
+                        className={`group px-3 sm:px-4 py-3 sm:py-4 hover:bg-brand-light/30 dark:hover:bg-gray-800 transition-all duration-200 border-b border-brand-light/20 dark:border-gray-700/50 last:border-0 ${
+                          !notification.is_read ? 'bg-brand-primary/5 dark:bg-brand-primary/10' : ''
+                        }`}
+                      >
+                        <div className="flex items-start gap-2 sm:gap-3">
+                          <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-300 ${getIconBgColor(notification.type)}`}>
+                            {getNotificationIcon(notification.type)}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between gap-1 sm:gap-2">
+                              <p className={`text-xs sm:text-sm transition-colors duration-200 ${
+                                !notification.is_read
+                                  ? 'font-semibold text-brand-secondary dark:text-white'
+                                  : 'text-brand-text dark:text-gray-300 group-hover:text-brand-secondary dark:group-hover:text-white'
+                              }`}>
+                                {notification.title}
+                              </p>
+                              <div className="flex items-center gap-0.5 sm:gap-1 flex-shrink-0 opacity-60 group-hover:opacity-100 transition-opacity duration-200">
+                                {!notification.is_read && (
+                                  <button
+                                    onClick={() => handleMarkAsRead(notification.id)}
+                                    className="p-1 sm:p-1.5 text-brand-primary hover:bg-brand-primary/10 rounded-lg transition-all duration-200 hover:scale-110 cursor-pointer"
+                                    title={t('candidate.markAsRead') || 'Đánh dấu đã đọc'}
+                                  >
+                                    <FaCheck size={10} sm:size={12} />
+                                  </button>
+                                )}
                                 <button
-                                  onClick={() => handleMarkAsRead(notification.id)}
-                                  className="p-1.5 text-brand-primary hover:bg-brand-primary/10 rounded-lg transition-all duration-200 hover:scale-110 cursor-pointer"
-                                  title={t('candidate.markAsRead') || 'Đánh dấu đã đọc'}
+                                  onClick={() => handleDelete(notification.id)}
+                                  className="p-1 sm:p-1.5 text-brand-text/40 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition-all duration-200 hover:scale-110 cursor-pointer"
+                                  title={t('common.delete') || 'Xóa'}
                                 >
-                                  <FaCheck size={12} />
+                                  <FaTrash size={10} sm:size={12} />
                                 </button>
-                              )}
+                              </div>
+                            </div>
+                            <p className="text-xs text-brand-text/60 dark:text-gray-400 mt-1 line-clamp-2 leading-relaxed group-hover:text-brand-text/80 dark:group-hover:text-gray-300 transition-colors duration-200">
+                              {notification.content}
+                            </p>
+                            <div className="flex items-center gap-2 sm:gap-3 mt-1 flex-wrap">
+                              <div className="flex items-center gap-1">
+                                <FaClock size={9} sm:size={10} className="text-brand-text/30 dark:text-gray-500" />
+                                <span className="text-[9px] sm:text-[10px] text-brand-text/40 dark:text-gray-500">
+                                  {formatTime(notification.created_at)}
+                                </span>
+                                {!notification.is_read && (
+                                  <span className="w-1.5 h-1.5 rounded-full bg-brand-primary animate-pulse" />
+                                )}
+                              </div>
                               <button
-                                onClick={() => handleDelete(notification.id)}
-                                className="p-1.5 text-brand-text/40 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition-all duration-200 hover:scale-110 cursor-pointer"
-                                title={t('common.delete') || 'Xóa'}
+                                onClick={() => handleViewDetail(notification.id)}
+                                className="flex items-center gap-1 text-[9px] sm:text-[10px] font-medium text-brand-primary hover:text-brand-secondary dark:hover:text-white transition-all duration-200 group/link hover:gap-1.5 cursor-pointer"
                               >
-                                <FaTrash size={12} />
+                                <span className="hover:underline underline-offset-2 transition-all duration-200">
+                                  {t('common.viewDetail') || 'Xem chi tiết'}
+                                </span>
+                                <FaArrowRight size={8} sm:size={10} className="transition-transform duration-200 group-hover/link:translate-x-0.5" />
                               </button>
                             </div>
                           </div>
-                          <p className="text-xs text-brand-text/60 dark:text-gray-400 mt-1 line-clamp-2 leading-relaxed group-hover:text-brand-text/80 dark:group-hover:text-gray-300 transition-colors duration-200">
-                            {notification.content}
-                          </p>
-                          <div className="flex items-center gap-3 mt-1.5 flex-wrap">
-                            <div className="flex items-center gap-1.5">
-                              <FaClock size={10} className="text-brand-text/30 dark:text-gray-500" />
-                              <span className="text-[10px] text-brand-text/40 dark:text-gray-500">
-                                {formatTime(notification.created_at)}
-                              </span>
-                              {!notification.is_read && (
-                                <span className="w-1.5 h-1.5 rounded-full bg-brand-primary animate-pulse" />
-                              )}
-                            </div>
-                            <button
-                              onClick={() => handleViewDetail(notification.id)}
-                              className="flex items-center gap-1 text-[10px] font-medium text-brand-primary hover:text-brand-secondary dark:hover:text-white transition-all duration-200 group/link hover:gap-1.5 cursor-pointer"
-                            >
-                              <span className="hover:underline underline-offset-2 transition-all duration-200">
-                                {t('common.viewDetail') || 'Xem chi tiết'}
-                              </span>
-                              <FaArrowRight size={10} className="transition-transform duration-200 group-hover/link:translate-x-0.5" />
-                            </button>
-                          </div>
                         </div>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <div className="px-4 py-12 text-center text-brand-text/70 dark:text-gray-400 text-sm flex flex-col items-center gap-3">
-                  <div className="w-14 h-14 rounded-full bg-brand-light/20 dark:bg-gray-700/30 flex items-center justify-center transition-all duration-300 hover:scale-110">
-                    <FaBell className="text-brand-light/60 dark:text-gray-600" size={28} />
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <div className="px-4 py-12 text-center text-brand-text/70 dark:text-gray-400 text-sm flex flex-col items-center gap-3">
+                    <div className="w-14 h-14 rounded-full bg-brand-light/20 dark:bg-gray-700/30 flex items-center justify-center transition-all duration-300 hover:scale-110">
+                      <FaBell className="text-brand-light/60 dark:text-gray-600" size={28} />
+                    </div>
+                    <div>
+                      <p className="font-medium text-brand-secondary dark:text-white">
+                        {t('candidate.noNotifications') || 'Chưa có thông báo mới'}
+                      </p>
+                      <p className="text-xs text-brand-text/50 dark:text-gray-500 mt-0.5">
+                        {t('candidate.checkLater') || 'Hãy quay lại sau để xem thông báo mới'}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-medium text-brand-secondary dark:text-white">
-                      {t('candidate.noNotifications') || 'Chưa có thông báo mới'}
-                    </p>
-                    <p className="text-xs text-brand-text/50 dark:text-gray-500 mt-0.5">
-                      {t('candidate.checkLater') || 'Hãy quay lại sau để xem thông báo mới'}
-                    </p>
-                  </div>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
 
-            <div className="px-4 py-3 border-t border-brand-light/50 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
-              {notifications.length > 0 && pagination.total > notifications.length ? (
-                <div className="flex flex-col gap-2">
-                  <button
-                    onClick={() => fetchNotifications(pagination.page + 1, true)}
-                    disabled={isLoadingMore}
-                    className="w-full text-center text-xs font-medium text-brand-primary hover:text-brand-secondary dark:hover:text-white transition-all duration-200 py-1.5 flex items-center justify-center gap-2 rounded-lg hover:bg-brand-light/30 dark:hover:bg-gray-700/50 group cursor-pointer"
-                  >
-                    {isLoadingMore ? (
-                      <>
-                        <FaSpinner className="animate-spin" size={14} />
-                        {t('common.loading') || 'Đang tải...'}
-                      </>
-                    ) : (
-                      <>
-                        {t('common.viewMore') || 'Xem thêm'}
-                        <span className="text-brand-text/40 dark:text-gray-500 group-hover:text-brand-primary dark:group-hover:text-white transition-colors duration-200">
-                          ({pagination.total - notifications.length} {t('common.unread') || 'chưa đọc'})
-                        </span>
-                      </>
-                    )}
-                  </button>
+              <div className="px-3 sm:px-4 py-2.5 sm:py-3 border-t border-brand-light/50 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
+                {notifications.length > 0 && pagination.total > notifications.length ? (
+                  <div className="flex flex-col gap-1.5 sm:gap-2">
+                    <button
+                      onClick={() => fetchNotifications(pagination.page + 1, true)}
+                      disabled={isLoadingMore}
+                      className="w-full text-center text-xs font-medium text-brand-primary hover:text-brand-secondary dark:hover:text-white transition-all duration-200 py-1.5 flex items-center justify-center gap-2 rounded-lg hover:bg-brand-light/30 dark:hover:bg-gray-700/50 group cursor-pointer"
+                    >
+                      {isLoadingMore ? (
+                        <>
+                          <FaSpinner className="animate-spin" size={12} sm:size={14} />
+                          {t('common.loading') || 'Đang tải...'}
+                        </>
+                      ) : (
+                        <>
+                          {t('common.viewMore') || 'Xem thêm'}
+                          <span className="text-brand-text/40 dark:text-gray-500 group-hover:text-brand-primary dark:group-hover:text-white transition-colors duration-200">
+                            ({pagination.total - notifications.length} {t('common.unread') || 'chưa đọc'})
+                          </span>
+                        </>
+                      )}
+                    </button>
+                    <button
+                      onClick={handleViewAll}
+                      className="w-full text-center text-xs font-medium text-brand-text/60 dark:text-gray-400 hover:text-brand-primary dark:hover:text-white transition-all duration-200 py-1.5 flex items-center justify-center gap-1.5 rounded-lg hover:bg-brand-light/30 dark:hover:bg-gray-700/50 group cursor-pointer"
+                    >
+                      <FaEye size={11} sm:size={12} className="group-hover:scale-110 transition-transform duration-200" />
+                      {t('candidate.viewAllNotifications') || 'Xem tất cả thông báo'}
+                    </button>
+                  </div>
+                ) : (
                   <button
                     onClick={handleViewAll}
                     className="w-full text-center text-xs font-medium text-brand-text/60 dark:text-gray-400 hover:text-brand-primary dark:hover:text-white transition-all duration-200 py-1.5 flex items-center justify-center gap-1.5 rounded-lg hover:bg-brand-light/30 dark:hover:bg-gray-700/50 group cursor-pointer"
                   >
-                    <FaEye size={12} className="group-hover:scale-110 transition-transform duration-200" />
+                    <FaEye size={11} sm:size={12} className="group-hover:scale-110 transition-transform duration-200" />
                     {t('candidate.viewAllNotifications') || 'Xem tất cả thông báo'}
                   </button>
-                </div>
-              ) : (
-                <button
-                  onClick={handleViewAll}
-                  className="w-full text-center text-xs font-medium text-brand-text/60 dark:text-gray-400 hover:text-brand-primary dark:hover:text-white transition-all duration-200 py-1.5 flex items-center justify-center gap-1.5 rounded-lg hover:bg-brand-light/30 dark:hover:bg-gray-700/50 group cursor-pointer"
-                >
-                  <FaEye size={12} className="group-hover:scale-110 transition-transform duration-200" />
-                  {t('candidate.viewAllNotifications') || 'Xem tất cả thông báo'}
-                </button>
-              )}
-            </div>
-          </motion.div>
+                )}
+              </div>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
     </div>

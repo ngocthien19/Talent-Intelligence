@@ -91,21 +91,36 @@ const VerifyOtp = () => {
     >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
         <div className="flex justify-center gap-2 sm:gap-4">
-          {[0, 1, 2, 3, 4, 5].map((index) => (
-            <input
-              key={index}
-              ref={el => inputRefs.current[index] = el}
-              type="text"
-              inputMode="numeric"
-              maxLength={1}
-              className={`w-12 h-14 sm:w-14 sm:h-16 text-center text-3xl font-bold rounded-xl border ${errors[`otp${index + 1}`] ? 'border-red-500 focus:ring-red-500/20' : 'border-brand-light dark:border-gray-700'} bg-gray-50/50 dark:bg-gray-900/50 focus:bg-white dark:focus:bg-gray-800 focus:outline-none focus:ring-4 focus:ring-brand-primary/20 focus:border-brand-primary transition-all duration-300 dark:text-white shadow-sm`}
-              onChange={(e) => handleChange(index, e.target.value)}
-              onKeyDown={(e) => handleKeyDown(index, e)}
-              onPaste={index === 0 ? handlePaste : undefined}
-              autoFocus={index === 0}
-              {...register(`otp${index + 1}`, { required: true, pattern: /^\d$/ })}
-            />
-          ))}
+          {[0, 1, 2, 3, 4, 5].map((index) => {
+            // Tách riêng onChange/ref của react-hook-form ra để không bị đè mất
+            // logic tự nhảy ô (handleChange) và inputRefs dùng cho Backspace/Paste.
+            const { onChange: rhfOnChange, ref: rhfRef, ...rhfRest } = register(`otp${index + 1}`, {
+              required: true,
+              pattern: /^\d$/
+            })
+
+            return (
+              <input
+                key={index}
+                type="text"
+                inputMode="numeric"
+                maxLength={1}
+                className={`w-12 h-14 sm:w-14 sm:h-16 text-center text-3xl font-bold rounded-xl border ${errors[`otp${index + 1}`] ? 'border-red-500 focus:ring-red-500/20' : 'border-brand-light dark:border-gray-700'} bg-gray-50/50 dark:bg-gray-900/50 focus:bg-white dark:focus:bg-gray-800 focus:outline-none focus:ring-4 focus:ring-brand-primary/20 focus:border-brand-primary transition-all duration-300 dark:text-white shadow-sm`}
+                onChange={(e) => {
+                  rhfOnChange(e)
+                  handleChange(index, e.target.value)
+                }}
+                onKeyDown={(e) => handleKeyDown(index, e)}
+                onPaste={index === 0 ? handlePaste : undefined}
+                autoFocus={index === 0}
+                ref={(el) => {
+                  rhfRef(el)
+                  inputRefs.current[index] = el
+                }}
+                {...rhfRest}
+              />
+            )
+          })}
         </div>
 
         <div className="text-center bg-brand-light/30 dark:bg-gray-800/50 py-3 rounded-lg border border-brand-light/50 dark:border-gray-700">
