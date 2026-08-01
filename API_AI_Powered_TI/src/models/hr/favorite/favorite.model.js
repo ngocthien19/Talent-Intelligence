@@ -13,9 +13,9 @@ const favoriteModel = {
     paramIndex++
 
     // Tìm kiếm theo từ khóa (tên ứng viên hoặc email)
-    if (keyword) {
+    if (keyword && keyword.trim()) {
       conditions.push(`(cp.name ILIKE $${paramIndex} OR cp.email ILIKE $${paramIndex})`)
-      params.push(`%${keyword}%`)
+      params.push(`%${keyword.trim()}%`)
       paramIndex++
     }
 

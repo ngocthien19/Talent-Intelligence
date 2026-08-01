@@ -11,11 +11,21 @@ import {
 
 const router = express.Router()
 
-// Tất cả routes đều yêu cầu xác thực và quyền HR
 router.use(authGuard.isAuthorized)
 router.use(authGuard.authorize(ROLES.HR))
 
-// Lấy danh sách ứng viên yêu thích công việc
+router.get(
+  '/favorites/top-jobs',
+  validate(getTopFavoriteValidation, 'query'),
+  favoriteController.getTopFavoriteJobs
+)
+
+router.get(
+  '/favorites/top-candidates',
+  validate(getTopFavoriteValidation, 'query'),
+  favoriteController.getTopFavoriteCandidates
+)
+
 router.get(
   '/jobs/:jobId/favorites/candidates',
   validate(jobIdParamValidation, 'params'),
@@ -23,25 +33,10 @@ router.get(
   favoriteController.getCandidatesByJobId
 )
 
-// Lấy số lượng ứng viên yêu thích công việc
 router.get(
   '/jobs/:jobId/favorites/count',
   validate(jobIdParamValidation, 'params'),
   favoriteController.getFavoriteCount
-)
-
-// Lấy danh sách công việc được yêu thích nhiều nhất
-router.get(
-  '/favorites/top-jobs',
-  validate(getTopFavoriteValidation, 'query'),
-  favoriteController.getTopFavoriteJobs
-)
-
-// Lấy danh sách ứng viên yêu thích nhiều công việc nhất
-router.get(
-  '/favorites/top-candidates',
-  validate(getTopFavoriteValidation, 'query'),
-  favoriteController.getTopFavoriteCandidates
 )
 
 export default router
