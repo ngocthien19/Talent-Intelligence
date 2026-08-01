@@ -3,9 +3,14 @@ import { motion } from 'framer-motion'
 import { useLanguage } from '~/hooks/useLanguage'
 import { formatSalary } from '~/utils/format'
 import ApplyJobModal from '~/components/candidate/ApplyJobModal'
+import { useAuth } from '~/hooks/useAuth'
+import { toast } from 'react-toastify'
+import { useNavigate } from 'react-router-dom'
 
 const JobDetailSidebar = ({ job, getExperienceLabel }) => {
   const { t } = useLanguage()
+  const { isAuthenticated } = useAuth() // Thêm
+  const navigate = useNavigate() // Thêm
   const [showApplyModal, setShowApplyModal] = useState(false)
 
   const itemVariants = {
@@ -113,7 +118,14 @@ const JobDetailSidebar = ({ job, getExperienceLabel }) => {
             className="space-y-3"
           >
             <button
-              onClick={() => setShowApplyModal(true)}
+              onClick={() => {
+                if (!isAuthenticated) {
+                  toast.warning(t('common.loginRequired') || 'Vui lòng đăng nhập để ứng tuyển')
+                  setTimeout(() => navigate('/login'), 500)
+                  return
+                }
+                setShowApplyModal(true)
+              }}
               className="w-full px-6 py-3 bg-gradient-brand text-white rounded-xl font-medium transition-all duration-300 cursor-pointer hover:shadow-glow hover:scale-[1.02] active:scale-[0.98]"
             >
               {t('jobs.applyNow') || 'Ứng tuyển ngay'}

@@ -23,12 +23,13 @@ import {
   TooltipProvider,
   TooltipTrigger
 } from '~/components/ui/tooltip'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { syncFavorites } from '~/redux/slices/auth.slice'
 import ApplyJobModal from '~/components/candidate/ApplyJobModal'
 
 const JobDetail = ({ job, onBack, formatSalary, getExperienceLabel }) => {
   const dispatch = useDispatch()
+  const navigate = useNavigate()
   const { isAuthenticated } = useAuth()
   const { t } = useLanguage()
   const { favoriteIds, isLoading } = useSelector((state) => state.favorite)
@@ -45,6 +46,7 @@ const JobDetail = ({ job, onBack, formatSalary, getExperienceLabel }) => {
   const handleToggleFavorite = async () => {
     if (!isAuthenticated) {
       toast.warning(t('common.loginRequired') || 'Vui lòng đăng nhập để lưu việc làm')
+      setTimeout(() => navigate('/login'), 500)
       return
     }
 
@@ -405,7 +407,14 @@ const JobDetail = ({ job, onBack, formatSalary, getExperienceLabel }) => {
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            onClick={() => setShowApplyModal(true)}
+            onClick={() => {
+              if (!isAuthenticated) {
+                toast.warning(t('common.loginRequired') || 'Vui lòng đăng nhập để ứng tuyển')
+                setTimeout(() => navigate('/login'), 500)
+                return
+              }
+              setShowApplyModal(true)
+            }}
             className="flex-1 px-6 py-3 bg-gradient-brand text-white rounded-xl font-medium hover:shadow-glow transition-all duration-300 cursor-pointer"
           >
             {t('jobs.applyNow') || 'Ứng tuyển ngay'}

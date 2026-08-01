@@ -23,27 +23,33 @@ import {
   TooltipProvider,
   TooltipTrigger
 } from '~/components/ui/tooltip'
+import { useNavigate } from 'react-router-dom'
 
 const JobDetailContent = ({
   job,
   getExperienceLabel
 }) => {
   const { t } = useLanguage()
-  const { isAuthenticated } = useAuth()
+  const navigate = useNavigate()
+  const { isAuthenticated, favoriteIds: authFavoriteIds } = useAuth()
   const dispatch = useDispatch()
-  const { favoriteIds, isLoading } = useSelector((state) => state.favorite)
+  const { isLoading } = useSelector((state) => state.favorite)
   const [isFavorite, setIsFavorite] = useState(false)
   const [isToggling, setIsToggling] = useState(false)
 
+  // Chỉ kiểm tra favorite khi đã đăng nhập
   useEffect(() => {
-    if (job?.id && favoriteIds) {
-      setIsFavorite(favoriteIds.includes(job.id))
+    if (isAuthenticated && job?.id && authFavoriteIds) {
+      setIsFavorite(authFavoriteIds.includes(job.id))
+    } else {
+      setIsFavorite(false)
     }
-  }, [favoriteIds, job?.id])
+  }, [authFavoriteIds, job?.id, isAuthenticated])
 
   const handleToggleFavorite = async () => {
     if (!isAuthenticated) {
-      toast.warning('Vui lòng đăng nhập để lưu việc làm')
+      toast.warning(t('common.loginRequired') || 'Vui lòng đăng nhập để lưu việc làm')
+      setTimeout(() => navigate('/login'), 500)
       return
     }
 
@@ -56,8 +62,8 @@ const JobDetailContent = ({
       setIsFavorite(newIsFavorite)
 
       const updatedFavorites = result.action === 'added'
-        ? [...favoriteIds, job.id]
-        : favoriteIds.filter(id => id !== job.id)
+        ? [...authFavoriteIds, job.id]
+        : authFavoriteIds.filter(id => id !== job.id)
       dispatch(syncFavorites(updatedFavorites))
 
       toast.success(result.action === 'added' ? 'Đã thêm vào yêu thích' : 'Đã xóa khỏi yêu thích')
@@ -246,7 +252,7 @@ const JobDetailContent = ({
               className="inline-flex items-center gap-1 text-sm bg-brand-light/70 dark:bg-gray-700 text-brand-text dark:text-gray-300 px-3 py-1 rounded-full transition-all duration-200 hover:bg-brand-primary hover:text-white dark:hover:bg-brand-primary dark:hover:text-white cursor-default"
             >
               <FaClock size={14} className="dark:text-gray-400 transition-colors duration-200" />
-              {getExperienceLabel(job.experience_level)}
+              {job.experience_level}
             </motion.span>
           )}
           {job.salary_range && (

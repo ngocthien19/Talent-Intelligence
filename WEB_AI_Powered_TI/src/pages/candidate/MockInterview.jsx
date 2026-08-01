@@ -16,7 +16,8 @@ import {
   FaTrash,
   FaCheckCircle,
   FaClock,
-  FaCommentDots
+  FaCommentDots,
+  FaArrowLeft
 } from 'react-icons/fa'
 import { toast } from 'react-toastify'
 
@@ -79,6 +80,9 @@ const MockInterviewChat = () => {
   const [isCreatingSession, setIsCreatingSession] = useState(false)
   const [isInitialized, setIsInitialized] = useState(false)
   const [shouldScrollToBottom, setShouldScrollToBottom] = useState(false)
+
+  // Trên mobile: 'list' = hiện sidebar, 'chat' = hiện khung chat. Từ md trở lên bỏ qua, luôn hiện cả 2.
+  const [mobileView, setMobileView] = useState('list')
 
   // Modal states
   const [modalConfig, setModalConfig] = useState({
@@ -176,7 +180,7 @@ const MockInterviewChat = () => {
     }
   }
 
-  // Tạo phiên mới
+  // Tạo phiên mới (dùng nội bộ, không tự chuyển view trên mobile - dùng cho init)
   const createNewSession = async () => {
     setIsCreatingSession(true)
     try {
@@ -219,12 +223,24 @@ const MockInterviewChat = () => {
     }
   }
 
-  // Chọn phiên cũ
+  // Xử lý khi người dùng bấm nút "Phiên mới" -> chuyển sang khung chat trên mobile
+  const handleNewSessionClick = async () => {
+    setMobileView('chat')
+    await createNewSession()
+  }
+
+  // Chọn phiên cũ -> chuyển sang khung chat trên mobile
   const selectSession = async (session) => {
+    setMobileView('chat')
     if (currentSession?.id === session.id) return
     setCurrentSession(null)
     setMessages([])
     await loadSessionDetail(session.id)
+  }
+
+  // Quay lại danh sách (chỉ có tác dụng trên mobile)
+  const handleBackToList = () => {
+    setMobileView('list')
   }
 
   // Hiển thị modal xác nhận
@@ -392,6 +408,8 @@ const MockInterviewChat = () => {
         const remainingSessions = sessions.filter(s => s.id !== sessionId)
         if (remainingSessions.length === 0) {
           await createNewSession()
+        } else {
+          setMobileView('list')
         }
       }
       toast.success(t('mockInterview.deleteSuccess'))
@@ -497,11 +515,15 @@ const MockInterviewChat = () => {
         initial="hidden"
         animate="visible"
         variants={containerVariants}
-        className="app-container py-6 h-[calc(100vh-120px)]"
+        className="app-container py-3 sm:py-6 h-[calc(100vh-64px)] sm:h-[calc(100vh-120px)]"
       >
         <div className="max-w-6xl mx-auto h-full flex gap-4">
-          {/* Sidebar */}
-          <div className="w-80 flex-shrink-0 h-full bg-white dark:bg-gray-800 rounded-xl shadow-custom p-4 flex flex-col overflow-hidden">
+          {/* Sidebar - trên mobile: chỉ hiện khi mobileView === 'list', từ md trở lên luôn hiện */}
+          <div
+            className={`w-full md:w-80 flex-shrink-0 h-full bg-white dark:bg-gray-800 rounded-xl shadow-custom p-4 flex-col overflow-hidden ${
+              mobileView === 'chat' ? 'hidden md:flex' : 'flex'
+            }`}
+          >
             <div className="flex items-center justify-between mb-4 flex-shrink-0">
               <h3 className="font-semibold text-brand-secondary dark:text-white flex items-center gap-2">
                 <FaHistory size={16} className="text-brand-primary" />
@@ -515,7 +537,7 @@ const MockInterviewChat = () => {
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              onClick={createNewSession}
+              onClick={handleNewSessionClick}
               disabled={isCreatingSession}
               className="w-full px-4 py-2.5 bg-gradient-brand text-white rounded-lg font-medium hover:shadow-glow transition-all duration-200 flex items-center justify-center gap-2 mb-4 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
             >
@@ -587,23 +609,34 @@ const MockInterviewChat = () => {
             </div>
           </div>
 
-          {/* Main Chat Area */}
+          {/* Main Chat Area - trên mobile: chỉ hiện khi mobileView === 'chat', từ md trở lên luôn hiện */}
           <motion.div
             variants={fadeInUp}
-            className="flex-1 bg-white dark:bg-gray-800 rounded-xl shadow-custom flex flex-col overflow-hidden"
+            className={`flex-1 bg-white dark:bg-gray-800 rounded-xl shadow-custom flex-col overflow-hidden ${
+              mobileView === 'list' ? 'hidden md:flex' : 'flex'
+            }`}
           >
             {/* Header */}
-            <div className="px-6 py-4 border-b border-brand-light dark:border-gray-700 flex items-center justify-between flex-shrink-0">
-              <div className="flex items-center gap-3">
+            <div className="px-4 sm:px-6 py-4 border-b border-brand-light dark:border-gray-700 flex items-center justify-between flex-shrink-0">
+              <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                {/* Nút quay lại danh sách - chỉ hiện trên mobile */}
+                <button
+                  onClick={handleBackToList}
+                  className="md:hidden p-2 -ml-1 rounded-lg hover:bg-brand-light/50 dark:hover:bg-gray-700/50 transition-colors duration-200 flex-shrink-0 cursor-pointer"
+                  aria-label={t('common.back') || 'Quay lại'}
+                >
+                  <FaArrowLeft size={16} className="text-brand-secondary dark:text-white" />
+                </button>
+
                 <motion.div
                   whileHover={{ scale: 1.05, rotate: -5 }}
                   transition={{ duration: 0.2 }}
-                  className="p-2 rounded-xl bg-brand-light/30 dark:bg-gray-700/30"
+                  className="p-2 rounded-xl bg-brand-light/30 dark:bg-gray-700/30 flex-shrink-0"
                 >
                   <FaRobot size={20} className="text-brand-primary" />
                 </motion.div>
-                <div>
-                  <h2 className="font-bold text-brand-secondary dark:text-white">
+                <div className="min-w-0">
+                  <h2 className="font-bold text-brand-secondary dark:text-white truncate">
                     {currentSession?.title || t('mockInterview.title')}
                   </h2>
                   <div className="flex items-center gap-2 text-xs text-brand-text/60 dark:text-gray-400 flex-wrap">
@@ -624,7 +657,7 @@ const MockInterviewChat = () => {
                 </div>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-shrink-0">
                 {currentSession?.status === 'in_progress' && (
                   <motion.button
                     whileHover={{ scale: 1.02 }}
@@ -667,7 +700,7 @@ const MockInterviewChat = () => {
                     exit="exit"
                     className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
                   >
-                    <div className={`flex items-start gap-3 max-w-[80%] ${msg.sender === 'user' ? 'flex-row-reverse' : ''}`}>
+                    <div className={`flex items-start gap-3 max-w-[85%] sm:max-w-[80%] ${msg.sender === 'user' ? 'flex-row-reverse' : ''}`}>
                       <motion.div
                         whileHover={{ scale: 1.05 }}
                         className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
@@ -738,8 +771,8 @@ const MockInterviewChat = () => {
             </div>
 
             {/* Input */}
-            <div className="p-4 border-t border-brand-light dark:border-gray-700 flex-shrink-0 bg-white dark:bg-gray-800">
-              <div className="flex gap-3">
+            <div className="p-3 sm:p-4 border-t border-brand-light dark:border-gray-700 flex-shrink-0 bg-white dark:bg-gray-800">
+              <div className="flex gap-2 sm:gap-3">
                 <textarea
                   ref={inputRef}
                   value={input}
@@ -754,7 +787,7 @@ const MockInterviewChat = () => {
                   }
                   rows={1}
                   disabled={!currentSession || currentSession?.status === 'completed' || isSending}
-                  className="flex-1 px-4 py-3 bg-brand-bg dark:bg-gray-900 border border-brand-light dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-primary/50 resize-none transition-all duration-200 text-brand-secondary dark:text-white placeholder:text-brand-text/40 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 px-3 sm:px-4 py-3 bg-brand-bg dark:bg-gray-900 border border-brand-light dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-primary/50 resize-none transition-all duration-200 text-brand-secondary dark:text-white placeholder:text-brand-text/40 disabled:opacity-50 disabled:cursor-not-allowed"
                   style={{ minHeight: '48px', maxHeight: '120px' }}
                 />
                 <motion.button
@@ -762,7 +795,7 @@ const MockInterviewChat = () => {
                   whileTap={{ scale: 0.95 }}
                   onClick={sendMessage}
                   disabled={!input.trim() || !currentSession || currentSession?.status === 'completed' || isSending}
-                  className="px-4 py-3 bg-gradient-brand text-white rounded-xl font-medium hover:shadow-glow transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 cursor-pointer"
+                  className="px-4 py-3 bg-gradient-brand text-white rounded-xl font-medium hover:shadow-glow transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 cursor-pointer flex-shrink-0"
                 >
                   {isSending ? (
                     <FaSpinner className="animate-spin" size={18} />

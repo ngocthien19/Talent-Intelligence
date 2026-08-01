@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import {
   FaBuilding,
   FaMapMarkerAlt,
@@ -52,6 +52,7 @@ const JobCard = ({
 }) => {
   const { t } = useLanguage()
   const dispatch = useDispatch()
+  const navigate = useNavigate() // Khởi tạo navigate
   const { isAuthenticated, favoriteIds, addFavorite, removeFavorite, isFavorite: checkFavorite } = useAuth()
   const [isFavorite, setIsFavorite] = useState(false)
   const [isToggling, setIsToggling] = useState(false)
@@ -68,6 +69,7 @@ const JobCard = ({
 
     if (!isAuthenticated) {
       toast.warning(t('common.loginRequired') || 'Vui lòng đăng nhập để lưu việc làm')
+      setTimeout(() => navigate('/login'), 500)
       return
     }
 
@@ -115,7 +117,6 @@ const JobCard = ({
   const Wrapper = onClick ? 'div' : Link
   const wrapperProps = onClick ? { onClick: () => onClick(job.id) } : { to: `/jobs/${job.id}` }
 
-  // 👉 Lấy experience label hiển thị
   const displayExperience = getDisplayExperience(job.experience_level)
   const experienceLabel = displayExperience
     ? getExperienceLabel(displayExperience, t)
