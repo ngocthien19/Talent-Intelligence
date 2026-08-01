@@ -738,12 +738,18 @@
       "internship": "Internship",
       "freelance": "Freelance",
       "validation": {
-        "titleRequired": "Please enter title",
-        "descriptionRequired": "Please enter description",
-        "categoryRequired": "Please select a category",
+        "titleRequired": "Please enter a title",
+        "titleMin": "Title must be at least 3 characters",
+        "titleMax": "Title must not exceed 255 characters",
+        "descriptionRequired": "Please enter a description",
+        "descriptionMin": "Description must be at least 10 characters",
+        "requirementsRequired": "Please enter job requirements",
+        "requirementsMin": "Requirements must be at least 10 characters",
+        "benefitsRequired": "Please enter job benefits",
+        "benefitsMin": "Benefits must be at least 10 characters",
         "skillsRequired": "Please add at least 1 required skill",
-        "salaryMinMax": "Minimum salary cannot be greater than maximum",
-        "salaryPositive": "Salary must be a positive number"
+        "categoryRequired": "Please select a category"
+
       },
       "backToList": "Back to list",
       "totalApplications": "Total Applications",

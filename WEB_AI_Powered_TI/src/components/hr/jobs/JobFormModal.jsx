@@ -218,16 +218,35 @@ const JobFormModal = ({
   }
 
   const onFormSubmit = (data) => {
+    // Validate Requirements
+    if (!data.requirements || data.requirements.trim() === '') {
+      setError('requirements', {
+        message: t('hr.job.validation.requirementsRequired') || 'Vui lòng nhập yêu cầu công việc'
+      })
+      return
+    }
+
+    // Validate Benefits
+    if (!data.benefits || data.benefits.trim() === '') {
+      setError('benefits', {
+        message: t('hr.job.validation.benefitsRequired') || 'Vui lòng nhập quyền lợi công việc'
+      })
+      return
+    }
+
+    // Validate Required Skills
     if (!data.requiredSkills || data.requiredSkills.length === 0) {
-      setError('requiredSkills', { message: t('hr.job.validation.skillsRequired') || 'Vui lòng thêm ít nhất 1 kỹ năng bắt buộc' })
+      setError('requiredSkills', {
+        message: t('hr.job.validation.skillsRequired') || 'Vui lòng thêm ít nhất 1 kỹ năng bắt buộc'
+      })
       return
     }
 
     const submitData = {
       title: data.title.trim(),
       description: data.description.trim(),
-      requirements: data.requirements?.trim() || '',
-      benefits: data.benefits?.trim() || '',
+      requirements: data.requirements.trim(),
+      benefits: data.benefits.trim(),
       requiredSkills: data.requiredSkills || [],
       niceToHaveSkills: data.niceToHaveSkills || [],
       experienceLevel: data.experienceLevel || undefined,
@@ -383,29 +402,41 @@ const JobFormModal = ({
                 </div>
               </div>
 
-              {/* Requirements & Benefits */}
+              {/* Requirements & Benefits - Có validation bắt buộc */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium text-brand-secondary dark:text-white block mb-1.5">
-                    {t('hr.job.requirements') || 'Yêu cầu'}
+                    {t('hr.job.requirements') || 'Yêu cầu'} <span className="text-red-500">*</span>
                   </label>
                   <textarea
-                    {...register('requirements')}
+                    {...register('requirements', {
+                      required: t('hr.job.validation.requirementsRequired') || 'Vui lòng nhập yêu cầu công việc',
+                      minLength: { value: 10, message: t('hr.job.validation.requirementsMin') || 'Yêu cầu phải có ít nhất 10 ký tự' }
+                    })}
                     rows={3}
-                    className="w-full px-4 py-2.5 text-sm border border-brand-light/50 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-brand-secondary dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-primary/50 transition-all duration-200"
+                    className={`w-full px-4 py-2.5 text-sm border rounded-lg bg-white dark:bg-gray-900 text-brand-secondary dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-primary/50 transition-all duration-200 ${
+                      errors.requirements ? 'border-red-500' : 'border-brand-light/50 dark:border-gray-700'
+                    }`}
                     placeholder={t('hr.job.requirementsPlaceholder') || 'Nhập yêu cầu...'}
                   />
+                  {errors.requirements && <p className="text-xs text-red-500 mt-1">{errors.requirements.message}</p>}
                 </div>
                 <div>
                   <label className="text-sm font-medium text-brand-secondary dark:text-white block mb-1.5">
-                    {t('hr.job.benefits') || 'Quyền lợi'}
+                    {t('hr.job.benefits') || 'Quyền lợi'} <span className="text-red-500">*</span>
                   </label>
                   <textarea
-                    {...register('benefits')}
+                    {...register('benefits', {
+                      required: t('hr.job.validation.benefitsRequired') || 'Vui lòng nhập quyền lợi công việc',
+                      minLength: { value: 10, message: t('hr.job.validation.benefitsMin') || 'Quyền lợi phải có ít nhất 10 ký tự' }
+                    })}
                     rows={3}
-                    className="w-full px-4 py-2.5 text-sm border border-brand-light/50 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-brand-secondary dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-primary/50 transition-all duration-200"
+                    className={`w-full px-4 py-2.5 text-sm border rounded-lg bg-white dark:bg-gray-900 text-brand-secondary dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-primary/50 transition-all duration-200 ${
+                      errors.benefits ? 'border-red-500' : 'border-brand-light/50 dark:border-gray-700'
+                    }`}
                     placeholder={t('hr.job.benefitsPlaceholder') || 'Nhập quyền lợi...'}
                   />
+                  {errors.benefits && <p className="text-xs text-red-500 mt-1">{errors.benefits.message}</p>}
                 </div>
               </div>
 

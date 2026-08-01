@@ -732,11 +732,16 @@
       "freelance": "フリーランス",
       "validation": {
         "titleRequired": "タイトルを入力してください",
+        "titleMin": "タイトルは3文字以上で入力してください",
+        "titleMax": "タイトルは255文字以内で入力してください",
         "descriptionRequired": "説明を入力してください",
-        "categoryRequired": "カテゴリを選択してください",
-        "skillsRequired": "必須スキルを1つ以上追加してください",
-        "salaryMinMax": "最低給与は最高給与より大きくできません",
-        "salaryPositive": "給与は正の数である必要があります"
+        "descriptionMin": "説明は10文字以上で入力してください",
+        "requirementsRequired": "必須条件を入力してください",
+        "requirementsMin": "必須条件は10文字以上で入力してください",
+        "benefitsRequired": "福利厚生を入力してください",
+        "benefitsMin": "福利厚生は10文字以上で入力してください",
+        "skillsRequired": "少なくとも1つの必須スキルを追加してください",
+        "categoryRequired": "カテゴリを選択してください"
       },
       "backToList": "一覧に戻る",
       "totalApplications": "総応募数",

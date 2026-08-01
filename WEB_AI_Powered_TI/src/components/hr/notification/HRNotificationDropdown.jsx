@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom'
 import {
   FaBell,
   FaCheck,
-  FaTrash,
   FaSpinner,
   FaChartBar,
   FaCalendarAlt,
@@ -146,40 +145,7 @@ const HRNotificationDropdown = ({ onUnreadCountChange }) => {
     }
   }
 
-  const handleDelete = async (id) => {
-    try {
-      const response = await notificationApi.deleteNotification(id)
-      if (response.success) {
-        setNotifications(prev => prev.filter(n => n.id !== id))
-        const deleted = notifications.find(n => n.id === id)
-        if (deleted && !deleted.is_read) {
-          setUnreadCount(prev => Math.max(0, prev - 1))
-          if (onUnreadCountChange) {
-            onUnreadCountChange(Math.max(0, unreadCount - 1))
-          }
-        }
-        toast.success('Xóa thông báo thành công')
-      }
-    } catch (error) {
-      toast.error('Không thể xóa thông báo')
-    }
-  }
-
-  const handleDeleteAll = async () => {
-    try {
-      const response = await notificationApi.deleteAll()
-      if (response.success) {
-        setNotifications([])
-        setUnreadCount(0)
-        if (onUnreadCountChange) {
-          onUnreadCountChange(0)
-        }
-        toast.success('Xóa tất cả thông báo thành công')
-      }
-    } catch (error) {
-      toast.error('Không thể xóa tất cả thông báo')
-    }
-  }
+  // ĐÃ XÓA: handleDelete và handleDeleteAll
 
   const handleViewDetail = (notificationId) => {
     setIsOpen(false)
@@ -318,14 +284,7 @@ const HRNotificationDropdown = ({ onUnreadCountChange }) => {
                       {t('hr.markAllRead') || 'Đọc tất cả'}
                     </button>
                   )}
-                  {notifications.length > 0 && (
-                    <button
-                      onClick={handleDeleteAll}
-                      className="text-xs font-medium text-red-500 hover:text-red-600 transition-colors px-2.5 py-1 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 cursor-pointer"
-                    >
-                      {t('common.deleteAll') || 'Xóa tất cả'}
-                    </button>
-                  )}
+                  {/* ĐÃ XÓA NÚT XÓA TẤT CẢ */}
                 </div>
               </div>
 
@@ -370,13 +329,7 @@ const HRNotificationDropdown = ({ onUnreadCountChange }) => {
                                     <FaCheck size={12} />
                                   </button>
                                 )}
-                                <button
-                                  onClick={() => handleDelete(notification.id)}
-                                  className="p-1.5 text-brand-text/40 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition-all duration-200 hover:scale-110 cursor-pointer"
-                                  title={t('common.delete') || 'Xóa'}
-                                >
-                                  <FaTrash size={12} />
-                                </button>
+                                {/* ĐÃ XÓA NÚT XÓA Ở ĐÂY */}
                               </div>
                             </div>
                             <p className="text-xs text-brand-text/60 dark:text-gray-400 mt-1 line-clamp-2 leading-relaxed group-hover:text-brand-text/80 dark:group-hover:text-gray-300 transition-colors duration-200">

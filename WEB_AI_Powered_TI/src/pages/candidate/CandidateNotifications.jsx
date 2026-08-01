@@ -7,7 +7,6 @@ import { toast } from 'react-toastify'
 import {
   FaBell,
   FaCheck,
-  FaTrash,
   FaSpinner,
   FaChartBar,
   FaCalendarAlt,
@@ -364,39 +363,7 @@ const CandidateNotifications = () => {
     }
   }
 
-  const handleDelete = async (id, e) => {
-    e.stopPropagation()
-    try {
-      const response = await candidateNotificationApi.deleteNotification(id)
-      if (response.success) {
-        setNotifications(prev => prev.filter(n => n.id !== id))
-        if (selectedId === id) {
-          const remaining = notifications.filter(n => n.id !== id)
-          setSelectedId(remaining.length > 0 ? remaining[0].id : null)
-          if (remaining.length === 0) {
-            setIsMobileDetailOpen(false)
-          }
-        }
-        toast.success('Xóa thông báo thành công')
-      }
-    } catch (error) {
-      toast.error('Không thể xóa thông báo')
-    }
-  }
-
-  const handleDeleteAll = async () => {
-    try {
-      const response = await candidateNotificationApi.deleteAll()
-      if (response.success) {
-        setNotifications([])
-        setSelectedId(null)
-        setIsMobileDetailOpen(false)
-        toast.success('Xóa tất cả thông báo thành công')
-      }
-    } catch (error) {
-      toast.error('Không thể xóa tất cả thông báo')
-    }
-  }
+  // ĐÃ XÓA: handleDelete và handleDeleteAll
 
   const loadMore = async () => {
     if (pagination.page < Math.ceil(pagination.total / pagination.limit)) {
@@ -506,14 +473,7 @@ const CandidateNotifications = () => {
                 {t('candidate.markAllRead') || 'Đọc tất cả'}
               </button>
             )}
-            {notifications.length > 0 && (
-              <button
-                onClick={handleDeleteAll}
-                className="px-3 py-1.5 text-xs font-medium text-red-500 hover:text-red-600 transition-colors rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 cursor-pointer"
-              >
-                {t('common.deleteAll') || 'Xóa tất cả'}
-              </button>
-            )}
+            {/* ĐÃ XÓA NÚT XÓA TẤT CẢ */}
           </div>
         </motion.div>
 
@@ -656,24 +616,16 @@ const CandidateNotifications = () => {
                           )}
                         </div>
                       </div>
-                      <div className="flex items-center gap-1.5 flex-shrink-0">
-                        {!selectedNotification.is_read && (
-                          <button
-                            onClick={(e) => handleMarkAsRead(selectedNotification.id, e)}
-                            className="p-2 text-brand-primary hover:bg-brand-primary/10 rounded-lg transition-none hover:scale-110 cursor-pointer"
-                            title={t('candidate.markAsRead') || 'Đánh dấu đã đọc'}
-                          >
-                            <FaCheck size={16} />
-                          </button>
-                        )}
+                      {/* Chỉ giữ lại nút đánh dấu đã đọc, đã xóa nút xóa */}
+                      {!selectedNotification.is_read && (
                         <button
-                          onClick={(e) => handleDelete(selectedNotification.id, e)}
-                          className="p-2 text-brand-text/40 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition-none hover:scale-110 cursor-pointer"
-                          title={t('common.delete') || 'Xóa'}
+                          onClick={(e) => handleMarkAsRead(selectedNotification.id, e)}
+                          className="p-2 text-brand-primary hover:bg-brand-primary/10 rounded-lg transition-none hover:scale-110 cursor-pointer flex-shrink-0"
+                          title={t('candidate.markAsRead') || 'Đánh dấu đã đọc'}
                         >
-                          <FaTrash size={16} />
+                          <FaCheck size={16} />
                         </button>
-                      </div>
+                      )}
                     </div>
 
                     <div className="space-y-4">
