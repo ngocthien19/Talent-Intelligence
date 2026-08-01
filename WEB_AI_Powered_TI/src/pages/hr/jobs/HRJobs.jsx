@@ -13,6 +13,7 @@ import JobStats from '~/components/hr/jobs/JobStats'
 import JobEmptyState from '~/components/hr/jobs/JobEmptyState'
 import JobFormModal from '~/components/hr/jobs/JobFormModal'
 import usePageTitle from '~/hooks/usePageTitle'
+import FavoriteCandidatesModal from '~/components/hr/jobs/FavoriteCandidatesModal'
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -61,6 +62,8 @@ const HRJobs = () => {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingJob, setEditingJob] = useState(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isFavoriteModalOpen, setIsFavoriteModalOpen] = useState(false)
+  const [selectedJobForFavorites, setSelectedJobForFavorites] = useState(null)
 
   // Filter state
   const [filters, setFilters] = useState({
@@ -329,6 +332,18 @@ const HRJobs = () => {
     }
   }
 
+  // Handler mở modal yêu thích
+  const handleViewFavorites = (job) => {
+    setSelectedJobForFavorites(job)
+    setIsFavoriteModalOpen(true)
+  }
+
+  // Handler đóng modal yêu thích
+  const handleCloseFavoriteModal = () => {
+    setIsFavoriteModalOpen(false)
+    setSelectedJobForFavorites(null)
+  }
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-[60vh]">
@@ -393,6 +408,7 @@ const HRJobs = () => {
                     setFilters(prev => ({ ...prev, sortBy, sortOrder }))
                   }}
                   onEdit={handleOpenEditModal}
+                  onViewFavorites={handleViewFavorites}
                   currentSortBy={filters.sortBy}
                   currentSortOrder={filters.sortOrder}
                   isLoading={isTableLoading}
@@ -436,6 +452,14 @@ const HRJobs = () => {
         editingJob={editingJob}
         categories={categories}
         isSubmitting={isSubmitting}
+      />
+
+      {/* Favorite Candidates Modal */}
+      <FavoriteCandidatesModal
+        isOpen={isFavoriteModalOpen}
+        onClose={handleCloseFavoriteModal}
+        jobId={selectedJobForFavorites?.id}
+        jobTitle={selectedJobForFavorites?.title}
       />
     </>
   )

@@ -94,7 +94,7 @@ const JobDetailCandidates = ({ candidates, jobId }) => {
               )}
               <CandidateStatusBadge status={candidate.status} />
               <Link
-                to={`/hr/candidates/${candidate.id}`}
+                to={`/hr/applications/${candidate.id}`}
                 className="p-1.5 rounded-lg text-brand-text/40 dark:text-gray-500 hover:text-brand-primary hover:bg-brand-primary/10 transition-all duration-200"
               >
                 <FaEye size={14} />

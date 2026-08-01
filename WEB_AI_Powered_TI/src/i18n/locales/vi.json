@@ -243,7 +243,8 @@
     "back": "Quay lại",
     "additionalInfo": "Thông tin bổ sung",
     "readAt": "Đã đọc",
-    "notifications": "thông báo"
+    "notifications": "thông báo",
+    "search": "Tìm kiếm"
   },
    "profile": {
     "title": "Hồ sơ của tôi",
@@ -654,6 +655,15 @@
       "changePasswordDesc": "Cập nhật mật khẩu để bảo mật tài khoản của bạn"
     },
     "job": {
+      "viewFavorites": "Xem ứng viên yêu thích",
+      "favoriteCandidates": "Ứng viên yêu thích",
+      "forJob": "Công việc",
+      "searchCandidates": "Tìm kiếm ứng viên theo tên hoặc email...",
+      "noFavoriteCandidates": "Chưa có ứng viên yêu thích",
+      "noSearchResults": "Không tìm thấy ứng viên phù hợp với từ khóa tìm kiếm",
+      "noFavoriteCandidatesDesc": "Chưa có ứng viên nào yêu thích công việc này",
+      "totalCandidates": "Tổng số",
+      "favoritedAt": "Yêu thích lúc",
       "detail": "Chi tiết công việc: {value}",
       "totalJobs": "Tổng công việc",
       "noResults": "Không tìm thấy công việc nào",

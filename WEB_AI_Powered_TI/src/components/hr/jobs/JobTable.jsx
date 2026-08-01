@@ -19,6 +19,7 @@ const JobTable = ({
   onDeactivateBulk,
   onPageChange,
   onEdit,
+  onViewFavorites,
   isLoading
 }) => {
   const { t } = useLanguage()
@@ -270,6 +271,7 @@ const JobTable = ({
                     onSelect={(checked) => onSelectOne(job.id, checked)}
                     onEdit={onEdit}
                     onDelete={(id) => openDeleteConfirm(id, job.title)}
+                    onViewFavorites={onViewFavorites}
                     index={index}
                   />
                 ))
