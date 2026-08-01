@@ -15,6 +15,7 @@ export const jobApi = {
     )
     return response.data
   },
+
   // Tạo công việc mới
   createJob: async (data) => {
     const response = await authorizedAxiosInstance.post(
@@ -83,6 +84,7 @@ export const jobApi = {
     )
     return response.data
   },
+
   // Lấy chi tiết công việc (kèm candidates và stats)
   getJobDetail: async (id) => {
     const response = await authorizedAxiosInstance.get(
@@ -105,9 +107,60 @@ export const jobApi = {
     return response.data
   },
 
+  // Lấy thống kê công việc
   getJobStats: async () => {
     const response = await authorizedAxiosInstance.get(
       `${DEV_API_URL}/api/hr/jobs/stats`
+    )
+    return response.data
+  },
+
+  // Lấy danh sách ứng viên yêu thích công việc
+  getFavoriteCandidates: async (jobId, params = {}) => {
+    const queryParams = new URLSearchParams()
+    Object.keys(params).forEach(key => {
+      if (params[key] !== undefined && params[key] !== '') {
+        queryParams.append(key, params[key])
+      }
+    })
+    const response = await authorizedAxiosInstance.get(
+      `${DEV_API_URL}/api/hr/jobs/${jobId}/favorites/candidates?${queryParams.toString()}`
+    )
+    return response.data
+  },
+
+  // Lấy số lượng ứng viên yêu thích công việc
+  getFavoriteCount: async (jobId) => {
+    const response = await authorizedAxiosInstance.get(
+      `${DEV_API_URL}/api/hr/jobs/${jobId}/favorites/count`
+    )
+    return response.data
+  },
+
+  // Lấy danh sách công việc được yêu thích nhiều nhất
+  getTopFavoriteJobs: async (params = {}) => {
+    const queryParams = new URLSearchParams()
+    Object.keys(params).forEach(key => {
+      if (params[key] !== undefined && params[key] !== '') {
+        queryParams.append(key, params[key])
+      }
+    })
+    const response = await authorizedAxiosInstance.get(
+      `${DEV_API_URL}/api/hr/favorites/top-jobs?${queryParams.toString()}`
+    )
+    return response.data
+  },
+
+  // Lấy danh sách ứng viên yêu thích nhiều công việc nhất
+  getTopFavoriteCandidates: async (params = {}) => {
+    const queryParams = new URLSearchParams()
+    Object.keys(params).forEach(key => {
+      if (params[key] !== undefined && params[key] !== '') {
+        queryParams.append(key, params[key])
+      }
+    })
+    const response = await authorizedAxiosInstance.get(
+      `${DEV_API_URL}/api/hr/favorites/top-candidates?${queryParams.toString()}`
     )
     return response.data
   }

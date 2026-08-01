@@ -243,7 +243,8 @@
     "back": "戻る",
     "additionalInfo": "追加情報",
     "readAt": "既読日時",
-    "notifications": "通知"
+    "notifications": "通知",
+    "search": "検索"
   },
   "profile": {
     "title": "プロフィール",
@@ -647,6 +648,15 @@
       "changePasswordDesc": "アカウントを保護するためにパスワードを更新してください"
     },
     "job": {
+      "viewFavorites": "お気に入り候補者を見る",
+      "favoriteCandidates": "お気に入り候補者",
+      "forJob": "求人",
+      "searchCandidates": "名前またはメールで候補者を検索...",
+      "noFavoriteCandidates": "お気に入りの候補者がいません",
+      "noSearchResults": "検索条件に一致する候補者が見つかりません",
+      "noFavoriteCandidatesDesc": "この求人をお気に入りにした候補者はまだいません",
+      "totalCandidates": "合計",
+      "favoritedAt": "お気に入り登録日時",
       "detail": "求人詳細: {value}",
       "totalJobs": "総求人数",
       "noResults": "求人が見つかりません",

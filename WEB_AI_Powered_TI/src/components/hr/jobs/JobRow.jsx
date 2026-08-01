@@ -4,7 +4,8 @@ import {
   FaEdit,
   FaTrash,
   FaEye,
-  FaMapMarkerAlt
+  FaMapMarkerAlt,
+  FaHeart
 } from 'react-icons/fa'
 import {
   Tooltip,
@@ -22,6 +23,7 @@ const JobRow = ({
   onSelect,
   onEdit,
   onDelete,
+  onViewFavorites, // Thêm prop mới
   index
 }) => {
   const { t } = useLanguage()
@@ -102,6 +104,23 @@ const JobRow = ({
       {/* Actions - Căn giữa */}
       <td className="px-3 py-3 text-center">
         <div className="flex items-center justify-center gap-1">
+          {/* View Favorites - Nút mới */}
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={() => onViewFavorites(job)}
+                  className="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-pink-500 text-pink-500 hover:bg-pink-500 hover:text-white dark:border-pink-400 dark:text-pink-400 dark:hover:bg-pink-500 dark:hover:text-white transition-all duration-200 cursor-pointer hover:scale-110 active:scale-95"
+                >
+                  <FaHeart size={15} />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="top">
+                <p>{t('hr.job.viewFavorites') || 'Xem ứng viên yêu thích'}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+
           {/* View Detail */}
           <TooltipProvider>
             <Tooltip>

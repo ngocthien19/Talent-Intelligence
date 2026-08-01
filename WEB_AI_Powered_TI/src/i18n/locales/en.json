@@ -243,7 +243,8 @@
     "back": "Back",
     "additionalInfo": "Additional information",
     "readAt": "Read at",
-    "notifications": "notifications"
+    "notifications": "notifications",
+    "search": "Search"
   },
   "profile": {
     "title": "My Profile",
@@ -654,6 +655,15 @@
       "changePasswordDesc": "Update your password to secure your account"
     },
     "job": {
+      "viewFavorites": "View Favorite Candidates",
+      "favoriteCandidates": "Favorite Candidates",
+      "forJob": "Job",
+      "searchCandidates": "Search candidates by name or email...",
+      "noFavoriteCandidates": "No favorite candidates yet",
+      "noSearchResults": "No candidates found matching your search",
+      "noFavoriteCandidatesDesc": "No candidates have favorited this job yet",
+      "totalCandidates": "Total",
+      "favoritedAt": "Favorited at",
       "detail": "Job Detail: {value}",
       "totalJobs": "Total Jobs",
       "noResults": "No jobs found",
